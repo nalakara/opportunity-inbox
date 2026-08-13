@@ -11,6 +11,7 @@ const STATUS_ORDER = [
 
 const elements = {
   contentGrid: document.querySelector("#contentGrid"),
+  installButton: document.querySelector("#installButton"),
   captureButton: document.querySelector("#captureButton"),
   captureDialog: document.querySelector("#captureDialog"),
   captureForm: document.querySelector("#captureForm"),
@@ -29,6 +30,7 @@ const elements = {
   itemCount: document.querySelector("#itemCount"),
   filters: document.querySelectorAll(".filter"),
 };
+
 
 let activeFilter = "ALL";
 let selectedId = null;
@@ -328,6 +330,36 @@ elements.detailPanel.addEventListener("click", (event) => {
   }
 });
 
+// PWA Installation Handling
+let deferredInstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  if (elements.installButton) {
+    elements.installButton.style.display = "inline-flex";
+  }
+});
+
+if (elements.installButton) {
+  elements.installButton.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === "accepted") {
+      elements.installButton.style.display = "none";
+    }
+    deferredInstallPrompt = null;
+  });
+}
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  if (elements.installButton) {
+    elements.installButton.style.display = "none";
+  }
+});
+
 // Keyboard Shortcuts: Cmd+K / Ctrl+K to open Capture form
 window.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -346,3 +378,4 @@ if ("serviceWorker" in navigator) {
 }
 
 render();
+

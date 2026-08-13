@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f7f5ef" />
     <meta name="description" content="A minimal local-first PWA for capturing opportunity platforms and tracking interaction stages." />
+    
+    <!-- iOS / PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Opportunity Inbox" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
+
     <title>Opportunity Inbox</title>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="./icon.svg" />
@@ -17,9 +24,14 @@
           <p class="eyebrow">v0.1 prototype</p>
           <h1>Opportunity Inbox</h1>
         </div>
-        <button class="primary-action" id="captureButton" type="button" aria-keyshortcuts="Control+k Meta+k">
-          <span class="plus-icon">+</span> Capture <kbd class="kbd-badge">⌘K</kbd>
-        </button>
+        <div class="topbar-actions">
+          <button class="secondary-action install-button" id="installButton" type="button" style="display: none;">
+            <span class="install-icon">📲</span> Install App
+          </button>
+          <button class="primary-action" id="captureButton" type="button" aria-keyshortcuts="Control+k Meta+k">
+            <span class="plus-icon">+</span> Capture <kbd class="kbd-badge">⌘K</kbd>
+          </button>
+        </div>
       </header>
 
       <section class="toolbar" aria-label="Platform status filters">
