@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f5ef" />
+    <meta name="description" content="A minimal local-first PWA for capturing opportunity platforms and tracking interaction stages." />
+    <title>Opportunity Inbox</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">v0.1 prototype</p>
+          <h1>Opportunity Inbox</h1>
+        </div>
+        <button class="primary-action" id="captureButton" type="button" aria-keyshortcuts="Control+k Meta+k">
+          <span class="plus-icon">+</span> Capture <kbd class="kbd-badge">⌘K</kbd>
+        </button>
+      </header>
+
+      <section class="toolbar" aria-label="Platform status filters">
+        <button class="filter is-active" data-filter="ALL" type="button">All</button>
+        <button class="filter" data-filter="CAPTURED" type="button">Captured</button>
+        <button class="filter" data-filter="VISITED" type="button">Visited</button>
+        <button class="filter" data-filter="REGISTERED" type="button">Registered</button>
+        <button class="filter" data-filter="PROFILE_READY" type="button">Profile Ready</button>
+        <button class="filter" data-filter="APPLIED" type="button">Applied</button>
+        <button class="filter" data-filter="CLOSED" type="button">Closed</button>
+      </section>
+
+      <section class="content-grid" id="contentGrid">
+        <section class="list-panel" id="listPanel" aria-labelledby="listTitle">
+          <div class="panel-heading">
+            <h2 id="listTitle">Platforms</h2>
+            <span class="count-pill" id="itemCount">0</span>
+          </div>
+          <div class="empty-state" id="emptyState">
+            <h3>No platforms captured yet</h3>
+            <p>Add the first opportunity platform you want to track.</p>
+          </div>
+          <ul class="platform-list" id="platformList"></ul>
+        </section>
+
+        <section class="detail-panel" id="detailPanel" aria-live="polite">
+          <div class="detail-empty">
+            <h2>Select a platform</h2>
+            <p>Open an item to update its status, edit notes, or visit the platform.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="capture-dialog" id="captureDialog">
+      <form class="capture-form" id="captureForm" method="dialog">
+        <div class="dialog-heading">
+          <h2 id="dialogTitle">New Platform</h2>
+          <button class="icon-button" id="closeDialogButton" type="button" aria-label="Close dialog">×</button>
+        </div>
+
+        <input id="editingId" type="hidden" />
+
+        <label for="nameInput">
+          Platform name <span class="required-star">*</span>
+        </label>
+        <input id="nameInput" name="name" autocomplete="off" placeholder="e.g. Upwork, Substack, Contra" required />
+
+        <label for="categoryInput">Category</label>
+        <input id="categoryInput" name="category" autocomplete="off" placeholder="e.g. Creative, Freelance, Writing" />
+
+        <label for="urlInput">Platform URL</label>
+        <input id="urlInput" name="url" inputmode="url" type="url" autocomplete="off" placeholder="https://example.com" />
+
+        <label for="noteInput">Note</label>
+        <textarea id="noteInput" name="note" rows="3" placeholder="Why this platform looks interesting or next steps..."></textarea>
+
+        <p class="form-error" id="formError" role="alert"></p>
+
+        <div class="form-actions">
+          <button class="secondary-action" id="cancelButton" type="button">Cancel</button>
+          <button class="primary-action" type="submit">Save Platform</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
