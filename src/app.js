@@ -14,7 +14,9 @@ const elements = {
   // Navigation & Tabs
   sidebar: document.querySelector("#sidebar"),
   sidebarToggle: document.querySelector("#sidebarToggle"),
+  sidebarBackdrop: document.querySelector("#sidebarBackdrop"),
   navLinks: document.querySelectorAll(".nav-link[data-tab]"),
+  mobileNavLinks: document.querySelectorAll(".mobile-nav-link[data-tab]"),
   tabViews: document.querySelectorAll(".tab-view"),
   pageTitle: document.querySelector("#pageTitle"),
 
@@ -342,6 +344,10 @@ function switchTab(tabName) {
     link.classList.toggle("is-active", link.dataset.tab === tabName);
   });
 
+  elements.mobileNavLinks.forEach((link) => {
+    link.classList.toggle("is-active", link.dataset.tab === tabName);
+  });
+
   elements.tabViews.forEach((view) => {
     view.style.display = view.id === `view${tabName.charAt(0).toUpperCase() + tabName.slice(1)}` ? "block" : "none";
   });
@@ -351,6 +357,10 @@ function switchTab(tabName) {
     else if (tabName === "board") elements.pageTitle.textContent = "Opportunity Board";
     else if (tabName === "statistics") elements.pageTitle.textContent = "Statistics";
   }
+
+  // Auto close mobile drawer on tab switch
+  elements.sidebar?.classList.remove("is-open");
+  elements.sidebarBackdrop?.classList.remove("is-visible");
 
   render();
 }
@@ -408,6 +418,10 @@ function savePlatform() {
 
 /* Event Handlers */
 elements.navLinks.forEach((link) => {
+  link.addEventListener("click", () => switchTab(link.dataset.tab));
+});
+
+elements.mobileNavLinks.forEach((link) => {
   link.addEventListener("click", () => switchTab(link.dataset.tab));
 });
 
@@ -475,7 +489,13 @@ elements.sortBySelect?.addEventListener("change", (e) => {
 });
 
 elements.sidebarToggle?.addEventListener("click", () => {
-  elements.sidebar.classList.toggle("is-open");
+  const isOpen = elements.sidebar.classList.toggle("is-open");
+  elements.sidebarBackdrop?.classList.toggle("is-visible", isOpen);
+});
+
+elements.sidebarBackdrop?.addEventListener("click", () => {
+  elements.sidebar?.classList.remove("is-open");
+  elements.sidebarBackdrop?.classList.remove("is-visible");
 });
 
 elements.statsApplyTrigger?.addEventListener("click", () => switchTab("board"));

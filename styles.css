@@ -1007,15 +1007,120 @@ button {
 @media (max-width: 992px) {
   .sidebar {
     position: fixed;
-    left: -280px;
+    left: -290px;
     top: 0;
     bottom: 0;
+    box-shadow: var(--shadow-md);
   }
 
-  .sidebar.is-open { transform: translateX(280px); }
-  .sidebar-toggle { display: flex; }
+  .sidebar.is-open { 
+    transform: translateX(290px); 
+  }
+
+  .sidebar-toggle { 
+    display: flex; 
+  }
+
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 45;
+  }
+
+  .sidebar-backdrop.is-visible {
+    display: block;
+  }
 
   .home-grid, .kpi-grid, .insights-grid, .stats-breakdown-grid {
     grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    padding: 16px 20px;
+  }
+
+  .content-container {
+    padding: 20px 16px 90px 16px;
+  }
+
+  /* Kanban Smartphone Horizontal Snap Scroll */
+  .kanban-board {
+    scroll-snap-type: x mandatory;
+    scroll-padding: 16px;
+  }
+
+  .kanban-column {
+    scroll-snap-align: start;
+    width: calc(100vw - 48px);
+    max-width: 320px;
+  }
+
+  /* Mobile Bottom Navigation Dock */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(12, 13, 18, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    z-index: 40;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 6px 12px;
+  }
+
+  .mobile-nav-link.is-active {
+    color: var(--accent-orange-bright);
+  }
+
+  /* Mobile Bottom Sheet Modal Dialog */
+  .capture-dialog {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    max-height: 90vh;
+  }
+
+  .board-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .toolbar-actions {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 993px) {
+  .mobile-bottom-nav {
+    display: none;
   }
 }
