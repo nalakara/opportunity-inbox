@@ -1,22 +1,43 @@
 const STORAGE_KEY = "opportunity-inbox.platforms.v1";
 
 export const STATUS_ENUM = {
-  CAPTURED: "CAPTURED",
-  VISITED: "VISITED",
-  REGISTERED: "REGISTERED",
-  PROFILE_READY: "PROFILE_READY",
+  WISHLIST: "WISHLIST",
   APPLIED: "APPLIED",
-  CLOSED: "CLOSED",
+  INTERVIEWING: "INTERVIEWING",
+  OFFER: "OFFER",
+  REJECTED: "REJECTED",
+  GHOSTED: "GHOSTED",
+  FOLLOW_UP: "FOLLOW_UP",
 };
 
 export const STATUS_LABELS = {
-  [STATUS_ENUM.CAPTURED]: "Captured",
-  [STATUS_ENUM.VISITED]: "Visited",
-  [STATUS_ENUM.REGISTERED]: "Registered",
-  [STATUS_ENUM.PROFILE_READY]: "Profile Ready",
+  [STATUS_ENUM.WISHLIST]: "Wishlist",
   [STATUS_ENUM.APPLIED]: "Applied",
-  [STATUS_ENUM.CLOSED]: "Closed",
+  [STATUS_ENUM.INTERVIEWING]: "Interviewing",
+  [STATUS_ENUM.OFFER]: "Offer",
+  [STATUS_ENUM.REJECTED]: "Rejected",
+  [STATUS_ENUM.GHOSTED]: "Ghosted",
+  [STATUS_ENUM.FOLLOW_UP]: "Follow Up",
 };
+
+const LEGACY_STATUS_MAP = {
+  CAPTURED: STATUS_ENUM.WISHLIST,
+  VISITED: STATUS_ENUM.WISHLIST,
+  REGISTERED: STATUS_ENUM.WISHLIST,
+  PROFILE_READY: STATUS_ENUM.WISHLIST,
+  APPLIED: STATUS_ENUM.APPLIED,
+  CLOSED: STATUS_ENUM.REJECTED,
+};
+
+export function normalizeStatus(status) {
+  if (STATUS_ENUM[status]) {
+    return status;
+  }
+  if (LEGACY_STATUS_MAP[status]) {
+    return LEGACY_STATUS_MAP[status];
+  }
+  return STATUS_ENUM.WISHLIST;
+}
 
 /**
  * LocalStorageAdapter encapsulates raw localStorage operations,
@@ -63,12 +84,16 @@ function createId() {
 
 export const platformStore = {
   list() {
-    const platforms = adapter.get();
+    const rawPlatforms = adapter.get();
+    const platforms = rawPlatforms.map((p) => ({
+      ...p,
+      status: normalizeStatus(p.status),
+    }));
     return platforms.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   },
 
   get(id) {
-    const platforms = adapter.get();
+    const platforms = this.list();
     return platforms.find((platform) => platform.id === id) ?? null;
   },
 
@@ -79,7 +104,7 @@ export const platformStore = {
       name: (input.name || "").trim(),
       category: (input.category || "").trim(),
       url: (input.url || "").trim(),
-      status: input.status && STATUS_LABELS[input.status] ? input.status : STATUS_ENUM.CAPTURED,
+      status: normalizeStatus(input.status),
       note: (input.note || "").trim(),
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -93,10 +118,13 @@ export const platformStore = {
   update(id, patch) {
     const timestamp = now();
     let updatedItem = null;
-    const platforms = adapter.get().map((platform) => {
+    const rawPlatforms = adapter.get();
+    const platforms = rawPlatforms.map((platform) => {
       if (platform.id !== id) {
         return platform;
       }
+
+      const targetStatus = patch.status !== undefined ? normalizeStatus(patch.status) : normalizeStatus(platform.status);
 
       updatedItem = {
         ...platform,
@@ -105,7 +133,7 @@ export const platformStore = {
         category: patch.category !== undefined ? patch.category.trim() : platform.category,
         url: patch.url !== undefined ? patch.url.trim() : platform.url,
         note: patch.note !== undefined ? patch.note.trim() : platform.note,
-        status: patch.status && STATUS_LABELS[patch.status] ? patch.status : platform.status,
+        status: targetStatus,
         updatedAt: timestamp,
       };
       return updatedItem;

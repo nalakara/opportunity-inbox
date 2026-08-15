@@ -1,18 +1,31 @@
 import { platformStore, STATUS_ENUM, STATUS_LABELS } from "./storage.js";
 
-const STATUS_ORDER = [
-  STATUS_ENUM.CAPTURED,
-  STATUS_ENUM.VISITED,
-  STATUS_ENUM.REGISTERED,
-  STATUS_ENUM.PROFILE_READY,
+const STAGES_ORDER = [
+  STATUS_ENUM.WISHLIST,
   STATUS_ENUM.APPLIED,
-  STATUS_ENUM.CLOSED,
+  STATUS_ENUM.INTERVIEWING,
+  STATUS_ENUM.OFFER,
+  STATUS_ENUM.REJECTED,
+  STATUS_ENUM.GHOSTED,
+  STATUS_ENUM.FOLLOW_UP,
 ];
 
 const elements = {
-  contentGrid: document.querySelector("#contentGrid"),
-  installButton: document.querySelector("#installButton"),
+  // Navigation & Tabs
+  sidebar: document.querySelector("#sidebar"),
+  sidebarToggle: document.querySelector("#sidebarToggle"),
+  navLinks: document.querySelectorAll(".nav-link[data-tab]"),
+  tabViews: document.querySelectorAll(".tab-view"),
+  pageTitle: document.querySelector("#pageTitle"),
+
+  // Toolbar & Search & View Switcher
+  searchInput: document.querySelector("#searchInput"),
+  sortBySelect: document.querySelector("#sortBySelect"),
   captureButton: document.querySelector("#captureButton"),
+  viewKanbanBtn: document.querySelector("#viewKanbanBtn"),
+  viewListBtn: document.querySelector("#viewListBtn"),
+
+  // Dialog Elements
   captureDialog: document.querySelector("#captureDialog"),
   captureForm: document.querySelector("#captureForm"),
   closeDialogButton: document.querySelector("#closeDialogButton"),
@@ -22,209 +35,337 @@ const elements = {
   nameInput: document.querySelector("#nameInput"),
   categoryInput: document.querySelector("#categoryInput"),
   urlInput: document.querySelector("#urlInput"),
+  statusSelectInput: document.querySelector("#statusSelectInput"),
   noteInput: document.querySelector("#noteInput"),
   formError: document.querySelector("#formError"),
-  platformList: document.querySelector("#platformList"),
-  detailPanel: document.querySelector("#detailPanel"),
-  emptyState: document.querySelector("#emptyState"),
-  itemCount: document.querySelector("#itemCount"),
-  filters: document.querySelectorAll(".filter"),
+
+  // Board Containers
+  kanbanBoard: document.querySelector("#kanbanBoard"),
+  listBoard: document.querySelector("#listBoard"),
+
+  // Home View Containers
+  homeWeeklyAppliedCount: document.querySelector("#homeWeeklyAppliedCount"),
+  homePipelineSummary: document.querySelector("#homePipelineSummary"),
+  gaugeProgressPath: document.querySelector("#gaugeProgressPath"),
+
+  // Statistics View Containers
+  kpiTotalApplications: document.querySelector("#kpiTotalApplications"),
+  kpiThisWeek: document.querySelector("#kpiThisWeek"),
+  kpiThisMonth: document.querySelector("#kpiThisMonth"),
+  kpiInterviewConversion: document.querySelector("#kpiInterviewConversion"),
+  statsGoalProgressText: document.querySelector("#statsGoalProgressText"),
+  conversionAnalysisList: document.querySelector("#conversionAnalysisList"),
+  pipelineBreakdownList: document.querySelector("#pipelineBreakdownList"),
+  statsApplyTrigger: document.querySelector("#statsApplyTrigger"),
+  statsAddMoreTrigger: document.querySelector("#statsAddMoreTrigger"),
+
+  // Install PWA
+  installButton: document.querySelector("#installButton"),
 };
 
-
-let activeFilter = "ALL";
-let selectedId = null;
-
-function statusLabel(status) {
-  return STATUS_LABELS[status] || status;
-}
-
-function formatDate(isoString) {
-  if (!isoString) return "";
-  try {
-    const date = new Date(isoString);
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return isoString;
-  }
-}
+let activeTab = "board";
+let boardViewMode = "kanban"; // 'kanban' | 'list'
+let searchQuery = "";
+let sortBy = "updatedDesc";
 
 function normalizeUrl(url) {
   const trimmed = (url || "").trim();
-  if (!trimmed) {
-    return "";
-  }
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed;
-  }
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
 }
 
-function filteredPlatforms() {
-  const platforms = platformStore.list();
-  if (activeFilter === "ALL") {
-    return platforms;
+function getProcessedPlatforms() {
+  let platforms = platformStore.list();
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    platforms = platforms.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.note && p.note.toLowerCase().includes(q))
+    );
   }
-  return platforms.filter((platform) => platform.status === activeFilter);
+
+  if (sortBy === "nameAsc") {
+    platforms.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sortBy === "category") {
+    platforms.sort((a, b) => (a.category || "").localeCompare(b.category || ""));
+  } else {
+    platforms.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  return platforms;
 }
 
-function renderList() {
-  const platforms = filteredPlatforms();
-  elements.itemCount.textContent = `${platforms.length}`;
-  elements.emptyState.classList.toggle("is-visible", platforms.length === 0);
+function renderKanbanBoard() {
+  const platforms = getProcessedPlatforms();
+  elements.kanbanBoard.innerHTML = "";
 
-  elements.platformList.replaceChildren(
-    ...platforms.map((platform) => {
-      const item = document.createElement("li");
-      const button = document.createElement("button");
-      button.className = `platform-item${platform.id === selectedId ? " is-selected" : ""}`;
-      button.type = "button";
-      button.dataset.id = platform.id;
+  STAGES_ORDER.forEach((stage) => {
+    const stageItems = platforms.filter((p) => p.status === stage);
+    const stageLabel = STATUS_LABELS[stage] || stage;
 
-      const info = document.createElement("div");
-      info.className = "platform-info";
+    const col = document.createElement("div");
+    col.className = "kanban-column";
+    col.dataset.stage = stage;
 
-      const name = document.createElement("span");
-      name.className = "platform-name";
-      name.textContent = platform.name;
-
-      const meta = document.createElement("span");
-      meta.className = "platform-meta";
-      meta.textContent = platform.category || "Uncategorized";
-
-      info.append(name, meta);
-
-      const status = document.createElement("span");
-      status.className = "status-pill";
-      status.dataset.status = platform.status;
-      status.textContent = statusLabel(platform.status);
-
-      button.append(info, status);
-      item.append(button);
-      return item;
-    }),
-  );
-}
-
-function renderDetail() {
-  const platform = selectedId ? platformStore.get(selectedId) : null;
-  
-  // Update mobile layout grid class depending on selection state
-  elements.contentGrid.classList.toggle("has-selection", Boolean(platform));
-
-  if (!platform) {
-    elements.detailPanel.innerHTML = `
-      <div class="detail-empty">
-        <h2>Select a platform</h2>
-        <p>Open an item to update its status, edit notes, or visit the platform.</p>
+    const header = document.createElement("div");
+    header.className = "kanban-column-header";
+    header.innerHTML = `
+      <div class="kanban-column-title">
+        <span>${stageLabel}</span>
       </div>
+      <span class="kanban-column-count">${stageItems.length}</span>
     `;
-    return;
-  }
 
-  const openUrl = normalizeUrl(platform.url);
-  const statusOptions = STATUS_ORDER.map(
-    (status) => `<option value="${status}" ${status === platform.status ? "selected" : ""}>${statusLabel(status)}</option>`,
-  ).join("");
+    const cardsContainer = document.createElement("div");
+    cardsContainer.className = "kanban-cards-container";
 
-  elements.detailPanel.innerHTML = `
-    <div class="detail-content">
-      <div class="detail-top-nav">
-        <button class="back-button" id="backToListButton" type="button">← Back to platforms</button>
-      </div>
-
-      <div class="detail-header">
-        <div>
-          <h2 class="detail-title"></h2>
-          <p class="detail-category"></p>
+    if (stageItems.length === 0) {
+      cardsContainer.innerHTML = `
+        <div style="padding: 12px; color: #64748B; font-size: 0.8rem; text-align: center; font-style: italic;">
+          No jobs
         </div>
-        <span class="status-pill" data-status="${platform.status}"></span>
-      </div>
+      `;
+    } else {
+      stageItems.forEach((item) => {
+        const url = normalizeUrl(item.url);
+        const card = document.createElement("div");
+        card.className = "kanban-card";
+        card.dataset.id = item.id;
+        card.innerHTML = `
+          <div class="kanban-card-title">${item.name}</div>
+          <div class="kanban-card-meta">${item.category ? `📍 ${item.category}` : "Uncategorized"}</div>
+          <div class="kanban-card-footer">
+            ${
+              url
+                ? `<a href="${url}" target="_blank" rel="noopener" class="text-link-btn" style="font-size:0.78rem;">Open ↗</a>`
+                : `<span></span>`
+            }
+            <div>
+              <button class="action-row-btn edit-job-btn" data-id="${item.id}" type="button">✏️</button>
+              <button class="action-row-btn delete-job-btn" data-id="${item.id}" type="button">🗑️</button>
+            </div>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      });
+    }
 
-      <div class="detail-field">
-        <label for="statusSelect">Stage / Status</label>
-        <select id="statusSelect">${statusOptions}</select>
-      </div>
+    const addBtn = document.createElement("button");
+    addBtn.className = "kanban-add-btn stage-add-btn";
+    addBtn.type = "button";
+    addBtn.dataset.stage = stage;
+    addBtn.textContent = "+ Add job";
 
-      <div class="detail-field">
-        <label>URL</label>
-        <p class="detail-value detail-url"></p>
-      </div>
+    col.appendChild(header);
+    col.appendChild(cardsContainer);
+    col.appendChild(addBtn);
+    elements.kanbanBoard.appendChild(col);
+  });
+}
 
-      <div class="detail-field">
-        <label>Note</label>
-        <p class="detail-value detail-note"></p>
-      </div>
+function renderListBoard() {
+  const platforms = getProcessedPlatforms();
+  elements.listBoard.innerHTML = "";
 
-      <div class="timestamps-grid">
-        <div class="timestamp-item">
-          <span>Captured</span>
-          <span>${formatDate(platform.createdAt)}</span>
+  STAGES_ORDER.forEach((stage) => {
+    const stageItems = platforms.filter((p) => p.status === stage);
+    const stageLabel = STATUS_LABELS[stage] || stage;
+
+    const accordion = document.createElement("div");
+    accordion.className = "stage-accordion";
+    accordion.dataset.stage = stage;
+
+    const header = document.createElement("div");
+    header.className = "stage-header";
+    header.innerHTML = `
+      <div class="stage-header-left">
+        <span class="stage-toggle-icon">▼</span>
+        <span class="stage-title">${stageLabel}</span>
+        <span class="stage-badge">${stageItems.length}</span>
+      </div>
+      <button class="stage-add-btn" type="button" data-stage="${stage}">+ Add job</button>
+    `;
+
+    const body = document.createElement("div");
+    body.className = "stage-body";
+
+    if (stageItems.length === 0) {
+      body.innerHTML = `
+        <div style="padding: 16px 20px; color: #64748B; font-size: 0.85rem; font-style: italic;">
+          No jobs in ${stageLabel} stage.
         </div>
-        <div class="timestamp-item">
-          <span>Last Updated</span>
-          <span>${formatDate(platform.updatedAt)}</span>
+      `;
+    } else {
+      const table = document.createElement("table");
+      table.className = "stage-table";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Company / Position</th>
+            <th>Location / Tag</th>
+            <th>Applied Date</th>
+            <th>URL</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${stageItems
+            .map((item) => {
+              const url = normalizeUrl(item.url);
+              const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—";
+              return `
+                <tr data-id="${item.id}">
+                  <td>
+                    <div style="font-weight:700;">${item.name}</div>
+                  </td>
+                  <td><span style="color:#94A3B8; font-size:0.85rem;">${item.category || "—"}</span></td>
+                  <td><span style="color:#94A3B8; font-size:0.85rem;">${dateStr}</span></td>
+                  <td>
+                    ${
+                      url
+                        ? `<a href="${url}" target="_blank" rel="noopener" class="text-link-btn" style="font-size:0.82rem;">Link ↗</a>`
+                        : `<span style="color:#64748B; font-size:0.82rem;">—</span>`
+                    }
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="action-row-btn edit-job-btn" data-id="${item.id}" type="button">✏️ Edit</button>
+                    <button class="action-row-btn delete-job-btn" data-id="${item.id}" type="button">🗑️ Delete</button>
+                  </td>
+                </tr>
+              `;
+            })
+            .join("")}
+        </tbody>
+      `;
+      body.appendChild(table);
+    }
+
+    accordion.appendChild(header);
+    accordion.appendChild(body);
+    elements.listBoard.appendChild(accordion);
+  });
+}
+
+function renderBoard() {
+  if (boardViewMode === "kanban") {
+    elements.kanbanBoard.style.display = "flex";
+    elements.listBoard.style.display = "none";
+    elements.viewKanbanBtn.classList.add("is-active");
+    elements.viewListBtn.classList.remove("is-active");
+    renderKanbanBoard();
+  } else {
+    elements.kanbanBoard.style.display = "none";
+    elements.listBoard.style.display = "flex";
+    elements.viewKanbanBtn.classList.remove("is-active");
+    elements.viewListBtn.classList.add("is-active");
+    renderListBoard();
+  }
+}
+
+function renderHome() {
+  const allPlatforms = platformStore.list();
+  const appliedCount = allPlatforms.filter(
+    (p) => p.status === STATUS_ENUM.APPLIED || p.status === STATUS_ENUM.INTERVIEWING || p.status === STATUS_ENUM.OFFER
+  ).length;
+
+  elements.homeWeeklyAppliedCount.textContent = appliedCount;
+  const progressPercent = Math.min(100, (appliedCount / 10) * 100);
+  const strokeOffset = 126 - (126 * progressPercent) / 100;
+  if (elements.gaugeProgressPath) {
+    elements.gaugeProgressPath.style.strokeDashoffset = strokeOffset;
+  }
+
+  if (elements.homePipelineSummary) {
+    elements.homePipelineSummary.innerHTML = STAGES_ORDER.map((stage) => {
+      const count = allPlatforms.filter((p) => p.status === stage).length;
+      const pct = allPlatforms.length > 0 ? (count / allPlatforms.length) * 100 : 0;
+      return `
+        <div class="pipeline-bar-item">
+          <span class="pipeline-bar-label">${STATUS_LABELS[stage]}</span>
+          <div class="pipeline-bar-track">
+            <div class="pipeline-bar-fill" style="width: ${pct}%; background: var(--status-${stage.toLowerCase().replace("_", "")});"></div>
+          </div>
+          <span class="pipeline-bar-count">${count}</span>
         </div>
-      </div>
+      `;
+    }).join("");
+  }
+}
 
-      <div class="detail-actions">
-        <a class="link-action" id="openPlatformLink" target="_blank" rel="noopener">Open Platform ↗</a>
-        <button class="secondary-action" id="editButton" type="button">Edit</button>
-        <button class="danger-action" id="deleteButton" type="button">Delete</button>
-      </div>
-    </div>
-  `;
+function renderStatistics() {
+  const all = platformStore.list();
+  const total = all.length;
+  const applied = all.filter((p) => p.status === STATUS_ENUM.APPLIED).length;
+  const interviewing = all.filter((p) => p.status === STATUS_ENUM.INTERVIEWING).length;
+  const offer = all.filter((p) => p.status === STATUS_ENUM.OFFER).length;
 
-  elements.detailPanel.querySelector(".detail-title").textContent = platform.name;
-  elements.detailPanel.querySelector(".detail-category").textContent = platform.category || "Uncategorized";
-  elements.detailPanel.querySelector(".status-pill").textContent = statusLabel(platform.status);
+  const conversionPct = applied > 0 ? Math.round(((interviewing + offer) / applied) * 100) : 0;
 
-  const urlEl = elements.detailPanel.querySelector(".detail-url");
-  if (platform.url) {
-    urlEl.textContent = platform.url;
-    urlEl.classList.remove("is-empty");
-  } else {
-    urlEl.textContent = "No URL provided";
-    urlEl.classList.add("is-empty");
+  elements.kpiTotalApplications.textContent = total;
+  elements.kpiThisWeek.textContent = applied;
+  elements.kpiThisMonth.textContent = total;
+  elements.kpiInterviewConversion.textContent = `${conversionPct}%`;
+
+  const remainingWeekly = Math.max(0, 10 - applied);
+  elements.statsGoalProgressText.textContent =
+    remainingWeekly > 0
+      ? `You need ${remainingWeekly} more applications to reach your weekly goal of 10.`
+      : `Awesome! You have achieved your weekly goal of 10 applications!`;
+
+  if (elements.conversionAnalysisList) {
+    elements.conversionAnalysisList.innerHTML = `
+      <div class="breakdown-row"><span>Applied → Interview</span><span>${applied > 0 ? Math.round((interviewing / applied) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Interview → Offer</span><span>${interviewing > 0 ? Math.round((offer / interviewing) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Overall Win Rate</span><span>${total > 0 ? Math.round((offer / total) * 100) : 0}%</span></div>
+    `;
   }
 
-  const noteEl = elements.detailPanel.querySelector(".detail-note");
-  if (platform.note) {
-    noteEl.textContent = platform.note;
-    noteEl.classList.remove("is-empty");
-  } else {
-    noteEl.textContent = "No notes added";
-    noteEl.classList.add("is-empty");
+  if (elements.pipelineBreakdownList) {
+    elements.pipelineBreakdownList.innerHTML = STAGES_ORDER.map((stage) => {
+      const count = all.filter((p) => p.status === stage).length;
+      return `<div class="breakdown-row"><span>${STATUS_LABELS[stage]}</span><span>${count}</span></div>`;
+    }).join("");
+  }
+}
+
+function switchTab(tabName) {
+  activeTab = tabName;
+  elements.navLinks.forEach((link) => {
+    link.classList.toggle("is-active", link.dataset.tab === tabName);
+  });
+
+  elements.tabViews.forEach((view) => {
+    view.style.display = view.id === `view${tabName.charAt(0).toUpperCase() + tabName.slice(1)}` ? "block" : "none";
+  });
+
+  if (elements.pageTitle) {
+    if (tabName === "home") elements.pageTitle.textContent = "Home Dashboard";
+    else if (tabName === "board") elements.pageTitle.textContent = "Opportunity Board";
+    else if (tabName === "statistics") elements.pageTitle.textContent = "Statistics";
   }
 
-  const link = elements.detailPanel.querySelector("#openPlatformLink");
-  if (openUrl) {
-    link.href = openUrl;
-  } else {
-    link.setAttribute("aria-disabled", "true");
-    link.removeAttribute("href");
-  }
+  render();
 }
 
 function render() {
-  renderList();
-  renderDetail();
+  if (activeTab === "board") renderBoard();
+  if (activeTab === "home") renderHome();
+  if (activeTab === "statistics") renderStatistics();
 }
 
-function openCaptureDialog(platform = null) {
+function openCaptureDialog(platform = null, defaultStage = STATUS_ENUM.WISHLIST) {
   elements.captureForm.reset();
   elements.formError.textContent = "";
   elements.editingId.value = platform?.id ?? "";
-  elements.dialogTitle.textContent = platform ? "Edit Platform" : "New Platform";
+  elements.dialogTitle.textContent = platform ? "Edit Job Application" : "Add Job Application";
   elements.nameInput.value = platform?.name ?? "";
   elements.categoryInput.value = platform?.category ?? "";
   elements.urlInput.value = platform?.url ?? "";
+  elements.statusSelectInput.value = platform?.status ?? defaultStage;
   elements.noteInput.value = platform?.note ?? "";
   elements.captureDialog.showModal();
   elements.nameInput.focus();
@@ -237,7 +378,7 @@ function closeCaptureDialog() {
 function savePlatform() {
   const name = elements.nameInput.value.trim();
   if (!name) {
-    elements.formError.textContent = "Platform name is required.";
+    elements.formError.textContent = "Company or position name is required.";
     elements.nameInput.focus();
     return;
   }
@@ -246,20 +387,15 @@ function savePlatform() {
     name,
     category: elements.categoryInput.value,
     url: elements.urlInput.value,
+    status: elements.statusSelectInput.value,
     note: elements.noteInput.value,
   };
 
   const editingId = elements.editingId.value;
   if (editingId) {
     platformStore.update(editingId, input);
-    selectedId = editingId;
   } else {
-    const newPlatform = platformStore.create(input);
-    selectedId = newPlatform.id;
-    activeFilter = "ALL";
-    elements.filters.forEach((filter) => {
-      filter.classList.toggle("is-active", filter.dataset.filter === "ALL");
-    });
+    platformStore.create(input);
   }
 
   closeCaptureDialog();
@@ -267,100 +403,97 @@ function savePlatform() {
 }
 
 /* Event Handlers */
-elements.captureButton.addEventListener("click", () => openCaptureDialog());
-elements.closeDialogButton.addEventListener("click", closeCaptureDialog);
-elements.cancelButton.addEventListener("click", closeCaptureDialog);
+elements.navLinks.forEach((link) => {
+  link.addEventListener("click", () => switchTab(link.dataset.tab));
+});
 
-elements.captureForm.addEventListener("submit", (event) => {
-  event.preventDefault();
+elements.viewKanbanBtn?.addEventListener("click", () => {
+  boardViewMode = "kanban";
+  renderBoard();
+});
+
+elements.viewListBtn?.addEventListener("click", () => {
+  boardViewMode = "list";
+  renderBoard();
+});
+
+elements.captureButton?.addEventListener("click", () => openCaptureDialog());
+elements.closeDialogButton?.addEventListener("click", closeCaptureDialog);
+elements.cancelButton?.addEventListener("click", closeCaptureDialog);
+
+elements.captureForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
   savePlatform();
 });
 
-elements.platformList.addEventListener("click", (event) => {
-  const button = event.target.closest(".platform-item");
-  if (!button) {
-    return;
-  }
-  selectedId = button.dataset.id;
-  render();
+elements.searchInput?.addEventListener("input", (e) => {
+  searchQuery = e.target.value;
+  renderBoard();
 });
 
-elements.filters.forEach((filter) => {
-  filter.addEventListener("click", () => {
-    activeFilter = filter.dataset.filter;
-    elements.filters.forEach((item) => item.classList.toggle("is-active", item === filter));
-    const visibleIds = filteredPlatforms().map((platform) => platform.id);
-    if (selectedId && !visibleIds.includes(selectedId)) {
-      selectedId = null;
+elements.sortBySelect?.addEventListener("change", (e) => {
+  sortBy = e.target.value;
+  renderBoard();
+});
+
+// Click delegation for Kanban Board and List Board
+[elements.kanbanBoard, elements.listBoard].forEach((container) => {
+  container?.addEventListener("click", (e) => {
+    const addBtn = e.target.closest(".stage-add-btn");
+    if (addBtn) {
+      openCaptureDialog(null, addBtn.dataset.stage);
+      return;
     }
-    render();
+
+    const editBtn = e.target.closest(".edit-job-btn");
+    if (editBtn) {
+      const platform = platformStore.get(editBtn.dataset.id);
+      if (platform) openCaptureDialog(platform);
+      return;
+    }
+
+    const deleteBtn = e.target.closest(".delete-job-btn");
+    if (deleteBtn) {
+      const platform = platformStore.get(deleteBtn.dataset.id);
+      if (platform && confirm(`Are you sure you want to delete "${platform.name}"?`)) {
+        platformStore.remove(platform.id);
+        renderBoard();
+      }
+      return;
+    }
+
+    const header = e.target.closest(".stage-header");
+    if (header) {
+      const accordion = header.closest(".stage-accordion");
+      if (accordion) accordion.classList.toggle("is-collapsed");
+    }
   });
 });
 
-elements.detailPanel.addEventListener("change", (event) => {
-  if (event.target.id !== "statusSelect" || !selectedId) {
-    return;
-  }
-  platformStore.update(selectedId, { status: event.target.value });
-  render();
+elements.sidebarToggle?.addEventListener("click", () => {
+  elements.sidebar.classList.toggle("is-open");
 });
 
-elements.detailPanel.addEventListener("click", (event) => {
-  if (event.target.id === "backToListButton") {
-    selectedId = null;
-    render();
-    return;
-  }
+elements.statsApplyTrigger?.addEventListener("click", () => switchTab("board"));
+elements.statsAddMoreTrigger?.addEventListener("click", () => openCaptureDialog());
 
-  if (!selectedId) {
-    return;
-  }
-
-  if (event.target.id === "editButton") {
-    openCaptureDialog(platformStore.get(selectedId));
-  }
-
-  if (event.target.id === "deleteButton") {
-    const platform = platformStore.get(selectedId);
-    if (confirm(`Are you sure you want to delete "${platform?.name || "this platform"}"?`)) {
-      platformStore.remove(selectedId);
-      selectedId = null;
-      render();
-    }
-  }
-});
-
-// PWA Installation Handling
+// PWA Install logic
 let deferredInstallPrompt = null;
-
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
   deferredInstallPrompt = event;
-  if (elements.installButton) {
-    elements.installButton.style.display = "inline-flex";
-  }
+  if (elements.installButton) elements.installButton.style.display = "inline-flex";
 });
 
-if (elements.installButton) {
-  elements.installButton.addEventListener("click", async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    const { outcome } = await deferredInstallPrompt.userChoice;
-    if (outcome === "accepted") {
-      elements.installButton.style.display = "none";
-    }
-    deferredInstallPrompt = null;
-  });
-}
-
-window.addEventListener("appinstalled", () => {
+elements.installButton?.addEventListener("click", async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === "accepted") elements.installButton.style.display = "none";
   deferredInstallPrompt = null;
-  if (elements.installButton) {
-    elements.installButton.style.display = "none";
-  }
 });
 
-// Keyboard Shortcuts: Cmd+K / Ctrl+K to open Capture form
+// Keyboard Shortcuts: Cmd+K / Ctrl+K
 window.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
     event.preventDefault();
@@ -377,5 +510,11 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-render();
+document.querySelectorAll(".future-tool").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const toolName = btn.dataset.tool || "This tool";
+    alert(`💡 ${toolName} is currently in development for a future release.`);
+  });
+});
 
+switchTab("board");

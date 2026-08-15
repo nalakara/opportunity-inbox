@@ -3,14 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f7f5ef" />
-    <meta name="description" content="A minimal local-first PWA for capturing opportunity platforms and tracking interaction stages." />
+    <meta name="theme-color" content="#0F172A" />
+    <meta name="description" content="Opportunity Inbox - Local-first opportunity platform & job search tracker" />
     
     <!-- iOS / PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Opportunity Inbox" />
     <link rel="apple-touch-icon" href="./icon.svg" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <title>Opportunity Inbox</title>
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -18,82 +23,298 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">v0.1 prototype</p>
-          <h1>Opportunity Inbox</h1>
-        </div>
-        <div class="topbar-actions">
-          <button class="secondary-action install-button" id="installButton" type="button" style="display: none;">
-            <span class="install-icon">📲</span> Install App
+    <div class="app-layout">
+      <!-- Left Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <svg class="brand-logo" width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="24" height="24" rx="6" fill="#10B981"/>
+              <path d="M7 9L12 14L17 9" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="brand-name">Opportunity Inbox</span>
+          </div>
+          <button class="icon-button sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle Navigation">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
-          <button class="primary-action" id="captureButton" type="button" aria-keyshortcuts="Control+k Meta+k">
-            <span class="plus-icon">+</span> Capture <kbd class="kbd-badge">⌘K</kbd>
-          </button>
         </div>
-      </header>
 
-      <section class="toolbar" aria-label="Platform status filters">
-        <button class="filter is-active" data-filter="ALL" type="button">All</button>
-        <button class="filter" data-filter="CAPTURED" type="button">Captured</button>
-        <button class="filter" data-filter="VISITED" type="button">Visited</button>
-        <button class="filter" data-filter="REGISTERED" type="button">Registered</button>
-        <button class="filter" data-filter="PROFILE_READY" type="button">Profile Ready</button>
-        <button class="filter" data-filter="APPLIED" type="button">Applied</button>
-        <button class="filter" data-filter="CLOSED" type="button">Closed</button>
-      </section>
+        <nav class="sidebar-nav">
+          <ul class="nav-group">
+            <li>
+              <button class="nav-link" data-tab="home" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Home</span>
+              </button>
+            </li>
+            <li>
+              <button class="nav-link is-active" data-tab="board" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                <span>Board</span>
+              </button>
+            </li>
+            <li>
+              <button class="nav-link" data-tab="statistics" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>Statistics</span>
+              </button>
+            </li>
+          </ul>
 
-      <section class="content-grid" id="contentGrid">
-        <section class="list-panel" id="listPanel" aria-labelledby="listTitle">
-          <div class="panel-heading">
-            <h2 id="listTitle">Platforms</h2>
-            <span class="count-pill" id="itemCount">0</span>
+          <div class="nav-divider"></div>
+
+          <div class="nav-section-title">TOOLS</div>
+          <ul class="nav-group secondary-tools">
+            <li><button class="nav-link future-tool" data-tool="Resume Builder" type="button"><span>📄 Resume Builder</span><span class="soon-badge">Soon</span></button></li>
+            <li><button class="nav-link future-tool" data-tool="Score my Resume" type="button"><span>🎯 Score my Resume</span><span class="soon-badge">Soon</span></button></li>
+            <li><button class="nav-link future-tool" data-tool="AI Answer Generator" type="button"><span>✨ AI Answer Generator</span><span class="soon-badge">Soon</span></button></li>
+            <li><button class="nav-link future-tool" data-tool="Cover Letter Generator" type="button"><span>✉️ Cover Letter</span><span class="soon-badge">Soon</span></button></li>
+            <li><button class="nav-link future-tool" data-tool="LinkedIn Tools" type="button"><span>💼 LinkedIn Tools</span><span class="soon-badge">Soon</span></button></li>
+            <li><button class="nav-link future-tool" data-tool="Contacts" type="button"><span>👥 Contacts</span><span class="soon-badge">Soon</span></button></li>
+          </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="user-profile">
+            <div class="avatar">Y</div>
+            <div class="user-info">
+              <span class="user-name">Yudhan</span>
+            </div>
           </div>
-          <div class="empty-state" id="emptyState">
-            <h3>No platforms captured yet</h3>
-            <p>Add the first opportunity platform you want to track.</p>
-          </div>
-          <ul class="platform-list" id="platformList"></ul>
-        </section>
+        </div>
+      </aside>
 
-        <section class="detail-panel" id="detailPanel" aria-live="polite">
-          <div class="detail-empty">
-            <h2>Select a platform</h2>
-            <p>Open an item to update its status, edit notes, or visit the platform.</p>
+      <!-- Main Content Area -->
+      <div class="main-wrapper">
+        <!-- Top Bar Header -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <h1 class="page-title" id="pageTitle">Board</h1>
           </div>
-        </section>
-      </section>
-    </main>
 
+          <div class="topbar-actions">
+            <button class="install-button" id="installButton" type="button" style="display: none;">
+              📲 Install App
+            </button>
+          </div>
+        </header>
+
+        <!-- View Containers -->
+        <main class="content-container">
+          <!-- View: HOME -->
+          <section class="tab-view" id="viewHome" style="display: none;">
+            <div class="home-header">
+              <h2>Good morning, Yudhan 👋</h2>
+            </div>
+
+            <div class="home-grid">
+              <!-- Weekly Progress Gauge -->
+              <div class="card weekly-card">
+                <div class="card-header">
+                  <h3>Weekly Progress</h3>
+                  <span class="goal-pill">Weekly goal: 10</span>
+                </div>
+                <div class="gauge-container">
+                  <svg viewBox="0 0 100 55" class="gauge-svg">
+                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#334155" stroke-width="10" stroke-linecap="round"/>
+                    <path id="gaugeProgressPath" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#10B981" stroke-width="10" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="126"/>
+                  </svg>
+                  <div class="gauge-value">
+                    <span class="gauge-number" id="homeWeeklyAppliedCount">0</span>
+                    <span class="gauge-label">jobs applied</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Job Pipeline Summary -->
+              <div class="card pipeline-card">
+                <div class="card-header">
+                  <h3>Your Pipeline Breakdown</h3>
+                </div>
+                <div class="pipeline-summary-body" id="homePipelineSummary">
+                  <!-- Generated via JS -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View: BOARD -->
+          <section class="tab-view" id="viewBoard">
+            <div class="board-toolbar">
+              <div class="search-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="searchInput" placeholder="Search company, tag, position..." />
+              </div>
+
+              <div class="toolbar-actions">
+                <div class="select-wrapper">
+                  <select id="sortBySelect">
+                    <option value="updatedDesc">Sort by: Recent</option>
+                    <option value="nameAsc">Sort by: Name (A-Z)</option>
+                    <option value="category">Sort by: Category</option>
+                  </select>
+                </div>
+
+                <!-- View Switcher Toggle -->
+                <div class="view-switcher">
+                  <button class="view-btn is-active" id="viewKanbanBtn" type="button" title="Kanban Column View">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+                    Kanban
+                  </button>
+                  <button class="view-btn" id="viewListBtn" type="button" title="Table List View">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    List
+                  </button>
+                </div>
+
+                <button class="primary-btn" id="captureButton" type="button">
+                  + Add job
+                </button>
+              </div>
+            </div>
+
+            <!-- Kanban Columns Container -->
+            <div class="kanban-board" id="kanbanBoard">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Pipeline Accordion List Container -->
+            <div class="pipeline-board" id="listBoard" style="display: none;">
+              <!-- Rendered via JS -->
+            </div>
+          </section>
+
+          <!-- View: STATISTICS -->
+          <section class="tab-view" id="viewStatistics" style="display: none;">
+            <div class="stats-header">
+              <h2>📊 Statistics</h2>
+              <p>Track your applications, conversions, and job search progress.</p>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="kpi-grid">
+              <div class="kpi-card purple">
+                <div class="kpi-info">
+                  <span class="kpi-label">Total Applications</span>
+                  <span class="kpi-value" id="kpiTotalApplications">0</span>
+                </div>
+                <div class="kpi-icon">📈</div>
+              </div>
+
+              <div class="kpi-card blue">
+                <div class="kpi-info">
+                  <span class="kpi-label">Applications This Week</span>
+                  <span class="kpi-value" id="kpiThisWeek">0</span>
+                </div>
+                <div class="kpi-icon">👥</div>
+              </div>
+
+              <div class="kpi-card orange">
+                <div class="kpi-info">
+                  <span class="kpi-label">Applications This Month</span>
+                  <span class="kpi-value" id="kpiThisMonth">0</span>
+                </div>
+                <div class="kpi-icon">🏆</div>
+              </div>
+
+              <div class="kpi-card green">
+                <div class="kpi-info">
+                  <span class="kpi-label">Interview Conversion</span>
+                  <span class="kpi-value" id="kpiInterviewConversion">0%</span>
+                </div>
+                <div class="kpi-icon">🎯</div>
+              </div>
+            </div>
+
+            <!-- Actionable Insights -->
+            <div class="insights-grid">
+              <div class="insight-card blue">
+                <div class="insight-header">
+                  <span class="insight-title">Not enough jobs applied</span>
+                  <span class="badge low">low</span>
+                </div>
+                <p>You need to apply to at least 5 jobs to get detailed conversion insights.</p>
+                <button class="primary-btn sm" id="statsApplyTrigger" type="button">Apply to jobs</button>
+              </div>
+
+              <div class="insight-card yellow">
+                <div class="insight-header">
+                  <span class="insight-title">Apply More This Week</span>
+                  <span class="badge medium">medium</span>
+                </div>
+                <p id="statsGoalProgressText">You need 10 more applications to reach your weekly goal of 10.</p>
+                <button class="secondary-btn sm" id="statsAddMoreTrigger" type="button">Add More Jobs</button>
+              </div>
+            </div>
+
+            <!-- Detailed Breakdown -->
+            <div class="stats-breakdown-grid">
+              <div class="card breakdown-card">
+                <h3>Conversion Analysis</h3>
+                <div class="breakdown-list" id="conversionAnalysisList">
+                  <!-- Generated via JS -->
+                </div>
+              </div>
+              <div class="card breakdown-card">
+                <h3>Application Pipeline Breakdown</h3>
+                <div class="breakdown-list" id="pipelineBreakdownList">
+                  <!-- Generated via JS -->
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal Dialog for Add/Edit Job -->
     <dialog class="capture-dialog" id="captureDialog">
       <form class="capture-form" id="captureForm" method="dialog">
         <div class="dialog-heading">
-          <h2 id="dialogTitle">New Platform</h2>
+          <h2 id="dialogTitle">Add Job Application</h2>
           <button class="icon-button" id="closeDialogButton" type="button" aria-label="Close dialog">×</button>
         </div>
 
         <input id="editingId" type="hidden" />
 
-        <label for="nameInput">
-          Platform name <span class="required-star">*</span>
-        </label>
-        <input id="nameInput" name="name" autocomplete="off" placeholder="e.g. Upwork, Substack, Contra" required />
+        <div class="form-group">
+          <label for="nameInput">Company / Position <span class="required-star">*</span></label>
+          <input id="nameInput" name="name" autocomplete="off" placeholder="e.g. Microsoft, Frontend Developer" required />
+        </div>
 
-        <label for="categoryInput">Category</label>
-        <input id="categoryInput" name="category" autocomplete="off" placeholder="e.g. Creative, Freelance, Writing" />
+        <div class="form-group">
+          <label for="categoryInput">Location / Tag</label>
+          <input id="categoryInput" name="category" autocomplete="off" placeholder="e.g. California, USA or Remote" />
+        </div>
 
-        <label for="urlInput">Platform URL</label>
-        <input id="urlInput" name="url" inputmode="url" type="url" autocomplete="off" placeholder="https://example.com" />
+        <div class="form-group">
+          <label for="urlInput">Job Posting URL</label>
+          <input id="urlInput" name="url" inputmode="url" type="url" autocomplete="off" placeholder="https://example.com/careers/job" />
+        </div>
 
-        <label for="noteInput">Note</label>
-        <textarea id="noteInput" name="note" rows="3" placeholder="Why this platform looks interesting or next steps..."></textarea>
+        <div class="form-group">
+          <label for="statusSelectInput">Stage / Status</label>
+          <select id="statusSelectInput" name="status">
+            <option value="WISHLIST">Wishlist</option>
+            <option value="APPLIED">Applied</option>
+            <option value="INTERVIEWING">Interviewing</option>
+            <option value="OFFER">Offer</option>
+            <option value="REJECTED">Rejected</option>
+            <option value="GHOSTED">Ghosted</option>
+            <option value="FOLLOW_UP">Follow Up</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="noteInput">Notes / Details</label>
+          <textarea id="noteInput" name="note" rows="3" placeholder="Key contact, salary expectation, next steps..."></textarea>
+        </div>
 
         <p class="form-error" id="formError" role="alert"></p>
 
         <div class="form-actions">
-          <button class="secondary-action" id="cancelButton" type="button">Cancel</button>
-          <button class="primary-action" type="submit">Save Platform</button>
+          <button class="secondary-btn" id="cancelButton" type="button">Cancel</button>
+          <button class="primary-btn" type="submit">Save Job</button>
         </div>
       </form>
     </dialog>

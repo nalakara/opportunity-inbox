@@ -1,0 +1,24 @@
+{
+  "name": "opportunity-inbox",
+  "version": "1.0.0",
+  "description": "A clean, quiet productivity, local-first Progressive Web App (PWA) designed for capturing opportunity platforms and tracking your interaction status with each one.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nalakara/opportunity-inbox.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nalakara/opportunity-inbox/issues"
+  },
+  "homepage": "https://github.com/nalakara/opportunity-inbox#readme",
+  "devDependencies": {
+    "vercel": "^59.0.0"
+  }
+}
