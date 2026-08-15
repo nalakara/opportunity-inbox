@@ -59,6 +59,10 @@ const elements = {
   statsApplyTrigger: document.querySelector("#statsApplyTrigger"),
   statsAddMoreTrigger: document.querySelector("#statsAddMoreTrigger"),
 
+  exportBtn: document.querySelector("#exportBtn"),
+  importBtn: document.querySelector("#importBtn"),
+  importFileInput: document.querySelector("#importFileInput"),
+
   // Install PWA
   installButton: document.querySelector("#installButton"),
 };
@@ -509,6 +513,40 @@ if ("serviceWorker" in navigator) {
     });
   });
 }
+
+elements.exportBtn?.addEventListener("click", () => {
+  const jsonStr = platformStore.exportJson();
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `opportunity-inbox-backup-${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+elements.importBtn?.addEventListener("click", () => {
+  elements.importFileInput?.click();
+});
+
+elements.importFileInput?.addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const result = platformStore.importJson(event.target.result, "merge");
+    if (result.success) {
+      alert(`✅ Successfully imported backup data (${result.count} records processed).`);
+      render();
+    } else {
+      alert(`❌ Failed to import backup: ${result.error}`);
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+});
 
 document.querySelectorAll(".future-tool").forEach((btn) => {
   btn.addEventListener("click", () => {

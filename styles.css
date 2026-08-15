@@ -258,7 +258,7 @@ button {
   gap: 12px;
 }
 
-.install-button {
+.topbar-action-btn, .install-button {
   background: var(--surface-card);
   border: 1px solid var(--border);
   color: var(--text-main);
@@ -269,10 +269,13 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  transition: all 0.2s ease;
 }
 
-.install-button:hover {
+.topbar-action-btn:hover, .install-button:hover {
   background: var(--surface-hover);
+  border-color: var(--accent-orange);
+  color: var(--accent-orange-bright);
 }
 
 .content-container {

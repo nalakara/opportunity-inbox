@@ -147,4 +147,49 @@ export const platformStore = {
     const remaining = adapter.get().filter((platform) => platform.id !== id);
     adapter.set(remaining);
   },
+
+  exportJson() {
+    const data = adapter.get();
+    return JSON.stringify(data, null, 2);
+  },
+
+  importJson(jsonString, mode = "merge") {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (!Array.isArray(parsed)) {
+        throw new Error("Invalid backup file format. Expected an array of records.");
+      }
+
+      const validated = parsed.map((item) => ({
+        id: item.id || createId(),
+        name: (item.name || "Untitled").trim(),
+        category: (item.category || "").trim(),
+        url: (item.url || "").trim(),
+        status: normalizeStatus(item.status),
+        note: (item.note || "").trim(),
+        createdAt: item.createdAt || now(),
+        updatedAt: item.updatedAt || now(),
+      }));
+
+      if (mode === "replace") {
+        adapter.set(validated);
+      } else {
+        // Merge mode: retain existing items, add new items if ID doesn't exist
+        const existing = adapter.get();
+        const existingIds = new Set(existing.map((p) => p.id));
+        const merged = [...existing];
+
+        validated.forEach((item) => {
+          if (!existingIds.has(item.id)) {
+            merged.push(item);
+          }
+        });
+        adapter.set(merged);
+      }
+      return { success: true, count: validated.length };
+    } catch (err) {
+      console.error("Failed to import JSON data:", err);
+      return { success: false, error: err.message };
+    }
+  },
 };
