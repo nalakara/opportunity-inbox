@@ -2,6 +2,8 @@
 
 A clean, quiet productivity, local-first Progressive Web App (PWA) designed for capturing opportunity platforms and tracking your interaction status with each one.
 
+🌐 **Live Demo**: https://opportunity-inbox.vercel.app
+
 ## Core Product Intent
 
 Help you answer at a glance:
@@ -68,4 +70,12 @@ Open `http://localhost:8080` in your web browser.
 
 ## License
 
-MIT License
+MIT License © 2026 Yudhan Sebastian
+
+## Cara Menjalankan
+
+Tanpa build step — cukup buka `index.html` di browser, atau jalankan server statis:
+
+```bash
+npx serve .
+```
