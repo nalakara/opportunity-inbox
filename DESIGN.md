@@ -63,3 +63,4 @@ No rainbow gradients, no colored full-page glow meshes, and no technique without
 - **Keyboard First**: Every button, input, dialog, and dropdown is reachable via Tab and activatable via Enter/Space. Visible 2px outline rings on all focused elements.
 - **Mobile First**: All touch targets meet or exceed the 44px minimum hit area standard.
 - **Honest Content**: Zero fictional testimonials, fake numbers, or AI buzzwords. Real pipeline data only.
+
