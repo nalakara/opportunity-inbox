@@ -63,11 +63,14 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers to ensure instant loading, zero maintenance, and lifetime durability.
 
 ```text
-├── index.html            # App shell, views (Home, Board, Stats), and dialog markup
-├── styles.css            # Aniq-UI Dark Obsidian design system & responsive styling
+├── index.html            # App shell, views (Home, Board, Stats, Tools), and dialog markup
+├── styles.css            # Obsidian Dark design system, responsive styling & print sheets
 ├── src/
-│   ├── app.js            # View routing, DOM rendering, and event delegation
-│   └── storage.js        # LocalStorageAdapter, status normalizer & JSON backup utilities
+│   ├── app.js            # View routing, DOM rendering, tool logic & event delegation
+│   └── storage.js        # Stores (Jobs, Contacts, Settings, Resume) & JSON backup
+├── test/
+│   └── smoke-test.js     # Zero-dependency native Node.js smoke test suite
+├── package.json          # Project metadata and test scripts
 ├── manifest.webmanifest  # PWA Web App Manifest
 ├── sw.js                 # Service Worker (offline cache strategy)
 ├── icon.svg              # App icon
@@ -76,8 +79,9 @@ Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers 
 
 ### Technical Design Principles
 1. **Local-First & Private**: No analytics, third-party cookies, or remote databases. All data stays strictly in your browser's `localStorage`.
-2. **Decoupled Persistence**: UI code never accesses `window.localStorage` directly; all reads, writes, and migrations pass through `platformStore` in `src/storage.js`.
-3. **Zero-Build Deployment**: Standard ES Modules with native browser APIs. Works straight out of any HTTP server without `npm install` or compilation.
+2. **Decoupled Persistence**: UI code never accesses `window.localStorage` directly; all reads, writes, and migrations pass through dedicated stores in `src/storage.js`.
+3. **Zero-Build Deployment**: Standard ES Modules with native browser APIs. Works straight out of any HTTP server without compilation.
+4. **Lightweight Test Coverage**: Zero external test dependencies using native Node.js asserts.
 
 ---
 
@@ -91,6 +95,9 @@ python3 -m http.server 8080
 
 # Option 2: npx serve
 npx serve .
+
+# Run automated smoke tests
+npm test
 ```
 
 Visit `http://localhost:8080` in your browser.
