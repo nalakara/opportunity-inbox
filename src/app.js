@@ -1,4 +1,4 @@
-import { platformStore, settingsStore, contactStore, STATUS_ENUM, STATUS_LABELS } from "./storage.js";
+import { platformStore, settingsStore, contactStore, resumeStore, DEFAULT_RESUME, STATUS_ENUM, STATUS_LABELS } from "./storage.js";
 
 const STAGES_ORDER = [
   STATUS_ENUM.WISHLIST,
@@ -34,6 +34,7 @@ const elements = {
   cancelSettingsButton: document.querySelector("#cancelSettingsButton"),
   settingsUserNameInput: document.querySelector("#settingsUserNameInput"),
   settingsWeeklyGoalInput: document.querySelector("#settingsWeeklyGoalInput"),
+  settingsGeminiApiKeyInput: document.querySelector("#settingsGeminiApiKeyInput"),
 
   // Toolbar & Search & View Switcher
   searchInput: document.querySelector("#searchInput"),
@@ -119,6 +120,77 @@ const elements = {
   clDownloadBtn: document.querySelector("#clDownloadBtn"),
   clPrintBtn: document.querySelector("#clPrintBtn"),
   clOutputTextarea: document.querySelector("#clOutputTextarea"),
+
+  // Resume Builder Elements
+  viewResumebuilder: document.querySelector("#viewResumebuilder"),
+  rbLoadSampleBtn: document.querySelector("#rbLoadSampleBtn"),
+  rbFullName: document.querySelector("#rbFullName"),
+  rbTitle: document.querySelector("#rbTitle"),
+  rbEmail: document.querySelector("#rbEmail"),
+  rbPhone: document.querySelector("#rbPhone"),
+  rbLocation: document.querySelector("#rbLocation"),
+  rbWebsite: document.querySelector("#rbWebsite"),
+  rbSummary: document.querySelector("#rbSummary"),
+  rbSkills: document.querySelector("#rbSkills"),
+  rbExperience: document.querySelector("#rbExperience"),
+  rbEducation: document.querySelector("#rbEducation"),
+  rbProjects: document.querySelector("#rbProjects"),
+  rbSaveBtn: document.querySelector("#rbSaveBtn"),
+  rbCopyMdBtn: document.querySelector("#rbCopyMdBtn"),
+  rbDownloadMdBtn: document.querySelector("#rbDownloadMdBtn"),
+  rbPrintBtn: document.querySelector("#rbPrintBtn"),
+  resumePreviewSheet: document.querySelector("#resumePreviewSheet"),
+
+  // Score My Resume Elements
+  viewResumescore: document.querySelector("#viewResumescore"),
+  rsJobDescriptionInput: document.querySelector("#rsJobDescriptionInput"),
+  rsResumeTextInput: document.querySelector("#rsResumeTextInput"),
+  rsLoadJobBtn: document.querySelector("#rsLoadJobBtn"),
+  rsLoadMyResumeBtn: document.querySelector("#rsLoadMyResumeBtn"),
+  rsScanBtn: document.querySelector("#rsScanBtn"),
+  rsMatchScore: document.querySelector("#rsMatchScore"),
+  rsVerdictTitle: document.querySelector("#rsVerdictTitle"),
+  rsVerdictDesc: document.querySelector("#rsVerdictDesc"),
+  rsMatchedCount: document.querySelector("#rsMatchedCount"),
+  rsMissingCount: document.querySelector("#rsMissingCount"),
+  rsMatchedTags: document.querySelector("#rsMatchedTags"),
+  rsMissingTags: document.querySelector("#rsMissingTags"),
+  rsCheckMetrics: document.querySelector("#rsCheckMetrics"),
+  rsCheckVerbs: document.querySelector("#rsCheckVerbs"),
+  rsCheckContact: document.querySelector("#rsCheckContact"),
+  rsCheckLength: document.querySelector("#rsCheckLength"),
+
+  // AI Answer Generator Elements
+  viewAiAnswer: document.querySelector("#viewAiAnswer"),
+  aiQuestionCategory: document.querySelector("#aiQuestionCategory"),
+  aiCustomQuestionGroup: document.querySelector("#aiCustomQuestionGroup"),
+  aiCustomQuestionInput: document.querySelector("#aiCustomQuestionInput"),
+  aiCompanyInput: document.querySelector("#aiCompanyInput"),
+  aiRoleInput: document.querySelector("#aiRoleInput"),
+  aiFrameworkSelect: document.querySelector("#aiFrameworkSelect"),
+  aiDetailsInput: document.querySelector("#aiDetailsInput"),
+  aiGenerateBtn: document.querySelector("#aiGenerateBtn"),
+  aiCopyBtn: document.querySelector("#aiCopyBtn"),
+  aiOutputTextarea: document.querySelector("#aiOutputTextarea"),
+
+  // LinkedIn Tools Elements
+  viewLinkedinTools: document.querySelector("#viewLinkedinTools"),
+  liOutreachType: document.querySelector("#liOutreachType"),
+  liRecipientName: document.querySelector("#liRecipientName"),
+  liCompanyName: document.querySelector("#liCompanyName"),
+  liTargetRole: document.querySelector("#liTargetRole"),
+  liGenerateOutreachBtn: document.querySelector("#liGenerateOutreachBtn"),
+  liCopyOutreachBtn: document.querySelector("#liCopyOutreachBtn"),
+  liOutreachOutput: document.querySelector("#liOutreachOutput"),
+  liHeadlineKeywords: document.querySelector("#liHeadlineKeywords"),
+  liGenerateHeadlineBtn: document.querySelector("#liGenerateHeadlineBtn"),
+  liHeadlineResults: document.querySelector("#liHeadlineResults"),
+  liFormatInput: document.querySelector("#liFormatInput"),
+  liBoldBtn: document.querySelector("#liBoldBtn"),
+  liItalicBtn: document.querySelector("#liItalicBtn"),
+  liMonoBtn: document.querySelector("#liMonoBtn"),
+  liCopyFormatBtn: document.querySelector("#liCopyFormatBtn"),
+  liFormatOutput: document.querySelector("#liFormatOutput"),
 };
 
 let activeTab = "board";
@@ -713,6 +785,23 @@ function switchTab(tabName) {
       populateClJobSelect();
       if (!elements.clOutputTextarea.value) generateCoverLetter();
     }
+    else if (tabName === "resumebuilder") {
+      elements.pageTitle.textContent = "ATS Resume Builder";
+      renderResumeBuilder();
+    }
+    else if (tabName === "resumescore") {
+      elements.pageTitle.textContent = "Score My Resume";
+      if (!elements.rsResumeTextInput.value) loadResumeIntoScanner();
+    }
+    else if (tabName === "aianswer") {
+      elements.pageTitle.textContent = "STAR Interview Responder";
+      if (!elements.aiOutputTextarea.value) generateAiAnswer();
+    }
+    else if (tabName === "linkedintools") {
+      elements.pageTitle.textContent = "LinkedIn Optimization Suite";
+      if (!elements.liOutreachOutput.value) generateLinkedinOutreach();
+      generateLinkedinHeadlines();
+    }
   }
 
   // Auto close mobile drawer on tab switch
@@ -728,6 +817,382 @@ function render() {
   if (activeTab === "home") renderHome();
   if (activeTab === "statistics") renderStatistics();
   if (activeTab === "contacts") renderContacts();
+  if (activeTab === "resumebuilder") renderResumeBuilder();
+}
+
+/* Resume Builder Functions */
+function renderResumeBuilder() {
+  const resume = resumeStore.get();
+  if (elements.rbFullName) elements.rbFullName.value = resume.fullName || "";
+  if (elements.rbTitle) elements.rbTitle.value = resume.title || "";
+  if (elements.rbEmail) elements.rbEmail.value = resume.email || "";
+  if (elements.rbPhone) elements.rbPhone.value = resume.phone || "";
+  if (elements.rbLocation) elements.rbLocation.value = resume.location || "";
+  if (elements.rbWebsite) elements.rbWebsite.value = resume.website || "";
+  if (elements.rbSummary) elements.rbSummary.value = resume.summary || "";
+  if (elements.rbSkills) elements.rbSkills.value = resume.skills || "";
+  if (elements.rbExperience) elements.rbExperience.value = resume.experience || "";
+  if (elements.rbEducation) elements.rbEducation.value = resume.education || "";
+  if (elements.rbProjects) elements.rbProjects.value = resume.projects || "";
+
+  renderResumeSheet(resume);
+}
+
+function renderResumeSheet(resume) {
+  if (!elements.resumePreviewSheet) return;
+  const contacts = [resume.email, resume.phone, resume.location, resume.website].filter(Boolean).join(" • ");
+
+  elements.resumePreviewSheet.innerHTML = `
+    <header class="resume-header">
+      <div class="resume-name">${resume.fullName || "Untitled Name"}</div>
+      ${resume.title ? `<div class="resume-title">${resume.title}</div>` : ""}
+      ${contacts ? `<div class="resume-contacts">${contacts}</div>` : ""}
+    </header>
+
+    ${resume.summary ? `
+      <section class="resume-section">
+        <div class="resume-section-title">Professional Summary</div>
+        <div class="resume-body-text">${resume.summary}</div>
+      </section>
+    ` : ""}
+
+    ${resume.skills ? `
+      <section class="resume-section">
+        <div class="resume-section-title">Skills & Technologies</div>
+        <div class="resume-body-text">${resume.skills}</div>
+      </section>
+    ` : ""}
+
+    ${resume.experience ? `
+      <section class="resume-section">
+        <div class="resume-section-title">Professional Experience</div>
+        <div class="resume-body-text">${resume.experience}</div>
+      </section>
+    ` : ""}
+
+    ${resume.projects ? `
+      <section class="resume-section">
+        <div class="resume-section-title">Key Projects</div>
+        <div class="resume-body-text">${resume.projects}</div>
+      </section>
+    ` : ""}
+
+    ${resume.education ? `
+      <section class="resume-section">
+        <div class="resume-section-title">Education & Credentials</div>
+        <div class="resume-body-text">${resume.education}</div>
+      </section>
+    ` : ""}
+  `;
+}
+
+function saveResumeFromInputs() {
+  const data = {
+    fullName: elements.rbFullName?.value.trim() || "Untitled",
+    title: elements.rbTitle?.value.trim() || "",
+    email: elements.rbEmail?.value.trim() || "",
+    phone: elements.rbPhone?.value.trim() || "",
+    location: elements.rbLocation?.value.trim() || "",
+    website: elements.rbWebsite?.value.trim() || "",
+    summary: elements.rbSummary?.value.trim() || "",
+    skills: elements.rbSkills?.value.trim() || "",
+    experience: elements.rbExperience?.value.trim() || "",
+    education: elements.rbEducation?.value.trim() || "",
+    projects: elements.rbProjects?.value.trim() || "",
+  };
+  resumeStore.save(data);
+  renderResumeSheet(data);
+  alert("✅ Resume saved successfully!");
+}
+
+function getResumeMarkdown() {
+  const r = resumeStore.get();
+  return `# ${r.fullName}
+**${r.title}**
+${[r.email, r.phone, r.location, r.website].filter(Boolean).join(" | ")}
+
+## Professional Summary
+${r.summary}
+
+## Skills & Technologies
+${r.skills}
+
+## Experience
+${r.experience}
+
+## Projects
+${r.projects}
+
+## Education
+${r.education}
+`;
+}
+
+/* Score My Resume (ATS Scanner) Functions */
+const STOP_WORDS = new Set([
+  "a","about","above","after","again","against","all","am","an","and","any","are","aren't","as","at",
+  "be","because","been","before","being","below","between","both","but","by","can't","cannot","could",
+  "couldn't","did","didn't","do","does","doesn't","doing","don't","down","during","each","few","for",
+  "from","further","had","hadn't","has","hasn't","have","haven't","having","he","he'd","he'll","he's",
+  "her","here","here's","hers","herself","him","himself","his","how","how's","i","i'd","i'll","i'm",
+  "i've","if","in","into","is","isn't","it","it's","its","itself","let's","me","more","most","mustn't",
+  "my","myself","no","nor","not","of","off","on","once","only","or","other","ought","our","ours",
+  "ourselves","out","over","own","same","shan't","she","she'd","she'll","she's","should","shouldn't",
+  "so","some","such","than","that","that's","the","their","theirs","them","themselves","then","there",
+  "there's","these","they","they'd","they'll","they're","they've","this","those","through","to","too",
+  "under","until","up","very","was","wasn't","we","we'd","we'll","we're","we've","were","weren't",
+  "what","what's","when","when's","where","where's","which","while","who","who's","whom","why","why's",
+  "with","won't","would","wouldn't","you","you'd","you'll","you're","you've","your","yours","yourself",
+  "yourselves","will","shall","work","working","job","experience","requirements","responsible","team","looking"
+]);
+
+function extractKeywords(text) {
+  if (!text) return [];
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9+#.\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+
+  const freq = new Map();
+  words.forEach((w) => freq.set(w, (freq.get(w) || 0) + 1));
+
+  return Array.from(freq.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 30)
+    .map((entry) => entry[0]);
+}
+
+function loadResumeIntoScanner() {
+  const r = resumeStore.get();
+  if (elements.rsResumeTextInput) {
+    elements.rsResumeTextInput.value = `${r.fullName} - ${r.title}\n${r.summary}\n\nSKILLS:\n${r.skills}\n\nEXPERIENCE:\n${r.experience}\n\nPROJECTS:\n${r.projects}\n\nEDUCATION:\n${r.education}`;
+  }
+}
+
+function scanResumeScore() {
+  const jobText = elements.rsJobDescriptionInput?.value.trim() || "";
+  const resumeText = elements.rsResumeTextInput?.value.trim() || "";
+
+  if (!jobText || !resumeText) {
+    alert("Please provide both Job Description and Resume text to scan.");
+    return;
+  }
+
+  const jobKeywords = extractKeywords(jobText);
+  const resumeLower = resumeText.toLowerCase();
+
+  const matched = [];
+  const missing = [];
+
+  jobKeywords.forEach((kw) => {
+    if (resumeLower.includes(kw)) {
+      matched.push(kw);
+    } else {
+      missing.push(kw);
+    }
+  });
+
+  const matchRatio = jobKeywords.length > 0 ? (matched.length / jobKeywords.length) : 0;
+  
+  const hasNumbers = /\d+%|\$\d+|\b\d+\b/.test(resumeText);
+  const ACTION_VERBS = ["led", "engineered", "built", "spearheaded", "developed", "architected", "optimized", "delivered", "mentored", "scaled", "created", "designed", "improved"];
+  const actionVerbsFound = ACTION_VERBS.filter(v => new RegExp(`\\b${v}\\b`, 'i').test(resumeText)).length;
+  const hasContact = /@.+\..+/.test(resumeText) && /\d{3}/.test(resumeText);
+  const words = resumeText.split(/\s+/).length;
+  const lengthScore = words >= 250 && words <= 850;
+
+  let score = Math.round(matchRatio * 70);
+  if (hasNumbers) score += 10;
+  if (actionVerbsFound >= 4) score += 10;
+  if (hasContact) score += 5;
+  if (lengthScore) score += 5;
+  score = Math.min(98, Math.max(25, score));
+
+  if (elements.rsMatchScore) elements.rsMatchScore.textContent = `${score}%`;
+  if (elements.rsMatchedCount) elements.rsMatchedCount.textContent = matched.length;
+  if (elements.rsMissingCount) elements.rsMissingCount.textContent = missing.length;
+
+  if (elements.rsVerdictTitle) {
+    elements.rsVerdictTitle.textContent = score >= 80 ? "🌟 Excellent ATS Match!" : score >= 60 ? "👍 Good Match (Optimization Recommended)" : "⚠️ Low Match Rate";
+  }
+  if (elements.rsVerdictDesc) {
+    elements.rsVerdictDesc.textContent = score >= 80
+      ? "Your resume strongly mirrors the keywords and qualifications requested. Be sure to align your bullet points with the missing skills below."
+      : "You can significantly improve your odds by adding the missing technical skills and action verbs listed below into your experience bullets.";
+  }
+
+  if (elements.rsMatchedTags) {
+    elements.rsMatchedTags.innerHTML = matched.length > 0
+      ? matched.map((kw) => `<span class="rs-tag matched">✓ ${kw}</span>`).join("")
+      : '<span class="empty-tag-note">No exact keyword matches found.</span>';
+  }
+  if (elements.rsMissingTags) {
+    elements.rsMissingTags.innerHTML = missing.length > 0
+      ? missing.map((kw) => `<span class="rs-tag missing">✗ ${kw}</span>`).join("")
+      : '<span class="empty-tag-note">All top keywords matched!</span>';
+  }
+
+  if (elements.rsCheckMetrics) elements.rsCheckMetrics.textContent = hasNumbers ? "✅ Strong (Numbers/% found)" : "⚠️ Needs more quantifiable metrics";
+  if (elements.rsCheckVerbs) elements.rsCheckVerbs.textContent = actionVerbsFound >= 4 ? `✅ Strong (${actionVerbsFound} power verbs)` : "⚠️ Use stronger action verbs";
+  if (elements.rsCheckContact) elements.rsCheckContact.textContent = hasContact ? "✅ Complete (Email & Phone detected)" : "⚠️ Missing email or phone";
+  if (elements.rsCheckLength) elements.rsCheckLength.textContent = `${words} words ${lengthScore ? "(Ideal 1-page length)" : "(Consider trimming or expanding)"}`;
+}
+
+/* AI Answer Generator Functions */
+function generateAiAnswer() {
+  const category = elements.aiQuestionCategory?.value || "conflict";
+  const customQuestion = elements.aiCustomQuestionInput?.value.trim();
+  const company = elements.aiCompanyInput?.value.trim() || "[Target Company]";
+  const role = elements.aiRoleInput?.value.trim() || "[Target Role]";
+  const framework = elements.aiFrameworkSelect?.value || "star";
+  const details = elements.aiDetailsInput?.value.trim();
+
+  let questionText = "";
+  if (category === "conflict") questionText = "Tell me about a time you had a technical disagreement or conflict with a colleague and how you resolved it.";
+  else if (category === "failure") questionText = "Describe a significant mistake or failure in a project and what you learned from it.";
+  else if (category === "leadership") questionText = "Tell me about a time you took initiative to lead an unassigned project or solve a critical bottleneck.";
+  else if (category === "ambiguity") questionText = "How do you handle ambiguous requirements or sudden priority shifts?";
+  else if (category === "whyUs") questionText = `Why are you interested in joining ${company} as a ${role}?`;
+  else if (category === "salary") questionText = "What are your salary and total compensation expectations for this role?";
+  else questionText = customQuestion || "Interview Question";
+
+  let response = "";
+  if (framework === "star") {
+    response = `QUESTION: "${questionText}"
+
+[SITUATION]
+${details ? `In my recent role while working on ${details.slice(0, 100)}...` : `At my previous company, our team encountered a critical challenge when high production traffic exposed an architectural bottleneck that threatened our uptime commitments.`}
+
+[TASK]
+I was responsible for diagnosing the root cause, aligning our engineering priorities, and delivering an immediate fix without impacting active customer workflows.
+
+[ACTION]
+${details ? `To address this, ${details}` : `I initiated a rapid RCA, established transparent communication across stakeholders, and implemented an iterative, decoupled architecture that minimized blast radius. I also introduced automated safeguards to prevent future regressions.`}
+
+[RESULT]
+As a result, we eliminated the bottleneck, improved overall performance by 35%, and established a playbook adopted company-wide. When applying this to ${company}, I bring this same bias for disciplined problem-solving and proactive ownership.`;
+  } else if (framework === "car") {
+    response = `QUESTION: "${questionText}"
+
+[CONTEXT]
+${details ? details : `While developing core user-facing features, we faced strict latency SLAs and complex data dependencies that required high-level architectural precision.`}
+
+[ACTION]
+I took full ownership of the pipeline: auditing the critical rendering path, removing legacy bottlenecks, and collaborating directly with product managers to focus strictly on high-impact requirements.
+
+[RESULT]
+We shipped the milestone ahead of schedule, cut error rates significantly, and preserved high customer trust. I am excited to apply this high-velocity rigor to the ${role} position at ${company}.`;
+  } else {
+    // Direct & Concise
+    response = `KEY TAKEAWAYS FOR: "${questionText}"
+
+• Core Principle: I approach challenges with extreme ownership, data-driven prioritization, and proactive empathy.
+• Concrete Example: ${details ? details : `Led the refactoring of core systems resulting in sub-second response times and zero downtime.`}
+• Alignment with ${company}: I am eager to leverage this proven ability to solve complex technical bottlenecks for your ${role} team.`;
+  }
+
+  if (elements.aiOutputTextarea) {
+    elements.aiOutputTextarea.value = response;
+  }
+}
+
+/* LinkedIn Tools Functions */
+function generateLinkedinOutreach() {
+  const type = elements.liOutreachType?.value || "recruiter";
+  const recipient = elements.liRecipientName?.value.trim() || "Sarah";
+  const company = elements.liCompanyName?.value.trim() || "Company";
+  const role = elements.liTargetRole?.value.trim() || "Software Engineer";
+  const myName = settingsStore.get().userName || "Yudhan";
+
+  let msg = "";
+  if (type === "recruiter") {
+    msg = `Hi ${recipient},
+
+I recently applied for the ${role} opening at ${company} and wanted to reach out directly to express my enthusiasm.
+
+With extensive experience building performant, responsive web applications and reliable client-side architectures, I am confident my technical execution aligns closely with what your team is building.
+
+I would love to connect and share a quick snapshot of my work if you have a moment. Either way, appreciate your time!
+
+Best regards,
+${myName}`;
+  } else if (type === "referral") {
+    msg = `Hi ${recipient},
+
+Hope you're having a productive week! I came across your profile and noticed the inspiring work you're doing at ${company}.
+
+I am preparing to submit an application for the ${role} position. Given your firsthand experience there, I would greatly value any quick perspective you might have on the engineering culture. If you feel comfortable, I would also be honored by an internal referral!
+
+Thanks so much for considering,
+${myName}`;
+  } else if (type === "coffee") {
+    msg = `Hi ${recipient},
+
+I've been following ${company}'s recent technical milestones and love the direction you're taking with developer experience.
+
+As an engineer passionate about clean architectures and scalable frontends, I would love to buy you a virtual coffee for 15 minutes to learn more about how your team tackles complex challenges.
+
+No pressure at all, and thank you for your time!
+
+Best,
+${myName}`;
+  } else {
+    // Thank you
+    msg = `Hi ${recipient},
+
+Thank you for taking the time to speak with me today about the ${role} position at ${company}.
+
+I really enjoyed our discussion regarding your engineering roadmaps and upcoming features. Our conversation confirmed my strong enthusiasm for joining ${company} and contributing to your team's velocity.
+
+Please let me know if there are any additional details or code samples I can provide. Looking forward to the next steps!
+
+Warmly,
+${myName}`;
+  }
+
+  if (elements.liOutreachOutput) elements.liOutreachOutput.value = msg;
+}
+
+function generateLinkedinHeadlines() {
+  const kw = elements.liHeadlineKeywords?.value.trim() || "React, TypeScript, Scalable Architecture, Performance";
+  const role = elements.liTargetRole?.value.trim() || "Software Engineer";
+
+  const headlines = [
+    `🚀 ${role} | Building High-Velocity Web Apps | ${kw} | Open to Opportunities`,
+    `💻 ${role} @ Ex-Startups • Specializing in ${kw} • Crafting Scalable User Experiences`,
+    `⚡ ${role} | Turning Product Ambiguity into Resilient Systems | ${kw}`,
+    `🎯 Senior ${role} | Passionate about Zero-Dependency Simplicity & Performance | ${kw}`
+  ];
+
+  if (elements.liHeadlineResults) {
+    elements.liHeadlineResults.innerHTML = headlines
+      .map(
+        (h) => `
+        <div class="li-headline-card">
+          <span class="li-headline-text">${h}</span>
+          <button class="secondary-btn sm copy-headline-btn" data-text="${h.replace(/"/g, '&quot;')}" type="button">📋</button>
+        </div>
+      `
+      )
+      .join("");
+  }
+}
+
+function convertUnicode(text, style) {
+  if (!text) return "";
+  const normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const bold = "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵";
+  const italic = "𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡0123456789";
+  const mono = "𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿";
+
+  const targetMap = style === "bold" ? bold : style === "italic" ? italic : mono;
+  return Array.from(text)
+    .map((char) => {
+      const idx = normal.indexOf(char);
+      return idx !== -1 ? Array.from(targetMap)[idx] : char;
+    })
+    .join("");
 }
 
 function openCaptureDialog(platform = null, defaultStage = STATUS_ENUM.WISHLIST) {
@@ -830,6 +1295,7 @@ function openSettingsDialog() {
   const settings = settingsStore.get();
   elements.settingsUserNameInput.value = settings.userName;
   elements.settingsWeeklyGoalInput.value = settings.weeklyGoal;
+  if (elements.settingsGeminiApiKeyInput) elements.settingsGeminiApiKeyInput.value = settings.geminiApiKey || "";
   elements.settingsDialog.showModal();
   elements.settingsUserNameInput.focus();
 }
@@ -841,7 +1307,8 @@ function closeSettingsDialog() {
 function saveSettings() {
   const userName = elements.settingsUserNameInput.value.trim() || "Yudhan";
   const weeklyGoal = Math.max(1, parseInt(elements.settingsWeeklyGoalInput.value, 10) || 10);
-  settingsStore.update({ userName, weeklyGoal });
+  const geminiApiKey = elements.settingsGeminiApiKeyInput ? elements.settingsGeminiApiKeyInput.value.trim() : "";
+  settingsStore.update({ userName, weeklyGoal, geminiApiKey });
   closeSettingsDialog();
   render();
 }
@@ -1089,10 +1556,125 @@ elements.clPrintBtn?.addEventListener("click", () => {
   window.print();
 });
 
-document.querySelectorAll(".future-tool").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const toolName = btn.dataset.tool || "This tool";
-    alert(`💡 ${toolName} is currently in development for a future release.`);
+// Resume Builder Event Listeners
+elements.rbLoadSampleBtn?.addEventListener("click", () => {
+  if (confirm("Load sample tech resume? This will overwrite your current draft in the editor.")) {
+    resumeStore.reset();
+    renderResumeBuilder();
+  }
+});
+
+elements.rbSaveBtn?.addEventListener("click", saveResumeFromInputs);
+
+elements.rbCopyMdBtn?.addEventListener("click", () => {
+  const md = getResumeMarkdown();
+  navigator.clipboard.writeText(md).then(() => {
+    const orig = elements.rbCopyMdBtn.textContent;
+    elements.rbCopyMdBtn.textContent = "✅ Copied!";
+    setTimeout(() => { elements.rbCopyMdBtn.textContent = orig; }, 2000);
+  });
+});
+
+elements.rbDownloadMdBtn?.addEventListener("click", () => {
+  const md = getResumeMarkdown();
+  const name = (resumeStore.get().fullName || "resume").toLowerCase().replace(/[^a-z0-9]/g, "-");
+  const blob = new Blob([md], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `resume-${name}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+elements.rbPrintBtn?.addEventListener("click", () => {
+  window.print();
+});
+
+// Score My Resume Event Listeners
+elements.rsLoadJobBtn?.addEventListener("click", () => {
+  const platforms = platformStore.list();
+  if (platforms.length === 0) {
+    alert("No saved job applications found on your board.");
+    return;
+  }
+  const jobNames = platforms.slice(0, 5).map((p, idx) => `${idx + 1}. ${p.name} - ${p.category || ""}`).join("\n");
+  const choice = prompt(`Select job by number (1-${Math.min(5, platforms.length)}):\n${jobNames}`);
+  const idx = parseInt(choice, 10) - 1;
+  if (!isNaN(idx) && platforms[idx]) {
+    const job = platforms[idx];
+    elements.rsJobDescriptionInput.value = `${job.name} - ${job.category || ""}\n${job.note || ""}`;
+  }
+});
+
+elements.rsLoadMyResumeBtn?.addEventListener("click", loadResumeIntoScanner);
+elements.rsScanBtn?.addEventListener("click", scanResumeScore);
+
+// AI Answer Generator Event Listeners
+elements.aiQuestionCategory?.addEventListener("change", (e) => {
+  if (elements.aiCustomQuestionGroup) {
+    elements.aiCustomQuestionGroup.style.display = e.target.value === "custom" ? "block" : "none";
+  }
+});
+
+elements.aiGenerateBtn?.addEventListener("click", generateAiAnswer);
+elements.aiCopyBtn?.addEventListener("click", () => {
+  const text = elements.aiOutputTextarea?.value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = elements.aiCopyBtn.textContent;
+    elements.aiCopyBtn.textContent = "✅ Copied!";
+    setTimeout(() => { elements.aiCopyBtn.textContent = orig; }, 2000);
+  });
+});
+
+// LinkedIn Tools Event Listeners
+elements.liGenerateOutreachBtn?.addEventListener("click", generateLinkedinOutreach);
+elements.liCopyOutreachBtn?.addEventListener("click", () => {
+  const text = elements.liOutreachOutput?.value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = elements.liCopyOutreachBtn.textContent;
+    elements.liCopyOutreachBtn.textContent = "✅ Copied!";
+    setTimeout(() => { elements.liCopyOutreachBtn.textContent = orig; }, 2000);
+  });
+});
+
+elements.liGenerateHeadlineBtn?.addEventListener("click", generateLinkedinHeadlines);
+
+elements.liHeadlineResults?.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-headline-btn");
+  if (btn && btn.dataset.text) {
+    navigator.clipboard.writeText(btn.dataset.text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = "✅";
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    });
+  }
+});
+
+elements.liBoldBtn?.addEventListener("click", () => {
+  const val = elements.liFormatInput?.value || "";
+  if (elements.liFormatOutput) elements.liFormatOutput.value = convertUnicode(val, "bold");
+});
+
+elements.liItalicBtn?.addEventListener("click", () => {
+  const val = elements.liFormatInput?.value || "";
+  if (elements.liFormatOutput) elements.liFormatOutput.value = convertUnicode(val, "italic");
+});
+
+elements.liMonoBtn?.addEventListener("click", () => {
+  const val = elements.liFormatInput?.value || "";
+  if (elements.liFormatOutput) elements.liFormatOutput.value = convertUnicode(val, "mono");
+});
+
+elements.liCopyFormatBtn?.addEventListener("click", () => {
+  const text = elements.liFormatOutput?.value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = elements.liCopyFormatBtn.textContent;
+    elements.liCopyFormatBtn.textContent = "✅ Copied!";
+    setTimeout(() => { elements.liCopyFormatBtn.textContent = orig; }, 1500);
   });
 });
 

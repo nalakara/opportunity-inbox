@@ -157,6 +157,7 @@ export const platformStore = {
       platforms: adapter.get(),
       contacts: contactsAdapter.get(),
       settings: settingsStore.get(),
+      resume: resumeStore.get(),
     };
     return JSON.stringify(payload, null, 2);
   },
@@ -174,6 +175,7 @@ export const platformStore = {
         if (Array.isArray(parsed.platforms)) platformArray = parsed.platforms;
         if (Array.isArray(parsed.contacts)) contactArray = parsed.contacts;
         if (parsed.settings) incomingSettings = parsed.settings;
+        if (parsed.resume) resumeStore.save(parsed.resume);
       } else {
         throw new Error("Invalid backup file format.");
       }
@@ -248,13 +250,16 @@ export const platformStore = {
 
 const SETTINGS_KEY = "opportunity-inbox.settings.v1";
 const CONTACTS_KEY = "opportunity-inbox.contacts.v1";
+const RESUME_KEY = "opportunity-inbox.resume.v1";
 
 const settingsAdapter = new LocalStorageAdapter(SETTINGS_KEY);
 const contactsAdapter = new LocalStorageAdapter(CONTACTS_KEY);
+const resumeAdapter = new LocalStorageAdapter(RESUME_KEY);
 
 const DEFAULT_SETTINGS = {
   userName: "Yudhan",
   weeklyGoal: 10,
+  geminiApiKey: "",
 };
 
 export const settingsStore = {
@@ -266,6 +271,7 @@ export const settingsStore = {
     return {
       userName: (data.userName || DEFAULT_SETTINGS.userName).trim(),
       weeklyGoal: Math.max(1, parseInt(data.weeklyGoal, 10) || DEFAULT_SETTINGS.weeklyGoal),
+      geminiApiKey: (data.geminiApiKey || "").trim(),
     };
   },
   update(patch) {
@@ -274,10 +280,54 @@ export const settingsStore = {
       ...current,
       userName: patch.userName !== undefined ? patch.userName.trim() : current.userName,
       weeklyGoal: patch.weeklyGoal !== undefined ? Math.max(1, parseInt(patch.weeklyGoal, 10) || 10) : current.weeklyGoal,
+      geminiApiKey: patch.geminiApiKey !== undefined ? patch.geminiApiKey.trim() : current.geminiApiKey,
     };
     settingsAdapter.set(updated);
     return updated;
   },
+};
+
+export const DEFAULT_RESUME = {
+  fullName: "Yudhan Sebastian",
+  title: "Frontend & Full Stack Software Engineer",
+  email: "yudhan@example.com",
+  phone: "+62 812 3456 7890",
+  location: "Jakarta, Indonesia (Remote)",
+  website: "https://github.com/nalakara",
+  summary: "Results-driven Software Engineer with 5+ years of experience engineering high-performance web applications, resilient client-side systems, and intuitive design systems. Passionate about zero-dependency architecture, accessibility, and high developer velocity.",
+  skills: "JavaScript (ES6+), TypeScript, React, HTML5, CSS3, Node.js, WebSockets, Service Workers, Git, REST APIs, Performance Optimization",
+  experience: `Senior Frontend Engineer | Tech Platform Inc. (2023 - Present)
+• Architected high-performance web applications serving 100k+ active users with sub-second page loads.
+• Spearheaded local-first offline caching strategies using Service Workers, reducing network overhead by 45%.
+• Mentored 5 junior engineers and established automated linting, testing, and accessibility guidelines.
+
+Web Application Developer | Creative Studio (2021 - 2023)
+• Engineered responsive customer-facing web dashboards with modular component architectures.
+• Collaborated closely with cross-functional product and design teams to iterate rapidly from wireframes to production.
+• Optimized Core Web Vitals (LCP, CLS, INP) achieving consistent 95+ Lighthouse scores.`,
+  education: `B.S. in Computer Science | State University (2017 - 2021)
+• Graduated with Honors. Focus on Distributed Systems & Software Engineering.`,
+  projects: `Opportunity Inbox (github.com/nalakara/opportunity-inbox)
+• Local-first job search pipeline and CRM with zero cloud dependencies and offline-ready storage.
+• Built with pure vanilla JavaScript, CSS3 design system, and Service Worker caching.`
+};
+
+export const resumeStore = {
+  get() {
+    const raw = resumeAdapter.get();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw) || !raw.fullName) {
+      return { ...DEFAULT_RESUME };
+    }
+    return raw;
+  },
+  save(data) {
+    resumeAdapter.set(data);
+    return data;
+  },
+  reset() {
+    resumeAdapter.set(DEFAULT_RESUME);
+    return { ...DEFAULT_RESUME };
+  }
 };
 
 export const contactStore = {

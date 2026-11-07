@@ -76,10 +76,10 @@
           <div class="nav-section-title">TOOLS</div>
           <ul class="nav-group secondary-tools">
             <li><button class="nav-link" data-tab="coverletter" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Cover Letter</span></button></li>
-            <li><button class="nav-link future-tool" data-tool="Resume Builder" type="button"><span>📄 Resume Builder</span><span class="soon-badge">Soon</span></button></li>
-            <li><button class="nav-link future-tool" data-tool="Score my Resume" type="button"><span>🎯 Score my Resume</span><span class="soon-badge">Soon</span></button></li>
-            <li><button class="nav-link future-tool" data-tool="AI Answer Generator" type="button"><span>✨ AI Answer Generator</span><span class="soon-badge">Soon</span></button></li>
-            <li><button class="nav-link future-tool" data-tool="LinkedIn Tools" type="button"><span>💼 LinkedIn Tools</span><span class="soon-badge">Soon</span></button></li>
+            <li><button class="nav-link" data-tab="resumebuilder" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Resume Builder</span></button></li>
+            <li><button class="nav-link" data-tab="resumescore" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Score my Resume</span></button></li>
+            <li><button class="nav-link" data-tab="aianswer" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Answer Generator</span></button></li>
+            <li><button class="nav-link" data-tab="linkedintools" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg><span>LinkedIn Tools</span></button></li>
           </ul>
         </nav>
 
@@ -389,6 +389,360 @@
               </div>
             </div>
           </section>
+
+          <!-- View: RESUME BUILDER -->
+          <section class="tab-view" id="viewResumebuilder" style="display: none;">
+            <div class="cl-workspace">
+              <!-- Left Form / Config Column -->
+              <div class="card cl-form-card">
+                <div class="card-header" style="justify-content: space-between;">
+                  <h3>📄 Resume Details</h3>
+                  <button class="secondary-btn sm" id="rbLoadSampleBtn" type="button">✨ Load Sample</button>
+                </div>
+
+                <form id="rbForm" class="cl-config-form">
+                  <div class="form-row" style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                      <label for="rbFullName">Full Name <span class="required-star">*</span></label>
+                      <input id="rbFullName" required />
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                      <label for="rbTitle">Target Title / Headline</label>
+                      <input id="rbTitle" placeholder="e.g. Senior Frontend Engineer" />
+                    </div>
+                  </div>
+
+                  <div class="form-row" style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                      <label for="rbEmail">Email</label>
+                      <input id="rbEmail" type="email" />
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                      <label for="rbPhone">Phone</label>
+                      <input id="rbPhone" />
+                    </div>
+                  </div>
+
+                  <div class="form-row" style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                      <label for="rbLocation">Location</label>
+                      <input id="rbLocation" placeholder="e.g. Jakarta, ID (Remote)" />
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                      <label for="rbWebsite">Portfolio / GitHub / LinkedIn</label>
+                      <input id="rbWebsite" placeholder="https://github.com/username" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="rbSummary">Professional Summary</label>
+                    <textarea id="rbSummary" rows="3" placeholder="Brief narrative highlighting impact, core domains, and technical focus..."></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="rbSkills">Core Skills & Technologies</label>
+                    <textarea id="rbSkills" rows="2" placeholder="e.g. JavaScript (ES6+), React, Node.js, TypeScript, SQL, Docker, CI/CD"></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="rbExperience">Work Experience</label>
+                    <textarea id="rbExperience" rows="6" placeholder="Job Title | Company (Years)&#10;• Led project resulting in 40% performance gain...&#10;• Architected client-side caching..."></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="rbEducation">Education</label>
+                    <textarea id="rbEducation" rows="2" placeholder="B.S. in Computer Science | University (Graduation Year)"></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="rbProjects">Key Projects</label>
+                    <textarea id="rbProjects" rows="3" placeholder="Project Name (URL)&#10;• Built local-first application using PWA and Service Workers..."></textarea>
+                  </div>
+
+                  <div class="form-actions" style="margin-top: 8px;">
+                    <button class="primary-btn" id="rbSaveBtn" type="button" style="width: 100%;">
+                      💾 Save & Update Resume
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Right Preview Column -->
+              <div class="card cl-preview-card">
+                <div class="cl-preview-header">
+                  <div>
+                    <h3 style="margin-bottom: 2px;">ATS Standard Preview</h3>
+                    <span class="cl-meta-text">Single-column • High Contrast • 1-Page Layout</span>
+                  </div>
+                  <div class="cl-actions-group">
+                    <button class="secondary-btn sm" id="rbCopyMdBtn" type="button" title="Copy Markdown">📋 Copy .md</button>
+                    <button class="secondary-btn sm" id="rbDownloadMdBtn" type="button" title="Download .md">📥 .md</button>
+                    <button class="secondary-btn sm" id="rbPrintBtn" type="button" title="Print to PDF">🖨️ Print / PDF</button>
+                  </div>
+                </div>
+
+                <div class="resume-sheet-container" id="resumePrintArea">
+                  <div class="resume-sheet" id="resumePreviewSheet">
+                    <!-- Rendered via JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View: SCORE MY RESUME -->
+          <section class="tab-view" id="viewResumescore" style="display: none;">
+            <div class="cl-workspace">
+              <!-- Left Column: Inputs -->
+              <div class="card cl-form-card">
+                <div class="card-header">
+                  <h3>🎯 ATS Resume & Job Scanner</h3>
+                </div>
+
+                <div class="cl-config-form">
+                  <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <label for="rsJobDescriptionInput">Job Description</label>
+                      <button class="text-link-btn" id="rsLoadJobBtn" type="button" style="font-size: 0.78rem;">Link from Saved Board ↗</button>
+                    </div>
+                    <textarea id="rsJobDescriptionInput" rows="6" placeholder="Paste the full job requirements, responsibilities, or keywords here..."></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <label for="rsResumeTextInput">Your Resume Content</label>
+                      <button class="text-link-btn" id="rsLoadMyResumeBtn" type="button" style="font-size: 0.78rem;">Auto-load from Resume Builder ↗</button>
+                    </div>
+                    <textarea id="rsResumeTextInput" rows="8" placeholder="Paste your resume text here, or click 'Auto-load' to pull from your Resume Builder..."></textarea>
+                  </div>
+
+                  <button class="primary-btn" id="rsScanBtn" type="button" style="width: 100%; margin-top: 8px;">
+                    🎯 Scan & Analyze Match
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Column: Results Dashboard -->
+              <div class="card cl-preview-card" id="rsResultsCard">
+                <div class="rs-score-banner">
+                  <div class="rs-gauge-ring">
+                    <span class="rs-gauge-number" id="rsMatchScore">0%</span>
+                    <span class="rs-gauge-label">Match Score</span>
+                  </div>
+                  <div class="rs-verdict-info">
+                    <h4 id="rsVerdictTitle">Ready to Scan</h4>
+                    <p id="rsVerdictDesc">Paste your target job description and resume to discover hard skills match, ATS keyword alignment, and formatting recommendations.</p>
+                  </div>
+                </div>
+
+                <div class="rs-breakdown-section">
+                  <h4>Keywords & Skills Analysis</h4>
+                  <div class="rs-keywords-grid">
+                    <div>
+                      <span class="rs-subhead text-green">✓ Matched Keywords (<span id="rsMatchedCount">0</span>)</span>
+                      <div class="rs-tags-container" id="rsMatchedTags">
+                        <span class="empty-tag-note">No scan yet</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="rs-subhead text-orange">✗ Missing Keywords (<span id="rsMissingCount">0</span>)</span>
+                      <div class="rs-tags-container" id="rsMissingTags">
+                        <span class="empty-tag-note">No scan yet</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rs-breakdown-section" style="margin-top: 20px;">
+                  <h4>ATS Hygiene & Readability Checklist</h4>
+                  <div class="rs-checklist" id="rsChecklist">
+                    <div class="rs-check-item"><span>📊 Measurable Metrics (%, numbers, stats)</span><span id="rsCheckMetrics">—</span></div>
+                    <div class="rs-check-item"><span>🚀 Strong Action Verbs</span><span id="rsCheckVerbs">—</span></div>
+                    <div class="rs-check-item"><span>📬 Contact Details Complete</span><span id="rsCheckContact">—</span></div>
+                    <div class="rs-check-item"><span>📏 Resume Word Count</span><span id="rsCheckLength">—</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View: AI ANSWER GENERATOR -->
+          <section class="tab-view" id="viewAiAnswer" style="display: none;">
+            <div class="cl-workspace">
+              <!-- Left Form Column -->
+              <div class="card cl-form-card">
+                <div class="card-header">
+                  <h3>✨ STAR Interview Responder</h3>
+                </div>
+
+                <div class="cl-config-form">
+                  <div class="form-group">
+                    <label for="aiQuestionCategory">Select Common Question</label>
+                    <select id="aiQuestionCategory">
+                      <option value="conflict">Behavioral: Handling conflict with team member or manager</option>
+                      <option value="failure">Behavioral: A major project mistake and how you recovered</option>
+                      <option value="leadership">Behavioral: Stepping up to lead a challenging initiative</option>
+                      <option value="ambiguity">Situational: Navigating ambiguous requirements or tight deadlines</option>
+                      <option value="whyUs">Motivation: Why do you want to work at this specific company?</option>
+                      <option value="salary">Negotiation: What are your salary and compensation expectations?</option>
+                      <option value="custom">Custom Question (write your own)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group" id="aiCustomQuestionGroup" style="display: none;">
+                    <label for="aiCustomQuestionInput">Your Custom Interview Question</label>
+                    <input id="aiCustomQuestionInput" placeholder="e.g. How do you approach architectural refactoring?" />
+                  </div>
+
+                  <div class="form-row" style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                      <label for="aiCompanyInput">Target Company</label>
+                      <input id="aiCompanyInput" placeholder="e.g. Stripe, Netflix" />
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                      <label for="aiRoleInput">Target Role</label>
+                      <input id="aiRoleInput" placeholder="e.g. Staff Software Engineer" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="aiFrameworkSelect">Answering Framework</label>
+                    <select id="aiFrameworkSelect">
+                      <option value="star">STAR Method (Situation, Task, Action, Result)</option>
+                      <option value="car">CAR Method (Context, Action, Result)</option>
+                      <option value="direct">Direct & Concise (Bullet Point Delivery)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="aiDetailsInput">Your Real Experience / Project Context</label>
+                    <textarea id="aiDetailsInput" rows="4" placeholder="Briefly describe what happened: e.g. Legacy migration delayed by 2 weeks; I took initiative to modularize the services; shipped 3 days early with 0 downtime."></textarea>
+                  </div>
+
+                  <button class="primary-btn" id="aiGenerateBtn" type="button" style="width: 100%;">
+                    ✨ Generate Structured Answer
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Output Column -->
+              <div class="card cl-preview-card">
+                <div class="cl-preview-header">
+                  <div>
+                    <h3 style="margin-bottom: 2px;">Interview Answer Draft</h3>
+                    <span class="cl-meta-text">Prepared for verbal or written delivery</span>
+                  </div>
+                  <button class="secondary-btn sm" id="aiCopyBtn" type="button">📋 Copy Answer</button>
+                </div>
+
+                <div class="cl-document-container">
+                  <textarea id="aiOutputTextarea" class="cl-document-textarea" style="height: 480px;" placeholder="Select a question and click 'Generate Structured Answer'. The response will be structured using your chosen framework for high interview impact."></textarea>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View: LINKEDIN TOOLS -->
+          <section class="tab-view" id="viewLinkedinTools" style="display: none;">
+            <div class="card" style="padding: 24px; margin-bottom: 24px;">
+              <div class="card-header">
+                <h3>💼 LinkedIn Optimization Suite</h3>
+              </div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: -8px;">Craft high-conversion cold outreach messages, stand-out headlines, and formatted posts without leaving your local workspace.</p>
+            </div>
+
+            <div class="cl-workspace">
+              <!-- Left Column: Outreach Generator -->
+              <div class="card cl-form-card">
+                <div class="card-header">
+                  <h4>📬 Cold Outreach & InMail Drafter</h4>
+                </div>
+                <div class="cl-config-form">
+                  <div class="form-group">
+                    <label for="liOutreachType">Outreach Objective</label>
+                    <select id="liOutreachType">
+                      <option value="recruiter">Direct Recruiter Outreach (Application submitted)</option>
+                      <option value="referral">Asking an Employee for a Referral</option>
+                      <option value="coffee">Informational Coffee Chat Request</option>
+                      <option value="thankYou">Post-Interview Thank You Note</option>
+                    </select>
+                  </div>
+
+                  <div class="form-row" style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                      <label for="liRecipientName">Recipient Name</label>
+                      <input id="liRecipientName" placeholder="e.g. Sarah" />
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                      <label for="liCompanyName">Target Company</label>
+                      <input id="liCompanyName" placeholder="e.g. Shopify" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="liTargetRole">Target Role</label>
+                    <input id="liTargetRole" placeholder="e.g. Senior Frontend Engineer" />
+                  </div>
+
+                  <button class="primary-btn" id="liGenerateOutreachBtn" type="button" style="width: 100%;">
+                    ⚡ Draft InMail Message
+                  </button>
+
+                  <div class="form-group" style="margin-top: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <label for="liOutreachOutput">Generated Message</label>
+                      <button class="secondary-btn sm" id="liCopyOutreachBtn" type="button">📋 Copy</button>
+                    </div>
+                    <textarea id="liOutreachOutput" rows="7" class="cl-document-textarea" style="height: 180px;"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column: Headline Generator & Post Formatter -->
+              <div class="card cl-preview-card">
+                <div class="card-header">
+                  <h4>🎯 Headline Generator</h4>
+                </div>
+                <div class="cl-config-form">
+                  <div class="form-group">
+                    <label for="liHeadlineKeywords">Key Domains & Value Prop</label>
+                    <input id="liHeadlineKeywords" placeholder="e.g. React, TypeScript, Performance, Ex-Startup Lead" />
+                  </div>
+                  <button class="secondary-btn" id="liGenerateHeadlineBtn" type="button">Generate 4 Headline Styles</button>
+
+                  <div id="liHeadlineResults" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                    <!-- Rendered via JS -->
+                  </div>
+                </div>
+
+                <div class="nav-divider" style="margin: 24px 0;"></div>
+
+                <div class="card-header">
+                  <h4>✨ Unicode Feed Post Formatter</h4>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: -6px;">LinkedIn doesn't have native bold/italic tools. Use these converters for standout feed hooks.</p>
+
+                <div class="cl-config-form" style="margin-top: 10px;">
+                  <div class="form-group">
+                    <label for="liFormatInput">Text to Style</label>
+                    <input id="liFormatInput" placeholder="e.g. 3 Lessons from shipping offline-first apps" />
+                  </div>
+                  <div class="form-row" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="secondary-btn sm" id="liBoldBtn" type="button">𝗕𝗼𝗹𝗱</button>
+                    <button class="secondary-btn sm" id="liItalicBtn" type="button">𝘐𝘵𝘢𝘭𝘪𝘤</button>
+                    <button class="secondary-btn sm" id="liMonoBtn" type="button">𝙼𝚘𝚗𝚘</button>
+                  </div>
+                  <div class="form-group" style="margin-top: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                      <label for="liFormatOutput">Result</label>
+                      <button class="secondary-btn sm" id="liCopyFormatBtn" type="button">📋 Copy</button>
+                    </div>
+                    <input id="liFormatOutput" readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </main>
       </div>
     </div>
@@ -536,6 +890,12 @@
           <label for="settingsWeeklyGoalInput">Weekly Application Goal</label>
           <input id="settingsWeeklyGoalInput" name="settingsWeeklyGoal" type="number" min="1" max="100" placeholder="10" required />
           <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Target number of applications you aim to submit every week.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="settingsGeminiApiKeyInput">Gemini API Key (optional)</label>
+          <input id="settingsGeminiApiKeyInput" name="geminiApiKey" type="password" placeholder="AIzaSy..." autocomplete="off" />
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Optional for live AI rewrites & deep analysis. Stored only in local storage.</small>
         </div>
 
         <div class="form-actions">
