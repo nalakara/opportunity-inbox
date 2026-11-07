@@ -1,4 +1,4 @@
-import { platformStore, settingsStore, contactStore, resumeStore, DEFAULT_RESUME, STATUS_ENUM, STATUS_LABELS } from "./storage.js";
+import { platformStore, settingsStore, contactStore, resumeStore, DEFAULT_RESUME, STATUS_ENUM, STATUS_LABELS, parseRawResumeText } from "./storage.js";
 
 const STAGES_ORDER = [
   STATUS_ENUM.WISHLIST,
@@ -136,10 +136,33 @@ const elements = {
   rbEducation: document.querySelector("#rbEducation"),
   rbProjects: document.querySelector("#rbProjects"),
   rbSaveBtn: document.querySelector("#rbSaveBtn"),
+  rbImportResumeBtn: document.querySelector("#rbImportResumeBtn"),
   rbCopyMdBtn: document.querySelector("#rbCopyMdBtn"),
   rbDownloadMdBtn: document.querySelector("#rbDownloadMdBtn"),
   rbPrintBtn: document.querySelector("#rbPrintBtn"),
   resumePreviewSheet: document.querySelector("#resumePreviewSheet"),
+
+  // Resume Import Dialog Elements
+  resumeImportDialog: document.querySelector("#resumeImportDialog"),
+  resumeImportForm: document.querySelector("#resumeImportForm"),
+  closeResumeImportDialogButton: document.querySelector("#closeResumeImportDialogButton"),
+  cancelResumeImportButton: document.querySelector("#cancelResumeImportButton"),
+  importTabFileBtn: document.querySelector("#importTabFileBtn"),
+  importTabPasteBtn: document.querySelector("#importTabPasteBtn"),
+  importFileSection: document.querySelector("#importFileSection"),
+  importPasteSection: document.querySelector("#importPasteSection"),
+  resumeFileDropzone: document.querySelector("#resumeFileDropzone"),
+  browseResumeFileBtn: document.querySelector("#browseResumeFileBtn"),
+  resumeFileInput: document.querySelector("#resumeFileInput"),
+  dropzoneMainText: document.querySelector("#dropzoneMainText"),
+  resumePasteInput: document.querySelector("#resumePasteInput"),
+  parsePastedResumeBtn: document.querySelector("#parsePastedResumeBtn"),
+  importStatusBox: document.querySelector("#importStatusBox"),
+  importParsedSummary: document.querySelector("#importParsedSummary"),
+  importConfidenceBadge: document.querySelector("#importConfidenceBadge"),
+  importAiOptionBox: document.querySelector("#importAiOptionBox"),
+  geminiEnhanceResumeBtn: document.querySelector("#geminiEnhanceResumeBtn"),
+  applyResumeImportBtn: document.querySelector("#applyResumeImportBtn"),
 
   // Score My Resume Elements
   viewResumescore: document.querySelector("#viewResumescore"),
@@ -945,6 +968,247 @@ ${r.education}
 `;
 }
 
+/* Resume Upload & Import Logic */
+let pendingImportedResume = null;
+let lastImportedRawText = "";
+
+function openResumeImportDialog() {
+  if (!elements.resumeImportDialog) return;
+  pendingImportedResume = null;
+  lastImportedRawText = "";
+  if (elements.resumeFileInput) elements.resumeFileInput.value = "";
+  if (elements.resumePasteInput) elements.resumePasteInput.value = "";
+  if (elements.importStatusBox) elements.importStatusBox.style.display = "none";
+  if (elements.applyResumeImportBtn) elements.applyResumeImportBtn.disabled = true;
+  if (elements.resumeFileDropzone) {
+    elements.resumeFileDropzone.classList.remove("has-file", "dragover");
+    if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = "Drag & drop your resume file here";
+  }
+
+  const settings = settingsStore.get();
+  if (elements.importAiOptionBox) {
+    elements.importAiOptionBox.style.display = settings.geminiApiKey ? "block" : "none";
+  }
+
+  switchImportTab("file");
+  elements.resumeImportDialog.showModal();
+}
+
+function closeResumeImportDialog() {
+  elements.resumeImportDialog?.close();
+}
+
+function switchImportTab(tab) {
+  if (tab === "file") {
+    elements.importTabFileBtn?.classList.add("is-active");
+    elements.importTabPasteBtn?.classList.remove("is-active");
+    if (elements.importFileSection) elements.importFileSection.style.display = "block";
+    if (elements.importPasteSection) elements.importPasteSection.style.display = "none";
+  } else {
+    elements.importTabPasteBtn?.classList.add("is-active");
+    elements.importTabFileBtn?.classList.remove("is-active");
+    if (elements.importPasteSection) elements.importPasteSection.style.display = "block";
+    if (elements.importFileSection) elements.importFileSection.style.display = "none";
+  }
+}
+
+async function extractTextFromPdf(file) {
+  if (!window.pdfjsLib) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+      script.onload = () => {
+        if (window.pdfjsLib) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+          resolve();
+        } else {
+          reject(new Error("PDF library initialization failed"));
+        }
+      };
+      script.onerror = () => reject(new Error("Unable to load PDF parser from CDN. Please paste text directly into the Paste Text tab."));
+      document.head.appendChild(script);
+    });
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = "";
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const content = await page.getTextContent();
+    const strings = content.items.map((item) => item.str);
+    fullText += strings.join(" ") + "\n\n";
+  }
+  return fullText;
+}
+
+async function processResumeFile(file) {
+  if (!file) return;
+  if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = `Reading ${file.name}...`;
+
+  try {
+    let parsedData = null;
+    let rawText = "";
+
+    if (file.name.endsWith(".json") || file.type === "application/json") {
+      const jsonText = await file.text();
+      const parsedJson = JSON.parse(jsonText);
+      const target = parsedJson.resume || parsedJson;
+      parsedData = {
+        fullName: target.fullName || target.name || "",
+        title: target.title || target.headline || "",
+        email: target.email || "",
+        phone: target.phone || "",
+        location: target.location || "",
+        website: target.website || target.url || "",
+        summary: target.summary || "",
+        skills: target.skills || (Array.isArray(target.skills) ? target.skills.join(", ") : ""),
+        experience: target.experience || (Array.isArray(target.experience) ? JSON.stringify(target.experience, null, 2) : ""),
+        education: target.education || "",
+        projects: target.projects || "",
+      };
+      rawText = jsonText;
+    } else if (file.name.endsWith(".pdf") || file.type === "application/pdf") {
+      rawText = await extractTextFromPdf(file);
+      parsedData = parseRawResumeText(rawText);
+    } else {
+      rawText = await file.text();
+      parsedData = parseRawResumeText(rawText);
+    }
+
+    lastImportedRawText = rawText;
+    pendingImportedResume = parsedData;
+    displayParsedPreview(parsedData, file.name);
+  } catch (err) {
+    console.error("Resume file extraction error:", err);
+    alert(`Could not extract resume from file: ${err.message}`);
+    if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = "Drag & drop your resume file here";
+  }
+}
+
+function processPastedResume() {
+  const text = elements.resumePasteInput?.value.trim();
+  if (!text) {
+    alert("Please paste resume text first.");
+    return;
+  }
+  lastImportedRawText = text;
+  const parsedData = parseRawResumeText(text);
+  pendingImportedResume = parsedData;
+  displayParsedPreview(parsedData, "Pasted Text");
+}
+
+function displayParsedPreview(data, sourceLabel) {
+  if (!elements.importStatusBox || !elements.importParsedSummary) return;
+
+  elements.importStatusBox.style.display = "block";
+  if (elements.applyResumeImportBtn) elements.applyResumeImportBtn.disabled = false;
+  if (elements.resumeFileDropzone) {
+    elements.resumeFileDropzone.classList.add("has-file");
+    if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = `✓ ${sourceLabel} processed`;
+  }
+
+  const items = [
+    data.fullName ? `👤 <strong>Name:</strong> ${data.fullName}` : "👤 <strong>Name:</strong> <em>Not detected</em>",
+    data.title ? `💼 <strong>Title:</strong> ${data.title}` : null,
+    data.email ? `✉️ <strong>Email:</strong> ${data.email}` : null,
+    data.location ? `📍 <strong>Location:</strong> ${data.location}` : null,
+    data.website ? `🔗 <strong>Link:</strong> ${data.website}` : null,
+    data.skills ? `🛠️ <strong>Skills:</strong> Detected` : null,
+    data.experience ? `🏢 <strong>Experience:</strong> Detected` : null,
+    data.education ? `🎓 <strong>Education:</strong> Detected` : null,
+    data.projects ? `📁 <strong>Projects:</strong> Detected` : null,
+  ].filter(Boolean);
+
+  elements.importParsedSummary.innerHTML = items.map((i) => `<div>${i}</div>`).join("");
+}
+
+function applyImportedResume() {
+  if (!pendingImportedResume) return;
+
+  if (elements.rbFullName) elements.rbFullName.value = pendingImportedResume.fullName || "";
+  if (elements.rbTitle) elements.rbTitle.value = pendingImportedResume.title || "";
+  if (elements.rbEmail) elements.rbEmail.value = pendingImportedResume.email || "";
+  if (elements.rbPhone) elements.rbPhone.value = pendingImportedResume.phone || "";
+  if (elements.rbLocation) elements.rbLocation.value = pendingImportedResume.location || "";
+  if (elements.rbWebsite) elements.rbWebsite.value = pendingImportedResume.website || "";
+  if (elements.rbSummary) elements.rbSummary.value = pendingImportedResume.summary || "";
+  if (elements.rbSkills) elements.rbSkills.value = pendingImportedResume.skills || "";
+  if (elements.rbExperience) elements.rbExperience.value = pendingImportedResume.experience || "";
+  if (elements.rbEducation) elements.rbEducation.value = pendingImportedResume.education || "";
+  if (elements.rbProjects) elements.rbProjects.value = pendingImportedResume.projects || "";
+
+  resumeStore.save(pendingImportedResume);
+  renderResumeSheet(pendingImportedResume);
+  closeResumeImportDialog();
+  alert("✅ Resume imported and matched to form successfully!");
+}
+
+async function enhanceResumeWithGemini() {
+  const settings = settingsStore.get();
+  if (!settings.geminiApiKey) {
+    alert("Please enter a Gemini API Key in Settings first.");
+    return;
+  }
+  if (!lastImportedRawText) {
+    alert("Please upload a file or paste text first.");
+    return;
+  }
+
+  const btn = elements.geminiEnhanceResumeBtn;
+  const originalText = btn.textContent;
+  btn.textContent = "Analyzing with Gemini AI...";
+  btn.disabled = true;
+
+  try {
+    const prompt = `You are an expert resume parsing engine. Extract and organize the following raw resume into a clean JSON structure with these exact keys:
+"fullName": string,
+"title": string,
+"email": string,
+"phone": string,
+"location": string,
+"website": string,
+"summary": string,
+"skills": string (clear list or bulleted technical and domain competencies),
+"experience": string (formatted work history entries with Title | Company (Dates) and bullet achievements),
+"education": string (degrees, universities, graduation years),
+"projects": string (project names, URLs, descriptions).
+
+Return ONLY valid JSON matching this schema with no markdown code fences:
+
+RAW RESUME:
+${lastImportedRawText.slice(0, 10000)}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${settings.geminiApiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error ${response.status}`);
+    }
+
+    const data = await response.json();
+    const jsonStr = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const cleanJson = jsonStr.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
+    const parsed = JSON.parse(cleanJson);
+
+    pendingImportedResume = parsed;
+    displayParsedPreview(parsed, "Gemini AI Enhanced");
+    alert("✨ Resume polished and structured via Gemini AI!");
+  } catch (err) {
+    console.error("Gemini enhancement failed:", err);
+    alert(`Gemini AI extraction error: ${err.message}. Local extraction remains available.`);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
 /* Score My Resume (ATS Scanner) Functions */
 const STOP_WORDS = new Set([
   "a","about","above","after","again","against","all","am","an","and","any","are","aren't","as","at",
@@ -1574,6 +1838,42 @@ elements.clPrintBtn?.addEventListener("click", () => {
 });
 
 // Resume Builder Event Listeners
+elements.rbImportResumeBtn?.addEventListener("click", openResumeImportDialog);
+elements.closeResumeImportDialogButton?.addEventListener("click", closeResumeImportDialog);
+elements.cancelResumeImportButton?.addEventListener("click", closeResumeImportDialog);
+
+elements.importTabFileBtn?.addEventListener("click", () => switchImportTab("file"));
+elements.importTabPasteBtn?.addEventListener("click", () => switchImportTab("paste"));
+
+elements.browseResumeFileBtn?.addEventListener("click", () => {
+  elements.resumeFileInput?.click();
+});
+
+elements.resumeFileInput?.addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  if (file) processResumeFile(file);
+});
+
+elements.resumeFileDropzone?.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  elements.resumeFileDropzone.classList.add("dragover");
+});
+
+elements.resumeFileDropzone?.addEventListener("dragleave", () => {
+  elements.resumeFileDropzone.classList.remove("dragover");
+});
+
+elements.resumeFileDropzone?.addEventListener("drop", (e) => {
+  e.preventDefault();
+  elements.resumeFileDropzone.classList.remove("dragover");
+  const file = e.dataTransfer.files?.[0];
+  if (file) processResumeFile(file);
+});
+
+elements.parsePastedResumeBtn?.addEventListener("click", processPastedResume);
+elements.applyResumeImportBtn?.addEventListener("click", applyImportedResume);
+elements.geminiEnhanceResumeBtn?.addEventListener("click", enhanceResumeWithGemini);
+
 elements.rbLoadSampleBtn?.addEventListener("click", () => {
   if (confirm("Load sample tech resume? This will overwrite your current draft in the editor.")) {
     resumeStore.reset();

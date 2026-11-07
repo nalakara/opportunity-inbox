@@ -330,6 +330,162 @@ export const resumeStore = {
   }
 };
 
+export function parseRawResumeText(rawText) {
+  if (!rawText || typeof rawText !== "string") {
+    return {
+      fullName: "",
+      title: "",
+      email: "",
+      phone: "",
+      location: "",
+      website: "",
+      summary: "",
+      skills: "",
+      experience: "",
+      education: "",
+      projects: "",
+    };
+  }
+
+  const lines = rawText
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const result = {
+    fullName: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    website: "",
+    summary: "",
+    skills: "",
+    experience: "",
+    education: "",
+    projects: "",
+  };
+
+  if (lines.length === 0) return result;
+
+  // 1. Email extraction
+  const emailMatch = rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  if (emailMatch) {
+    result.email = emailMatch[0].trim();
+  }
+
+  // 2. Phone extraction (avoid matching years like 2011 - 2013)
+  const phoneMatches = rawText.matchAll(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,5}/g);
+  for (const match of phoneMatches) {
+    const candidate = match[0].trim();
+    if (candidate.length >= 8 && !/20\d\d/.test(candidate)) {
+      result.phone = candidate;
+      break;
+    }
+  }
+
+  // 3. Website / Portfolio / GitHub / LinkedIn
+  const urlMatches = rawText.matchAll(/(?:https?:\/\/)?(?:www\.)?(github\.com\/[a-zA-Z0-9_-]+|linkedin\.com\/in\/[a-zA-Z0-9_-]+|[a-zA-Z0-9-]+\.(?:com|org|dev|io|me|net|app|id)(?:\/[^\s·|,]*)?)/gi);
+  for (const match of urlMatches) {
+    const candidate = match[0].trim();
+    if (result.email && result.email.toLowerCase().includes(candidate.toLowerCase())) {
+      continue;
+    }
+    result.website = candidate.startsWith("http") ? candidate : `https://${candidate}`;
+    break;
+  }
+
+  // 4. Section detection keywords
+  const SECTION_PATTERNS = {
+    skills: /^(EXPERTISE|CORE COMPETENCIES|SKILLS|TECHNICAL SKILLS|TOOLS|AREAS OF EXPERTISE|COMPETENCIES)$/i,
+    experience: /^(EXPERIENCE|WORK EXPERIENCE|PROFESSIONAL EXPERIENCE|EMPLOYMENT HISTORY|WORK HISTORY|INDEPENDENT PRACTICE|EARLY CAREER)$/i,
+    education: /^(EDUCATION|ACADEMIC BACKGROUND|EDUCATION & CREDENTIALS|DEGREES)$/i,
+    projects: /^(PROJECTS|SELECTED PROJECTS|KEY PROJECTS|PORTFOLIO|SELECTED PUBLIC GITHUB PROJECTS)$/i,
+    summary: /^(SUMMARY|PROFESSIONAL SUMMARY|ABOUT ME|PROFILE|EXECUTIVE SUMMARY)$/i,
+    credentials: /^(CREDENTIALS|CERTIFICATIONS|CERTIFICATES|AWARDS|LANGUAGES)$/i,
+  };
+
+  let currentSection = "header";
+  const sections = {
+    header: [],
+    summary: [],
+    skills: [],
+    experience: [],
+    education: [],
+    projects: [],
+    credentials: [],
+  };
+
+  for (const line of lines) {
+    let matchedKey = null;
+    for (const [key, regex] of Object.entries(SECTION_PATTERNS)) {
+      if (regex.test(line)) {
+        matchedKey = key;
+        break;
+      }
+    }
+
+    if (matchedKey) {
+      currentSection = matchedKey;
+    } else {
+      sections[currentSection].push(line);
+    }
+  }
+
+  // 5. Process Header Lines
+  const headerLines = sections.header;
+  if (headerLines.length > 0) {
+    result.fullName = headerLines[0];
+  }
+  if (headerLines.length > 1) {
+    result.title = headerLines[1];
+  }
+
+  // Location from contact line (usually line 2 or 3)
+  for (let i = 2; i < Math.min(5, headerLines.length); i++) {
+    const line = headerLines[i];
+    const tokens = line.split(/[·|•]/).map((t) => t.trim());
+    for (const t of tokens) {
+      if (
+        t &&
+        !t.includes("@") &&
+        !t.includes("http") &&
+        !t.includes(".com") &&
+        !t.includes("github") &&
+        !t.includes("linkedin")
+      ) {
+        if (/^[A-Za-z\s]+(?:,\s*[A-Za-z\s]+)?$/.test(t) && t.length > 2 && t.length < 50) {
+          result.location = t;
+          break;
+        }
+      }
+    }
+    if (result.location) break;
+  }
+
+  // Summary
+  if (sections.summary.length > 0) {
+    result.summary = sections.summary.join("\n\n");
+  } else if (headerLines.length > 3) {
+    result.summary = headerLines.slice(3).join(" ");
+  }
+
+  // Skills
+  const skillsList = [...sections.skills, ...(sections.credentials || [])];
+  result.skills = skillsList.join("\n");
+
+  // Experience
+  result.experience = sections.experience.join("\n\n");
+
+  // Education
+  result.education = sections.education.join("\n\n");
+
+  // Projects
+  result.projects = sections.projects.join("\n\n");
+
+  return result;
+}
+
 export const contactStore = {
   list() {
     const raw = contactsAdapter.get();

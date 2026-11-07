@@ -43,7 +43,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 - **⚙️ Dynamic User Preferences**: Customize your display name and weekly application target directly in local storage without any accounts.
 
 ### ⚡ Power-User & Job Search Tool Suite
-- **📄 ATS Resume Builder**: Create crisp, ATS-compliant, single-column tech resumes. Features live preview sheet, Markdown copy/export, and clean `@media print` PDF generation.
+- **📄 ATS Resume Builder**: Create crisp, ATS-compliant, single-column tech resumes. Features **Upload / Import** for existing CVs (.pdf, .txt, .md, .json) with intelligent local field-matching, live preview sheet, Markdown copy/export, and clean `@media print` PDF generation.
 - **🎯 Score My Resume (ATS Scanner)**: Instant keyword and hard skill matching against target job descriptions. Audits quantifiable metrics, power verbs, and ATS formatting guidelines with composite scoring.
 - **✨ STAR Interview Responder**: Generate high-impact behavioral and situational interview answers using the STAR (Situation, Task, Action, Result) and CAR frameworks.
 - **✉️ Cover Letter Generator**: Generate tailored, professional cover letters instantly in 4 tones (*Impact-Driven, Mission-Aligned, Technical Problem Solver, Warm Referral*). Supports auto-linking with saved jobs, live Markdown editing, word count metrics, `.md` download, and clean print-to-PDF formatting.

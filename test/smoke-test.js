@@ -28,6 +28,7 @@ const {
   resumeStore,
   STATUS_ENUM,
   DEFAULT_RESUME,
+  parseRawResumeText,
 } = await import("../src/storage.js");
 
 console.log("Running Opportunity Inbox Suite Smoke Tests...\n");
@@ -157,6 +158,44 @@ for (const tab of expectedTabs) {
   );
 }
 console.log("  ✓ Tab navigation and view container mapping verified.");
+
+// 7. Resume Text Extraction & Matching Test
+console.log("7. Testing Resume Parser & Field Matching...");
+const sampleCV = `Yudhan Sebastian
+Senior Graphic Designer • Brand & Visual Communication
+Bali, Indonesia · yudhansebastian@gmail.com · github.com/nalakara
+
+Senior graphic designer and creative manager with 20+ years of professional experience across hospitality, brand communication, marketing, and independent creative practice.
+
+EXPERTISE
+Visual & Brand Design
+Creative Direction
+AI-Assisted Creative Work
+
+EXPERIENCE
+Creative Manager | Peppers Seminyak, Bali (2013 - 2026)
+• Led day-to-day graphic design and brand consistency.
+
+EDUCATION
+Bachelor Degree in Visual Communication Design | Universitas Negeri Malang
+
+PROJECTS
+Roast Navigator & Beauty Batch OS
+• Built modular business workflows and AI-assisted creative tools.
+`;
+
+const parsed = parseRawResumeText(sampleCV);
+assert.equal(parsed.fullName, "Yudhan Sebastian");
+assert.equal(parsed.title, "Senior Graphic Designer • Brand & Visual Communication");
+assert.equal(parsed.email, "yudhansebastian@gmail.com");
+assert.equal(parsed.location, "Bali, Indonesia");
+assert.equal(parsed.website, "https://github.com/nalakara");
+assert.ok(parsed.summary.includes("20+ years"));
+assert.ok(parsed.skills.includes("Visual & Brand Design"));
+assert.ok(parsed.experience.includes("Peppers Seminyak"));
+assert.ok(parsed.education.includes("Universitas Negeri Malang"));
+assert.ok(parsed.projects.includes("Roast Navigator"));
+console.log("  ✓ Resume parser correctly extracted all 10 fields.");
 
 console.log("\n🎉 ALL SMOKE TESTS PASSED CLEANLY!");
 

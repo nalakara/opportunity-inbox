@@ -1559,7 +1559,8 @@ button {
   }
 
   .secondary-btn.sm,
-  .primary-btn.sm {
+  .primary-btn.sm,
+  .import-tab-btn {
     min-height: 44px;
     padding: 10px 14px;
   }
@@ -1649,4 +1650,56 @@ button {
   font-weight: 600;
   color: var(--text-main);
   line-height: 1.4;
+}
+
+/* RESUME IMPORT & UPLOAD */
+.import-tabs {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.import-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.import-tab-btn:hover {
+  color: var(--text-main);
+}
+
+.import-tab-btn.is-active {
+  background: var(--surface-card);
+  color: var(--accent-orange-bright);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.file-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 32px 20px;
+  text-align: center;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.file-dropzone:hover,
+.file-dropzone.dragover {
+  border-color: var(--accent-orange);
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.file-dropzone.has-file {
+  border-color: #10B981;
+  background: rgba(16, 185, 129, 0.06);
 }
