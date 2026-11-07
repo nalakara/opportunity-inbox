@@ -43,6 +43,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 - **⚙️ Dynamic User Preferences**: Customize your display name and weekly application target directly in local storage without any accounts.
 
 ### ⚡ Power-User & Offline Features
+- **✉️ Cover Letter Generator**: Generate tailored, professional cover letters instantly in 4 tones (*Impact-Driven, Mission-Aligned, Technical Problem Solver, Warm Referral*). Supports auto-linking with saved jobs, live Markdown editing, word count metrics, `.md` download, and clean print-to-PDF formatting.
 - **Quick Capture Shortcut**: Press `⌘K` (Mac) or `Ctrl+K` (Windows/Linux) anywhere to open the capture dialog.
 - **URL Auto-Normalization**: Automatically formats URLs (e.g. `careers.airbnb.com` → `https://careers.airbnb.com`) and opens them safely in new tabs.
 - **Full Data Ownership (Backup & Restore)**:

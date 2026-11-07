@@ -102,6 +102,23 @@ const elements = {
 
   // Install PWA
   installButton: document.querySelector("#installButton"),
+
+  // Cover Letter Elements
+  viewCoverletter: document.querySelector("#viewCoverletter"),
+  clJobSelect: document.querySelector("#clJobSelect"),
+  clNameInput: document.querySelector("#clNameInput"),
+  clRecipientInput: document.querySelector("#clRecipientInput"),
+  clCompanyInput: document.querySelector("#clCompanyInput"),
+  clRoleInput: document.querySelector("#clRoleInput"),
+  clToneSelect: document.querySelector("#clToneSelect"),
+  clHighlightsInput: document.querySelector("#clHighlightsInput"),
+  clMotivationInput: document.querySelector("#clMotivationInput"),
+  clGenerateBtn: document.querySelector("#clGenerateBtn"),
+  clStatsText: document.querySelector("#clStatsText"),
+  clCopyBtn: document.querySelector("#clCopyBtn"),
+  clDownloadBtn: document.querySelector("#clDownloadBtn"),
+  clPrintBtn: document.querySelector("#clPrintBtn"),
+  clOutputTextarea: document.querySelector("#clOutputTextarea"),
 };
 
 let activeTab = "board";
@@ -566,6 +583,112 @@ function renderContacts() {
   });
 }
 
+function populateClJobSelect() {
+  if (!elements.clJobSelect) return;
+  const currentVal = elements.clJobSelect.value;
+  const platforms = platformStore.list();
+  elements.clJobSelect.innerHTML = `<option value="">-- Manual Input / Custom Role --</option>`;
+
+  platforms.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.name} ${p.category ? `(${p.category})` : ""}`;
+    elements.clJobSelect.appendChild(opt);
+  });
+
+  if (currentVal) elements.clJobSelect.value = currentVal;
+
+  if (elements.clNameInput && !elements.clNameInput.value) {
+    const settings = settingsStore.get();
+    elements.clNameInput.value = settings.userName || "Yudhan";
+  }
+}
+
+function updateClStats() {
+  if (!elements.clOutputTextarea || !elements.clStatsText) return;
+  const text = elements.clOutputTextarea.value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  const readTime = Math.max(1, Math.round(words / 200));
+  elements.clStatsText.textContent = `${words} words • ${readTime} min read`;
+}
+
+function generateCoverLetter() {
+  const settings = settingsStore.get();
+  const name = elements.clNameInput?.value.trim() || settings.userName || "Yudhan";
+  const recipient = elements.clRecipientInput?.value.trim() || "Hiring Team";
+  const company = elements.clCompanyInput?.value.trim() || "[Company Name]";
+  const role = elements.clRoleInput?.value.trim() || "[Target Role]";
+  const tone = elements.clToneSelect?.value || "impact";
+  const highlights = elements.clHighlightsInput?.value.trim();
+  const motivation = elements.clMotivationInput?.value.trim();
+
+  const todayStr = new Date().toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  let intro = "";
+  let body1 = "";
+  let body2 = "";
+  let outro = "";
+
+  if (tone === "impact") {
+    intro = `I am writing to express my strong enthusiasm for the ${role} position at ${company}. With a track record of driving measurable product outcomes, executing with velocity, and building resilient systems, I am eager to contribute immediately to your team's objectives.`;
+    body1 = highlights
+      ? `Throughout my recent work, I have focused on delivering high-leverage outcomes:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}\n\nI treat problem-solving as an iterative discipline: identifying user friction, shipping high-standard solutions, and optimizing for both performance and team velocity.`
+      : `In my career, I have consistently prioritized high-leverage execution: transforming product ambiguity into clean, resilient architectures and delivering impactful user experiences with speed and precision.`;
+    body2 = motivation
+      ? `What excites me most about ${company} is ${motivation}. Joining a team that values rigorous engineering and thoughtful craftsmanship is the ideal environment where I can make an outsized impact.`
+      : `I have followed ${company}'s progress closely and admire your high standard for user experience and engineering rigor. I would love the chance to apply my skills to your upcoming roadmaps.`;
+    outro = `I welcome the opportunity to discuss how my execution mindset and experience align with your goals for the ${role} role. Thank you for your time and consideration.`;
+  } else if (tone === "mission") {
+    intro = `It is with genuine excitement that I submit my application for the ${role} opening at ${company}. ${motivation ? `Having seen how ${motivation}, I` : "I"} have long admired your mission and culture of thoughtful innovation.`;
+    body1 = highlights
+      ? `My experience has taught me that the best products are built when empathy for users meets relentless craftsmanship. Here are key highlights of what I bring to the table:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}`
+      : `I thrive in collaborative environments where ownership and empathy guide technical decisions. Whether tackling complex architectural challenges or crafting refined user interactions, I hold myself and my work to the highest standard of quality.`;
+    body2 = `At ${company}, I see an opportunity to pour this dedication into a product that genuinely resonates with me. I am eager to collaborate with your team to advance your vision and deliver experiences that users love.`;
+    outro = `I would love to learn more about your team's challenges and share how my background can support your mission. Thank you for reviewing my application.`;
+  } else if (tone === "technical") {
+    intro = `I am writing to apply for the ${role} position at ${company}. As an engineer who values scalable architecture, zero-dependency simplicity, and clean code hygiene, I am excited about the technical challenges your team is addressing.`;
+    body1 = highlights
+      ? `Over the course of my projects, I have consistently architected robust solutions with an emphasis on maintainability and speed:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}\n\nMy development philosophy centers on building resilient abstractions, minimizing unnecessary complexity, and ensuring high runtime reliability.`
+      : `My development philosophy focuses on building resilient systems that stand the test of time: clean component separation, high runtime performance, and defensive design that anticipates scale without premature bloat.`;
+    body2 = motivation
+      ? `I am particularly drawn to ${company} because ${motivation}. I look forward to bringing a disciplined engineering perspective to these initiatives.`
+      : `I look forward to contributing to ${company}'s engineering standards and collaborating on complex, high-impact features.`;
+    outro = `I would welcome a technical conversation to explore how my skills can contribute to ${company}'s engineering roadmap. Thank you for your consideration.`;
+  } else {
+    // referral / warm outreach
+    intro = `I am reaching out to submit my application for the ${role} opportunity at ${company}. ${motivation ? `Following discussions regarding ${motivation}, I` : "I"} am thrilled to share my background and interest in joining your team.`;
+    body1 = highlights
+      ? `To give you a concise snapshot of my recent work and core capabilities:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}`
+      : `I pride myself on being a thoughtful partner who combines technical excellence with clear communication and a proactive, ownership-driven approach.`;
+    body2 = `Given ${company}'s current trajectory and ambitious goals, I am confident that my experience and dedication will make me an effective and energetic addition to your organization from day one.`;
+    outro = `I would appreciate the chance to connect for a brief introductory conversation at your convenience. Thank you for your time.`;
+  }
+
+  const letter = `${todayStr}
+
+Dear ${recipient},
+
+${intro}
+
+${body1}
+
+${body2}
+
+${outro}
+
+Sincerely,
+${name}`;
+
+  if (elements.clOutputTextarea) {
+    elements.clOutputTextarea.value = letter;
+    updateClStats();
+  }
+}
+
 function switchTab(tabName) {
   activeTab = tabName;
   elements.navLinks.forEach((link) => {
@@ -585,6 +708,11 @@ function switchTab(tabName) {
     else if (tabName === "board") elements.pageTitle.textContent = "Opportunity Board";
     else if (tabName === "statistics") elements.pageTitle.textContent = "Statistics";
     else if (tabName === "contacts") elements.pageTitle.textContent = "Network & Contacts";
+    else if (tabName === "coverletter") {
+      elements.pageTitle.textContent = "Cover Letter Generator";
+      populateClJobSelect();
+      if (!elements.clOutputTextarea.value) generateCoverLetter();
+    }
   }
 
   // Auto close mobile drawer on tab switch
@@ -912,6 +1040,53 @@ elements.importFileInput?.addEventListener("change", (e) => {
     e.target.value = "";
   };
   reader.readAsText(file);
+});
+
+// Cover Letter Event Listeners
+elements.clJobSelect?.addEventListener("change", (e) => {
+  const selectedId = e.target.value;
+  if (selectedId) {
+    const job = platformStore.get(selectedId);
+    if (job) {
+      if (elements.clCompanyInput) elements.clCompanyInput.value = job.name;
+      if (elements.clRoleInput) elements.clRoleInput.value = job.category || "";
+      if (elements.clHighlightsInput && !elements.clHighlightsInput.value && job.note) {
+        elements.clHighlightsInput.value = job.note;
+      }
+    }
+  }
+});
+
+elements.clGenerateBtn?.addEventListener("click", generateCoverLetter);
+elements.clOutputTextarea?.addEventListener("input", updateClStats);
+
+elements.clCopyBtn?.addEventListener("click", () => {
+  const text = elements.clOutputTextarea?.value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = elements.clCopyBtn.textContent;
+    elements.clCopyBtn.textContent = "✅ Copied!";
+    setTimeout(() => {
+      elements.clCopyBtn.textContent = originalText;
+    }, 2000);
+  });
+});
+
+elements.clDownloadBtn?.addEventListener("click", () => {
+  const text = elements.clOutputTextarea?.value;
+  if (!text) return;
+  const company = (elements.clCompanyInput?.value || "company").toLowerCase().replace(/[^a-z0-9]/g, "-");
+  const blob = new Blob([text], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `cover-letter-${company}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+elements.clPrintBtn?.addEventListener("click", () => {
+  window.print();
 });
 
 document.querySelectorAll(".future-tool").forEach((btn) => {

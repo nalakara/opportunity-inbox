@@ -1293,3 +1293,99 @@ button {
   color: var(--accent-orange-bright);
   background: var(--surface-hover);
 }
+
+/* COVER LETTER GENERATOR */
+.cl-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .cl-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cl-form-card,
+.cl-preview-card {
+  padding: 24px;
+}
+
+.cl-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cl-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-meta-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.cl-actions-group {
+  display: flex;
+  gap: 8px;
+}
+
+.cl-document-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.cl-document-textarea {
+  width: 100%;
+  height: 520px;
+  background: transparent;
+  border: none;
+  padding: 20px;
+  font-family: inherit;
+  font-size: 0.94rem;
+  line-height: 1.7;
+  color: var(--text-main);
+  resize: vertical;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.cl-document-textarea:focus {
+  outline: none;
+}
+
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #clPrintArea, #clPrintArea * {
+    visibility: visible;
+  }
+  #clPrintArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    padding: 20px !important;
+  }
+  .cl-document-textarea {
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
