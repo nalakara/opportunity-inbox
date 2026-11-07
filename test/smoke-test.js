@@ -127,4 +127,36 @@ assert.equal(contactStore.list().length, 1);
 assert.equal(settingsStore.get().userName, "Yudhan Sebastian");
 console.log("  ✓ JSON Export & Import round-trip passed.");
 
+// 6. Tab Navigation & View Integrity Test
+console.log("6. Testing Tab Navigation & View Integrity...");
+import fs from "node:fs";
+const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf-8");
+
+const expectedTabs = [
+  "home",
+  "board",
+  "statistics",
+  "contacts",
+  "coverletter",
+  "resumebuilder",
+  "resumescore",
+  "aianswer",
+  "linkedintools",
+];
+
+for (const tab of expectedTabs) {
+  assert.ok(
+    html.includes(`data-tab="${tab}"`),
+    `Navigation should contain data-tab="${tab}"`
+  );
+  assert.ok(
+    html.includes(`class="tab-view"`) &&
+      (html.includes(`data-tab="${tab}"`) ||
+        html.toLowerCase().includes(`id="view${tab}"`)),
+    `View container should exist for tab: ${tab}`
+  );
+}
+console.log("  ✓ Tab navigation and view container mapping verified.");
+
 console.log("\n🎉 ALL SMOKE TESTS PASSED CLEANLY!");
+

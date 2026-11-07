@@ -761,6 +761,18 @@ ${name}`;
   }
 }
 
+const TAB_VIEW_MAP = {
+  home: "viewHome",
+  board: "viewBoard",
+  statistics: "viewStatistics",
+  contacts: "viewContacts",
+  coverletter: "viewCoverletter",
+  resumebuilder: "viewResumebuilder",
+  resumescore: "viewResumescore",
+  aianswer: "viewAiAnswer",
+  linkedintools: "viewLinkedinTools",
+};
+
 function switchTab(tabName) {
   activeTab = tabName;
   elements.navLinks.forEach((link) => {
@@ -771,8 +783,13 @@ function switchTab(tabName) {
     link.classList.toggle("is-active", link.dataset.tab === tabName);
   });
 
+  const targetViewId = TAB_VIEW_MAP[tabName];
   elements.tabViews.forEach((view) => {
-    view.style.display = view.id === `view${tabName.charAt(0).toUpperCase() + tabName.slice(1)}` ? "block" : "none";
+    const isMatch =
+      view.dataset.tab === tabName ||
+      (targetViewId && view.id === targetViewId) ||
+      view.id.toLowerCase() === `view${tabName}`.toLowerCase();
+    view.style.display = isMatch ? "block" : "none";
   });
 
   if (elements.pageTitle) {
