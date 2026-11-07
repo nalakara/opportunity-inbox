@@ -9,7 +9,7 @@
   
   --text-main: #F3F4F6;
   --text-muted: #8E96A5;
-  --text-light: #525B6C;
+  --text-light: #94A3B8;
   --border: #202432;
   --border-highlight: rgba(255, 255, 255, 0.07);
 
@@ -963,7 +963,7 @@ button {
 
 .insight-title { font-weight: 800; font-size: 1rem; }
 
-.badge { font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; }
+.badge { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: var(--radius-sm); letter-spacing: 0.03em; }
 .badge.low { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
 .badge.medium { background: rgba(249, 115, 22, 0.15); color: var(--accent-orange-bright); }
 
@@ -1362,7 +1362,8 @@ button {
 }
 
 .cl-document-textarea:focus {
-  outline: none;
+  outline: 2px solid var(--accent-orange);
+  outline-offset: -2px;
 }
 
 /* Print Styles */
@@ -1544,6 +1545,23 @@ button {
 @media (max-width: 768px) {
   .rs-keywords-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* R-03: Ensure minimum 44px tap targets on touch devices */
+  .action-row-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    font-size: 1rem;
+  }
+
+  .secondary-btn.sm,
+  .primary-btn.sm {
+    min-height: 44px;
+    padding: 10px 14px;
   }
 }
 

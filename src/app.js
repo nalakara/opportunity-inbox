@@ -443,21 +443,21 @@ function renderListBoard() {
           ${stageItems
             .map((item) => {
               const url = normalizeUrl(item.url);
-              const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—";
+              const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "-";
               const followUpBadge = getFollowUpBadge(item.followUpDate, item.status);
               return `
                 <tr data-id="${item.id}">
                   <td>
                     <div style="font-weight:700;">${item.name}</div>
                   </td>
-                  <td><span style="color:#94A3B8; font-size:0.85rem;">${item.category || "—"}</span></td>
-                  <td><span style="color:#94A3B8; font-size:0.85rem;">${dateStr}</span></td>
-                  <td>${followUpBadge || `<span style="color:#64748B; font-size:0.82rem;">—</span>`}</td>
+                  <td><span style="color:var(--text-light); font-size:0.85rem;">${item.category || "-"}</span></td>
+                  <td><span style="color:var(--text-light); font-size:0.85rem;">${dateStr}</span></td>
+                  <td>${followUpBadge || `<span style="color:var(--text-light); font-size:0.82rem;">-</span>`}</td>
                   <td>
                     ${
                       url
                         ? `<a href="${url}" target="_blank" rel="noopener" class="text-link-btn" style="font-size:0.82rem;">Link ↗</a>`
-                        : `<span style="color:#64748B; font-size:0.82rem;">—</span>`
+                        : `<span style="color:var(--text-light); font-size:0.82rem;">-</span>`
                     }
                   </td>
                   <td style="text-align: right;">
@@ -1176,10 +1176,10 @@ function generateLinkedinHeadlines() {
   const role = elements.liTargetRole?.value.trim() || "Software Engineer";
 
   const headlines = [
-    `🚀 ${role} | Building High-Velocity Web Apps | ${kw} | Open to Opportunities`,
-    `💻 ${role} @ Ex-Startups • Specializing in ${kw} • Crafting Scalable User Experiences`,
-    `⚡ ${role} | Turning Product Ambiguity into Resilient Systems | ${kw}`,
-    `🎯 Senior ${role} | Passionate about Zero-Dependency Simplicity & Performance | ${kw}`
+    `${role} | High-Velocity Web Engineering | ${kw} | Open to Opportunities`,
+    `${role} • Specializing in ${kw} • Scalable User Experiences`,
+    `${role} | Transforming Ambiguity into Resilient Systems | ${kw}`,
+    `Senior ${role} | Zero-Dependency Architecture & Performance | ${kw}`
   ];
 
   if (elements.liHeadlineResults) {
