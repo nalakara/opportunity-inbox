@@ -63,6 +63,12 @@
                 <span>Statistics</span>
               </button>
             </li>
+            <li>
+              <button class="nav-link" data-tab="contacts" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Contacts</span>
+              </button>
+            </li>
           </ul>
 
           <div class="nav-divider"></div>
@@ -74,16 +80,17 @@
             <li><button class="nav-link future-tool" data-tool="AI Answer Generator" type="button"><span>✨ AI Answer Generator</span><span class="soon-badge">Soon</span></button></li>
             <li><button class="nav-link future-tool" data-tool="Cover Letter Generator" type="button"><span>✉️ Cover Letter</span><span class="soon-badge">Soon</span></button></li>
             <li><button class="nav-link future-tool" data-tool="LinkedIn Tools" type="button"><span>💼 LinkedIn Tools</span><span class="soon-badge">Soon</span></button></li>
-            <li><button class="nav-link future-tool" data-tool="Contacts" type="button"><span>👥 Contacts</span><span class="soon-badge">Soon</span></button></li>
           </ul>
         </nav>
 
         <div class="sidebar-footer">
-          <div class="user-profile">
-            <div class="avatar">Y</div>
-            <div class="user-info">
-              <span class="user-name">Yudhan</span>
+          <div class="user-profile" id="userProfileCard" title="Click to edit profile & weekly goal" style="cursor: pointer;">
+            <div class="avatar" id="userAvatar">Y</div>
+            <div class="user-info" style="flex: 1;">
+              <span class="user-name" id="sidebarUserName">Yudhan</span>
+              <span style="font-size: 0.74rem; color: var(--text-muted); display: block;" id="sidebarUserGoal">Goal: 10/wk</span>
             </div>
+            <button class="icon-button settings-btn" id="openSettingsBtn" type="button" aria-label="Settings" title="Preferences">⚙️</button>
           </div>
         </div>
       </aside>
@@ -116,7 +123,7 @@
           <!-- View: HOME -->
           <section class="tab-view" id="viewHome" style="display: none;">
             <div class="home-header">
-              <h2>Good morning, Yudhan 👋</h2>
+              <h2 id="homeGreeting">Good morning, Yudhan 👋</h2>
             </div>
 
             <div class="home-grid">
@@ -124,7 +131,7 @@
               <div class="card weekly-card">
                 <div class="card-header">
                   <h3>Weekly Progress</h3>
-                  <span class="goal-pill">Weekly goal: 10</span>
+                  <span class="goal-pill" id="homeGoalPill">Weekly goal: 10</span>
                 </div>
                 <div class="gauge-container">
                   <svg viewBox="0 0 100 55" class="gauge-svg">
@@ -275,6 +282,26 @@
               </div>
             </div>
           </section>
+
+          <!-- View: CONTACTS -->
+          <section class="tab-view" id="viewContacts" style="display: none;">
+            <div class="board-toolbar">
+              <div class="search-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="contactSearchInput" placeholder="Search contact name, company, role..." />
+              </div>
+
+              <div class="toolbar-actions">
+                <button class="primary-btn" id="addContactBtn" type="button">
+                  + Add Contact
+                </button>
+              </div>
+            </div>
+
+            <div class="contacts-grid" id="contactsGrid">
+              <!-- Rendered via JS -->
+            </div>
+          </section>
         </main>
       </div>
     </div>
@@ -289,9 +316,13 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
         <span>Board</span>
       </button>
+      <button class="mobile-nav-link" data-tab="contacts" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Contacts</span>
+      </button>
       <button class="mobile-nav-link" data-tab="statistics" type="button">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Statistics</span>
+        <span>Stats</span>
       </button>
     </nav>
 
@@ -334,6 +365,11 @@
         </div>
 
         <div class="form-group">
+          <label for="followUpDateInput">Follow-up Date (optional)</label>
+          <input id="followUpDateInput" name="followUpDate" type="date" />
+        </div>
+
+        <div class="form-group">
           <label for="noteInput">Notes / Details</label>
           <textarea id="noteInput" name="note" rows="3" placeholder="Key contact, salary expectation, next steps..."></textarea>
         </div>
@@ -343,6 +379,81 @@
         <div class="form-actions">
           <button class="secondary-btn" id="cancelButton" type="button">Cancel</button>
           <button class="primary-btn" type="submit">Save Job</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Modal Dialog for Add/Edit Contact -->
+    <dialog class="capture-dialog" id="contactDialog">
+      <form class="capture-form" id="contactForm" method="dialog">
+        <div class="dialog-heading">
+          <h2 id="contactDialogTitle">Add Network Contact</h2>
+          <button class="icon-button" id="closeContactDialogButton" type="button" aria-label="Close dialog">×</button>
+        </div>
+
+        <input id="contactEditingId" type="hidden" />
+
+        <div class="form-group">
+          <label for="contactNameInput">Contact Name <span class="required-star">*</span></label>
+          <input id="contactNameInput" name="contactName" autocomplete="off" placeholder="e.g. Sarah Jenkins" required />
+        </div>
+
+        <div class="form-group">
+          <label for="contactCompanyInput">Company / Organization</label>
+          <input id="contactCompanyInput" name="contactCompany" autocomplete="off" placeholder="e.g. Stripe, Google" />
+        </div>
+
+        <div class="form-group">
+          <label for="contactRoleInput">Role / Relationship</label>
+          <input id="contactRoleInput" name="contactRole" autocomplete="off" placeholder="e.g. Recruiter, Engineering Manager, Referral" />
+        </div>
+
+        <div class="form-group">
+          <label for="contactEmailInput">Email Address</label>
+          <input id="contactEmailInput" name="contactEmail" type="email" autocomplete="off" placeholder="sarah@example.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="contactLinkedinInput">LinkedIn or Profile URL</label>
+          <input id="contactLinkedinInput" name="contactLinkedin" type="url" autocomplete="off" placeholder="https://linkedin.com/in/username" />
+        </div>
+
+        <div class="form-group">
+          <label for="contactNoteInput">Notes / Interaction History</label>
+          <textarea id="contactNoteInput" name="contactNote" rows="3" placeholder="Referred via Tech Meetup, offered to review resume..."></textarea>
+        </div>
+
+        <p class="form-error" id="contactFormError" role="alert"></p>
+
+        <div class="form-actions">
+          <button class="secondary-btn" id="cancelContactButton" type="button">Cancel</button>
+          <button class="primary-btn" type="submit">Save Contact</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Modal Dialog for Settings & Preferences -->
+    <dialog class="capture-dialog" id="settingsDialog">
+      <form class="capture-form" id="settingsForm" method="dialog">
+        <div class="dialog-heading">
+          <h2>Preferences & Goals</h2>
+          <button class="icon-button" id="closeSettingsDialogButton" type="button" aria-label="Close dialog">×</button>
+        </div>
+
+        <div class="form-group">
+          <label for="settingsUserNameInput">Your Name</label>
+          <input id="settingsUserNameInput" name="settingsUserName" autocomplete="name" placeholder="e.g. Yudhan" required />
+        </div>
+
+        <div class="form-group">
+          <label for="settingsWeeklyGoalInput">Weekly Application Goal</label>
+          <input id="settingsWeeklyGoalInput" name="settingsWeeklyGoal" type="number" min="1" max="100" placeholder="10" required />
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Target number of applications you aim to submit every week.</small>
+        </div>
+
+        <div class="form-actions">
+          <button class="secondary-btn" id="cancelSettingsButton" type="button">Cancel</button>
+          <button class="primary-btn" type="submit">Save Preferences</button>
         </div>
       </form>
     </dialog>

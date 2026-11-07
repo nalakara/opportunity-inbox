@@ -1,4 +1,4 @@
-import { platformStore, STATUS_ENUM, STATUS_LABELS } from "./storage.js";
+import { platformStore, settingsStore, contactStore, STATUS_ENUM, STATUS_LABELS } from "./storage.js";
 
 const STAGES_ORDER = [
   STATUS_ENUM.WISHLIST,
@@ -20,6 +20,21 @@ const elements = {
   tabViews: document.querySelectorAll(".tab-view"),
   pageTitle: document.querySelector("#pageTitle"),
 
+  // User Profile & Settings
+  userProfileCard: document.querySelector("#userProfileCard"),
+  userAvatar: document.querySelector("#userAvatar"),
+  sidebarUserName: document.querySelector("#sidebarUserName"),
+  sidebarUserGoal: document.querySelector("#sidebarUserGoal"),
+  openSettingsBtn: document.querySelector("#openSettingsBtn"),
+  homeGreeting: document.querySelector("#homeGreeting"),
+  homeGoalPill: document.querySelector("#homeGoalPill"),
+  settingsDialog: document.querySelector("#settingsDialog"),
+  settingsForm: document.querySelector("#settingsForm"),
+  closeSettingsDialogButton: document.querySelector("#closeSettingsDialogButton"),
+  cancelSettingsButton: document.querySelector("#cancelSettingsButton"),
+  settingsUserNameInput: document.querySelector("#settingsUserNameInput"),
+  settingsWeeklyGoalInput: document.querySelector("#settingsWeeklyGoalInput"),
+
   // Toolbar & Search & View Switcher
   searchInput: document.querySelector("#searchInput"),
   sortBySelect: document.querySelector("#sortBySelect"),
@@ -38,8 +53,28 @@ const elements = {
   categoryInput: document.querySelector("#categoryInput"),
   urlInput: document.querySelector("#urlInput"),
   statusSelectInput: document.querySelector("#statusSelectInput"),
+  followUpDateInput: document.querySelector("#followUpDateInput"),
   noteInput: document.querySelector("#noteInput"),
   formError: document.querySelector("#formError"),
+
+  // Contacts Elements
+  viewContacts: document.querySelector("#viewContacts"),
+  contactSearchInput: document.querySelector("#contactSearchInput"),
+  addContactBtn: document.querySelector("#addContactBtn"),
+  contactsGrid: document.querySelector("#contactsGrid"),
+  contactDialog: document.querySelector("#contactDialog"),
+  contactForm: document.querySelector("#contactForm"),
+  closeContactDialogButton: document.querySelector("#closeContactDialogButton"),
+  cancelContactButton: document.querySelector("#cancelContactButton"),
+  contactDialogTitle: document.querySelector("#contactDialogTitle"),
+  contactEditingId: document.querySelector("#contactEditingId"),
+  contactNameInput: document.querySelector("#contactNameInput"),
+  contactCompanyInput: document.querySelector("#contactCompanyInput"),
+  contactRoleInput: document.querySelector("#contactRoleInput"),
+  contactEmailInput: document.querySelector("#contactEmailInput"),
+  contactLinkedinInput: document.querySelector("#contactLinkedinInput"),
+  contactNoteInput: document.querySelector("#contactNoteInput"),
+  contactFormError: document.querySelector("#contactFormError"),
 
   // Board Containers
   kanbanBoard: document.querySelector("#kanbanBoard"),
@@ -72,13 +107,64 @@ const elements = {
 let activeTab = "board";
 let boardViewMode = "kanban"; // 'kanban' | 'list'
 let searchQuery = "";
+let contactSearchQuery = "";
 let sortBy = "updatedDesc";
+let draggedCardId = null;
 
 function normalizeUrl(url) {
   const trimmed = (url || "").trim();
   if (!trimmed) return "";
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
+}
+
+function isDateThisWeek(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const now = new Date();
+  
+  // Start of week (Monday)
+  const startOfWeek = new Date(now);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  return d >= startOfWeek && d <= now;
+}
+
+function isDateThisMonth(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+}
+
+function getFollowUpBadge(followUpDate, status) {
+  if (!followUpDate) return "";
+  if (status === STATUS_ENUM.OFFER || status === STATUS_ENUM.REJECTED || status === STATUS_ENUM.GHOSTED) {
+    return "";
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [year, month, day] = followUpDate.split("-").map(Number);
+  if (!year || !month || !day) return "";
+  const targetDate = new Date(year, month - 1, day);
+  targetDate.setHours(0, 0, 0, 0);
+
+  const diffTime = targetDate.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  const formattedDate = targetDate.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+  if (diffDays < 0) {
+    return `<span class="follow-up-badge overdue" title="Follow-up was scheduled for ${followUpDate}">⚠️ Overdue (${formattedDate})</span>`;
+  } else if (diffDays === 0) {
+    return `<span class="follow-up-badge due-today" title="Follow-up due today!">⏰ Due Today</span>`;
+  } else {
+    return `<span class="follow-up-badge upcoming" title="Follow-up on ${followUpDate}">📅 Follow-up: ${formattedDate}</span>`;
+  }
 }
 
 function getProcessedPlatforms() {
@@ -128,22 +214,67 @@ function renderKanbanBoard() {
 
     const cardsContainer = document.createElement("div");
     cardsContainer.className = "kanban-cards-container";
+    cardsContainer.dataset.stage = stage;
+
+    // Drag-over visual feedback on drop target
+    cardsContainer.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      cardsContainer.classList.add("drag-over");
+    });
+
+    cardsContainer.addEventListener("dragleave", (e) => {
+      if (!cardsContainer.contains(e.relatedTarget)) {
+        cardsContainer.classList.remove("drag-over");
+      }
+    });
+
+    cardsContainer.addEventListener("drop", (e) => {
+      e.preventDefault();
+      cardsContainer.classList.remove("drag-over");
+      const cardId = e.dataTransfer.getData("text/plain") || draggedCardId;
+      if (cardId) {
+        const currentItem = platformStore.get(cardId);
+        if (currentItem && currentItem.status !== stage) {
+          platformStore.update(cardId, { status: stage });
+          render();
+        }
+      }
+    });
 
     if (stageItems.length === 0) {
       cardsContainer.innerHTML = `
         <div style="padding: 12px; color: #64748B; font-size: 0.8rem; text-align: center; font-style: italic;">
-          No jobs
+          Drop jobs here or + Add
         </div>
       `;
     } else {
       stageItems.forEach((item) => {
         const url = normalizeUrl(item.url);
+        const followUpHtml = getFollowUpBadge(item.followUpDate, item.status);
         const card = document.createElement("div");
         card.className = "kanban-card";
         card.dataset.id = item.id;
+        card.draggable = true;
+
+        // Drag start and end events
+        card.addEventListener("dragstart", (e) => {
+          draggedCardId = item.id;
+          card.classList.add("is-dragging");
+          e.dataTransfer.setData("text/plain", item.id);
+          e.dataTransfer.effectAllowed = "move";
+        });
+
+        card.addEventListener("dragend", () => {
+          card.classList.remove("is-dragging");
+          draggedCardId = null;
+          document.querySelectorAll(".kanban-cards-container").forEach((c) => c.classList.remove("drag-over"));
+        });
+
         card.innerHTML = `
           <div class="kanban-card-title">${item.name}</div>
           <div class="kanban-card-meta">${item.category ? `📍 ${item.category}` : "Uncategorized"}</div>
+          ${followUpHtml ? `<div>${followUpHtml}</div>` : ""}
           <div class="kanban-card-footer">
             ${
               url
@@ -214,6 +345,7 @@ function renderListBoard() {
             <th>Company / Position</th>
             <th>Location / Tag</th>
             <th>Applied Date</th>
+            <th>Follow-up</th>
             <th>URL</th>
             <th style="text-align: right;">Actions</th>
           </tr>
@@ -223,6 +355,7 @@ function renderListBoard() {
             .map((item) => {
               const url = normalizeUrl(item.url);
               const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—";
+              const followUpBadge = getFollowUpBadge(item.followUpDate, item.status);
               return `
                 <tr data-id="${item.id}">
                   <td>
@@ -230,6 +363,7 @@ function renderListBoard() {
                   </td>
                   <td><span style="color:#94A3B8; font-size:0.85rem;">${item.category || "—"}</span></td>
                   <td><span style="color:#94A3B8; font-size:0.85rem;">${dateStr}</span></td>
+                  <td>${followUpBadge || `<span style="color:#64748B; font-size:0.82rem;">—</span>`}</td>
                   <td>
                     ${
                       url
@@ -272,14 +406,32 @@ function renderBoard() {
   }
 }
 
+function renderUserProfile() {
+  const settings = settingsStore.get();
+  const name = settings.userName || "Yudhan";
+  const initial = name.charAt(0).toUpperCase() || "Y";
+  const goal = settings.weeklyGoal || 10;
+
+  if (elements.userAvatar) elements.userAvatar.textContent = initial;
+  if (elements.sidebarUserName) elements.sidebarUserName.textContent = name;
+  if (elements.sidebarUserGoal) elements.sidebarUserGoal.textContent = `Goal: ${goal}/wk`;
+  if (elements.homeGreeting) elements.homeGreeting.textContent = `Good morning, ${name} 👋`;
+  if (elements.homeGoalPill) elements.homeGoalPill.textContent = `Weekly goal: ${goal}`;
+}
+
 function renderHome() {
   const allPlatforms = platformStore.list();
-  const appliedCount = allPlatforms.filter(
-    (p) => p.status === STATUS_ENUM.APPLIED || p.status === STATUS_ENUM.INTERVIEWING || p.status === STATUS_ENUM.OFFER
-  ).length;
+  const settings = settingsStore.get();
+  const weeklyGoal = settings.weeklyGoal || 10;
+  
+  // Weekly count: jobs applied/progressed this week
+  const weeklyAppliedCount = allPlatforms.filter((p) => {
+    const isApplied = p.status !== STATUS_ENUM.WISHLIST;
+    return isApplied && (isDateThisWeek(p.createdAt) || isDateThisWeek(p.updatedAt));
+  }).length;
 
-  elements.homeWeeklyAppliedCount.textContent = appliedCount;
-  const progressPercent = Math.min(100, (appliedCount / 10) * 100);
+  elements.homeWeeklyAppliedCount.textContent = weeklyAppliedCount;
+  const progressPercent = Math.min(100, (weeklyAppliedCount / weeklyGoal) * 100);
   const strokeOffset = 126 - (126 * progressPercent) / 100;
   if (elements.gaugeProgressPath) {
     elements.gaugeProgressPath.style.strokeDashoffset = strokeOffset;
@@ -304,28 +456,37 @@ function renderHome() {
 
 function renderStatistics() {
   const all = platformStore.list();
+  const settings = settingsStore.get();
+  const weeklyGoal = settings.weeklyGoal || 10;
+
   const total = all.length;
   const applied = all.filter((p) => p.status === STATUS_ENUM.APPLIED).length;
   const interviewing = all.filter((p) => p.status === STATUS_ENUM.INTERVIEWING).length;
   const offer = all.filter((p) => p.status === STATUS_ENUM.OFFER).length;
 
-  const conversionPct = applied > 0 ? Math.round(((interviewing + offer) / applied) * 100) : 0;
+  // Real date-based filter for active additions
+  const thisWeekCount = all.filter((p) => isDateThisWeek(p.createdAt)).length;
+  const thisMonthCount = all.filter((p) => isDateThisMonth(p.createdAt)).length;
+
+  const totalActioned = applied + interviewing + offer;
+  const conversionPct = totalActioned > 0 ? Math.round(((interviewing + offer) / totalActioned) * 100) : 0;
 
   elements.kpiTotalApplications.textContent = total;
-  elements.kpiThisWeek.textContent = applied;
-  elements.kpiThisMonth.textContent = total;
+  elements.kpiThisWeek.textContent = thisWeekCount;
+  elements.kpiThisMonth.textContent = thisMonthCount;
   elements.kpiInterviewConversion.textContent = `${conversionPct}%`;
 
-  const remainingWeekly = Math.max(0, 10 - applied);
+  const remainingWeekly = Math.max(0, weeklyGoal - thisWeekCount);
   elements.statsGoalProgressText.textContent =
     remainingWeekly > 0
-      ? `You need ${remainingWeekly} more applications to reach your weekly goal of 10.`
-      : `Awesome! You have achieved your weekly goal of 10 applications!`;
+      ? `You need ${remainingWeekly} more applications to reach your weekly goal of ${weeklyGoal}.`
+      : `Awesome! You have achieved your weekly goal of ${weeklyGoal} applications!`;
 
   if (elements.conversionAnalysisList) {
+    const appliedOrHigher = applied + interviewing + offer;
     elements.conversionAnalysisList.innerHTML = `
-      <div class="breakdown-row"><span>Applied → Interview</span><span>${applied > 0 ? Math.round((interviewing / applied) * 100) : 0}%</span></div>
-      <div class="breakdown-row"><span>Interview → Offer</span><span>${interviewing > 0 ? Math.round((offer / interviewing) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Applied → Interview</span><span>${appliedOrHigher > 0 ? Math.round(((interviewing + offer) / appliedOrHigher) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Interview → Offer</span><span>${interviewing > 0 ? Math.round((offer / (interviewing + offer)) * 100) : 0}%</span></div>
       <div class="breakdown-row"><span>Overall Win Rate</span><span>${total > 0 ? Math.round((offer / total) * 100) : 0}%</span></div>
     `;
   }
@@ -336,6 +497,73 @@ function renderStatistics() {
       return `<div class="breakdown-row"><span>${STATUS_LABELS[stage]}</span><span>${count}</span></div>`;
     }).join("");
   }
+}
+
+function renderContacts() {
+  let contacts = contactStore.list();
+  if (contactSearchQuery) {
+    const q = contactSearchQuery.toLowerCase();
+    contacts = contacts.filter((c) =>
+      c.name.toLowerCase().includes(q) ||
+      (c.company && c.company.toLowerCase().includes(q)) ||
+      (c.role && c.role.toLowerCase().includes(q)) ||
+      (c.note && c.note.toLowerCase().includes(q))
+    );
+  }
+
+  if (!elements.contactsGrid) return;
+  elements.contactsGrid.innerHTML = "";
+
+  if (contacts.length === 0) {
+    elements.contactsGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; color: var(--text-muted); background: var(--surface-card); border: 1px dashed var(--border); border-radius: var(--radius-lg);">
+        <p style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">No contacts found</p>
+        <p style="font-size: 0.88rem; margin-bottom: 18px;">Track recruiters, referrers, and hiring managers here to build your networking momentum.</p>
+        <button class="primary-btn sm" id="emptyAddContactBtn" type="button">+ Add First Contact</button>
+      </div>
+    `;
+    document.querySelector("#emptyAddContactBtn")?.addEventListener("click", () => openContactDialog());
+    return;
+  }
+
+  contacts.forEach((contact) => {
+    const card = document.createElement("div");
+    card.className = "contact-card";
+    card.dataset.id = contact.id;
+
+    const emailBtn = contact.email
+      ? `<a href="mailto:${contact.email}" class="contact-channel-btn" title="Send email">✉️ ${contact.email}</a>`
+      : "";
+    const linkedinUrl = normalizeUrl(contact.linkedin);
+    const linkedinBtn = linkedinUrl
+      ? `<a href="${linkedinUrl}" target="_blank" rel="noopener" class="contact-channel-btn" title="Open profile">💼 Profile ↗</a>`
+      : "";
+
+    const dateStr = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : "";
+
+    card.innerHTML = `
+      <div class="contact-card-header">
+        <div>
+          <div class="contact-name">${contact.name}</div>
+          ${contact.role ? `<div class="contact-role">${contact.role}</div>` : ""}
+        </div>
+        ${contact.company ? `<span class="contact-company-badge">🏢 ${contact.company}</span>` : ""}
+      </div>
+
+      ${(contact.email || contact.linkedin) ? `<div class="contact-channels">${emailBtn}${linkedinBtn}</div>` : ""}
+
+      ${contact.note ? `<div class="contact-note">${contact.note}</div>` : ""}
+
+      <div class="contact-card-footer">
+        <span style="font-size:0.75rem; color:var(--text-light);">${dateStr ? `Added ${dateStr}` : ""}</span>
+        <div>
+          <button class="action-row-btn edit-contact-btn" data-id="${contact.id}" type="button">✏️ Edit</button>
+          <button class="action-row-btn delete-contact-btn" data-id="${contact.id}" type="button">🗑️ Delete</button>
+        </div>
+      </div>
+    `;
+    elements.contactsGrid.appendChild(card);
+  });
 }
 
 function switchTab(tabName) {
@@ -356,6 +584,7 @@ function switchTab(tabName) {
     if (tabName === "home") elements.pageTitle.textContent = "Home Dashboard";
     else if (tabName === "board") elements.pageTitle.textContent = "Opportunity Board";
     else if (tabName === "statistics") elements.pageTitle.textContent = "Statistics";
+    else if (tabName === "contacts") elements.pageTitle.textContent = "Network & Contacts";
   }
 
   // Auto close mobile drawer on tab switch
@@ -366,9 +595,11 @@ function switchTab(tabName) {
 }
 
 function render() {
+  renderUserProfile();
   if (activeTab === "board") renderBoard();
   if (activeTab === "home") renderHome();
   if (activeTab === "statistics") renderStatistics();
+  if (activeTab === "contacts") renderContacts();
 }
 
 function openCaptureDialog(platform = null, defaultStage = STATUS_ENUM.WISHLIST) {
@@ -380,6 +611,7 @@ function openCaptureDialog(platform = null, defaultStage = STATUS_ENUM.WISHLIST)
   elements.categoryInput.value = platform?.category ?? "";
   elements.urlInput.value = platform?.url ?? "";
   elements.statusSelectInput.value = platform?.status ?? defaultStage;
+  if (elements.followUpDateInput) elements.followUpDateInput.value = platform?.followUpDate ?? "";
   elements.noteInput.value = platform?.note ?? "";
   elements.captureDialog.showModal();
   elements.nameInput.focus();
@@ -402,6 +634,7 @@ function savePlatform() {
     category: elements.categoryInput.value,
     url: elements.urlInput.value,
     status: elements.statusSelectInput.value,
+    followUpDate: elements.followUpDateInput ? elements.followUpDateInput.value : "",
     note: elements.noteInput.value,
   };
 
@@ -413,6 +646,75 @@ function savePlatform() {
   }
 
   closeCaptureDialog();
+  render();
+}
+
+/* Contacts Dialog Functions */
+function openContactDialog(contact = null) {
+  elements.contactForm.reset();
+  elements.contactFormError.textContent = "";
+  elements.contactEditingId.value = contact?.id ?? "";
+  elements.contactDialogTitle.textContent = contact ? "Edit Contact" : "Add Network Contact";
+  elements.contactNameInput.value = contact?.name ?? "";
+  elements.contactCompanyInput.value = contact?.company ?? "";
+  elements.contactRoleInput.value = contact?.role ?? "";
+  elements.contactEmailInput.value = contact?.email ?? "";
+  elements.contactLinkedinInput.value = contact?.linkedin ?? "";
+  elements.contactNoteInput.value = contact?.note ?? "";
+  elements.contactDialog.showModal();
+  elements.contactNameInput.focus();
+}
+
+function closeContactDialog() {
+  elements.contactDialog.close();
+}
+
+function saveContact() {
+  const name = elements.contactNameInput.value.trim();
+  if (!name) {
+    elements.contactFormError.textContent = "Contact name is required.";
+    elements.contactNameInput.focus();
+    return;
+  }
+
+  const input = {
+    name,
+    company: elements.contactCompanyInput.value,
+    role: elements.contactRoleInput.value,
+    email: elements.contactEmailInput.value,
+    linkedin: elements.contactLinkedinInput.value,
+    note: elements.contactNoteInput.value,
+  };
+
+  const editingId = elements.contactEditingId.value;
+  if (editingId) {
+    contactStore.update(editingId, input);
+  } else {
+    contactStore.create(input);
+  }
+
+  closeContactDialog();
+  renderContacts();
+}
+
+/* Settings Dialog Functions */
+function openSettingsDialog() {
+  const settings = settingsStore.get();
+  elements.settingsUserNameInput.value = settings.userName;
+  elements.settingsWeeklyGoalInput.value = settings.weeklyGoal;
+  elements.settingsDialog.showModal();
+  elements.settingsUserNameInput.focus();
+}
+
+function closeSettingsDialog() {
+  elements.settingsDialog.close();
+}
+
+function saveSettings() {
+  const userName = elements.settingsUserNameInput.value.trim() || "Yudhan";
+  const weeklyGoal = Math.max(1, parseInt(elements.settingsWeeklyGoalInput.value, 10) || 10);
+  settingsStore.update({ userName, weeklyGoal });
+  closeSettingsDialog();
   render();
 }
 
@@ -500,6 +802,50 @@ elements.sidebarBackdrop?.addEventListener("click", () => {
 
 elements.statsApplyTrigger?.addEventListener("click", () => switchTab("board"));
 elements.statsAddMoreTrigger?.addEventListener("click", () => openCaptureDialog());
+
+// Settings event listeners
+elements.openSettingsBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  openSettingsDialog();
+});
+elements.userProfileCard?.addEventListener("click", openSettingsDialog);
+elements.closeSettingsDialogButton?.addEventListener("click", closeSettingsDialog);
+elements.cancelSettingsButton?.addEventListener("click", closeSettingsDialog);
+elements.settingsForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  saveSettings();
+});
+
+// Contacts event listeners
+elements.addContactBtn?.addEventListener("click", () => openContactDialog());
+elements.closeContactDialogButton?.addEventListener("click", closeContactDialog);
+elements.cancelContactButton?.addEventListener("click", closeContactDialog);
+elements.contactForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  saveContact();
+});
+elements.contactSearchInput?.addEventListener("input", (e) => {
+  contactSearchQuery = e.target.value;
+  renderContacts();
+});
+
+elements.contactsGrid?.addEventListener("click", (e) => {
+  const editBtn = e.target.closest(".edit-contact-btn");
+  if (editBtn) {
+    const contact = contactStore.get(editBtn.dataset.id);
+    if (contact) openContactDialog(contact);
+    return;
+  }
+
+  const deleteBtn = e.target.closest(".delete-contact-btn");
+  if (deleteBtn) {
+    const contact = contactStore.get(deleteBtn.dataset.id);
+    if (contact && confirm(`Are you sure you want to delete contact "${contact.name}"?`)) {
+      contactStore.remove(contact.id);
+      renderContacts();
+    }
+  }
+});
 
 // PWA Install logic
 let deferredInstallPrompt = null;

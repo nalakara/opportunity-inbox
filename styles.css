@@ -648,6 +648,14 @@ button {
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.kanban-cards-container.drag-over {
+  background: rgba(249, 115, 22, 0.08);
+  outline: 2px dashed var(--accent-orange);
+  outline-offset: -6px;
+  border-radius: var(--radius-lg);
 }
 
 .kanban-card {
@@ -659,13 +667,55 @@ button {
   flex-direction: column;
   gap: 8px;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  cursor: grab;
+  user-select: none;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.45;
+  transform: scale(0.96) rotate(1deg);
+  border-color: var(--accent-orange);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.6);
 }
 
 .kanban-card:hover {
   transform: translateY(-2px);
   border-color: var(--accent-orange);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px var(--accent-orange-soft);
+}
+
+.follow-up-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.follow-up-badge.upcoming {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.follow-up-badge.due-today {
+  background: rgba(245, 158, 11, 0.18);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.follow-up-badge.overdue {
+  background: rgba(239, 68, 68, 0.18);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 .kanban-card-title {
@@ -1123,4 +1173,123 @@ button {
   .mobile-bottom-nav {
     display: none;
   }
+}
+
+/* CONTACTS & NETWORKING CRM */
+.contacts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.contact-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-orange);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4), 0 0 14px var(--accent-orange-soft);
+}
+
+.contact-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.contact-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.contact-company-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--surface-muted);
+  color: var(--accent-orange-bright);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.contact-role {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.contact-note {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-orange);
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.contact-channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.contact-channel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.contact-channel-btn:hover {
+  border-color: var(--accent-orange);
+  color: var(--accent-orange-bright);
+  background: var(--surface-hover);
+}
+
+.contact-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-highlight);
+  margin-top: auto;
+}
+
+.settings-btn {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.settings-btn:hover {
+  color: var(--accent-orange-bright);
+  background: var(--surface-hover);
 }

@@ -1,81 +1,97 @@
-# Opportunity Inbox v0.1
+# Opportunity Inbox
 
-A clean, quiet productivity, local-first Progressive Web App (PWA) designed for capturing opportunity platforms and tracking your interaction status with each one.
+A clean, quiet productivity, local-first Progressive Web App (PWA) designed for tracking job search pipelines, opportunities, and application stages.
 
-🌐 **Live Demo**: https://opportunity-inbox.vercel.app
-
-## Core Product Intent
-
-Help you answer at a glance:
-> **"What platforms have I found, and what stage am I at with each one?"**
+🌐 **Live Demo**: [opportunity-inbox.vercel.app](https://opportunity-inbox.vercel.app)
 
 ---
 
-## Features (v0.1 Scope)
+## 🎯 Core Product Intent
 
-- ⚡ **Quick Capture Form**: Easily capture new platforms with platform name, category, URL, and notes. Supports `⌘K` / `Ctrl+K` keyboard shortcut.
-- 📋 **Platform List & Filtering**: Filter platforms by interaction stage (`Captured`, `Visited`, `Registered`, `Profile Ready`, `Applied`, `Closed`).
-- 🏷️ **Interaction Stages**: Track platforms through 6 explicit status stages:
-  - **Captured**: Initial discovery.
-  - **Visited**: Checked out the platform.
-  - **Registered**: Created an account.
-  - **Profile Ready**: Completed user profile/portfolio.
-  - **Applied**: Submitted applications or pitch.
-  - **Closed**: Completed or archived.
-- 📱 **Mobile-First Responsive UI**: Dual-panel side-by-side layout on desktop views ($\ge 820\text{px}$) and smooth single-panel navigation with a `← Back to platforms` button on mobile viewports ($< 820\text{px}$).
-- 🔗 **URL Normalization & External Access**: Automatically normalizes URLs (e.g. `contra.com` $\rightarrow$ `https://contra.com`) and opens them safely in new browser tabs.
-- 💾 **Persistent Local Storage**: Storage logic is completely isolated inside a `LocalStorageAdapter` (`src/storage.js`), keeping UI code fully decoupled from browser storage APIs.
-- 📲 **PWA & Offline Capability**: Service Worker (`sw.js`) and Web Manifest (`manifest.webmanifest`) for standalone app installation and offline usage.
+Searching for jobs and managing opportunities often leads to fragmented spreadsheets, noisy subscription-based ATS trackers, or forgotten applications. 
+
+**Opportunity Inbox** answers at a single glance:
+> **"What opportunities am I pursuing, what stage is each application in, and am I hitting my weekly momentum?"**
+
+Built 100% offline-ready, zero-build, and local-first with zero tracking, external databases, or subscriptions.
 
 ---
 
-## Local Development & Preview
+## ✨ Features
 
-Because Opportunity Inbox v0.1 is built using standard HTML5, CSS3, and ES Modules without heavy build tools, you can serve it locally using any static web server:
+### 📋 Dual-View Pipeline Tracking
+- **Interactive Kanban Board**: Visualize applications across 7 structured stages with native **Drag & Drop** support:
+  - 💡 **Wishlist**: Discovered roles & target companies.
+  - 📩 **Applied**: Applications submitted.
+  - 🗣️ **Interviewing**: Active recruiter screens and technical rounds.
+  - 🎉 **Offer**: Offers received and under negotiation.
+  - 🛑 **Rejected**: Decisions closed by employer.
+  - 👻 **Ghosted**: Inactive applications without responses.
+  - ⏰ **Follow Up**: Opportunities requiring an active nudge or check-in (with smart **Overdue / Due Today** badges).
+- **Accordion List View**: Compact, expandable table view for quick audits and bulk review.
+- **Real-time Live Search & Sorting**: Instant filtering across company names, roles, tags/locations, and notes; sort by recent updates, name (A–Z), or category.
+- **👥 Networking & Contacts CRM**: Built-in recruiter and referral directory linking contacts, company affiliations, direct emails, and LinkedIn profiles.
+
+### 📊 Habit & Analytics Dashboards
+- **Home Dashboard**:
+  - **Weekly Goal Progress Gauge**: Dynamic SVG circular gauge meter tracking your target applications per week (customizable via Settings).
+  - **Pipeline Breakdown**: Visual distribution bars showing current pipeline health.
+- **Statistics & Conversion Funnel**:
+  - Key Performance Indicators (KPIs): Total Applications, Applications This Week (real calendar-week filter), Applications This Month, and Interview Conversion Rate.
+  - Funnel metrics: *Applied → Interview*, *Interview → Offer*, and *Overall Win Rate*.
+  - Actionable guidance when application momentum slows down.
+- **⚙️ Dynamic User Preferences**: Customize your display name and weekly application target directly in local storage without any accounts.
+
+### ⚡ Power-User & Offline Features
+- **Quick Capture Shortcut**: Press `⌘K` (Mac) or `Ctrl+K` (Windows/Linux) anywhere to open the capture dialog.
+- **URL Auto-Normalization**: Automatically formats URLs (e.g. `careers.airbnb.com` → `https://careers.airbnb.com`) and opens them safely in new tabs.
+- **Full Data Ownership (Backup & Restore)**:
+  - **JSON Export**: Download an exact, human-readable snapshot of all records.
+  - **JSON Import**: Restore or merge backup files with schema validation and automatic ID deduplication.
+- **Offline-First PWA**: Service Worker with stale-while-revalidate caching and Web Manifest support for standalone installation on iOS, Android, macOS, and Windows.
+- **Mobile-Optimized Experience**: Dedicated bottom navigation dock and touch-friendly drawers on smartphones.
+
+---
+
+## 🏗️ Architecture & Project Structure
+
+Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers to ensure instant loading, zero maintenance, and lifetime durability.
+
+```text
+├── index.html            # App shell, views (Home, Board, Stats), and dialog markup
+├── styles.css            # Aniq-UI Dark Obsidian design system & responsive styling
+├── src/
+│   ├── app.js            # View routing, DOM rendering, and event delegation
+│   └── storage.js        # LocalStorageAdapter, status normalizer & JSON backup utilities
+├── manifest.webmanifest  # PWA Web App Manifest
+├── sw.js                 # Service Worker (offline cache strategy)
+├── icon.svg              # App icon
+└── vercel.json           # Static deployment and security headers
+```
+
+### Technical Design Principles
+1. **Local-First & Private**: No analytics, third-party cookies, or remote databases. All data stays strictly in your browser's `localStorage`.
+2. **Decoupled Persistence**: UI code never accesses `window.localStorage` directly; all reads, writes, and migrations pass through `platformStore` in `src/storage.js`.
+3. **Zero-Build Deployment**: Standard ES Modules with native browser APIs. Works straight out of any HTTP server without `npm install` or compilation.
+
+---
+
+## 🚀 Quickstart & Local Development
+
+No build step required. Simply open `index.html` in your browser or run any local HTTP server:
 
 ```bash
 # Option 1: Python 3 built-in server
 python3 -m http.server 8080
 
-# Option 2: npx serve / live-server
+# Option 2: npx serve
 npx serve .
 ```
 
-Open `http://localhost:8080` in your web browser.
+Visit `http://localhost:8080` in your browser.
 
 ---
 
-## Architecture & Project Structure
-
-```text
-├── index.html            # Main app shell and markup
-├── styles.css            # Responsive CSS design system
-├── src/
-│   ├── app.js            # UI logic, event handlers & DOM rendering
-│   └── storage.js        # Storage abstraction layer & LocalStorageAdapter
-├── manifest.webmanifest  # PWA Web App Manifest
-├── sw.js                 # Service Worker (stale-while-revalidate strategy)
-└── icon.svg              # SVG app icon
-```
-
----
-
-## Technical Constraints & Design Principles
-
-- **Local-First**: Zero external backend APIs, cloud databases, or authentication required.
-- **Quiet Productivity**: Minimalist, fast, and practical interface.
-- **Clean Abstraction**: UI components never invoke `window.localStorage` directly; all reads/writes route through the store interface in `src/storage.js`.
-
----
-
-## License
+## 📄 License
 
 MIT License © 2026 Yudhan Sebastian
-
-## Cara Menjalankan
-
-Tanpa build step — cukup buka `index.html` di browser, atau jalankan server statis:
-
-```bash
-npx serve .
-```
