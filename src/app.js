@@ -34,7 +34,6 @@ const elements = {
   cancelSettingsButton: document.querySelector("#cancelSettingsButton"),
   settingsUserNameInput: document.querySelector("#settingsUserNameInput"),
   settingsWeeklyGoalInput: document.querySelector("#settingsWeeklyGoalInput"),
-  settingsGeminiApiKeyInput: document.querySelector("#settingsGeminiApiKeyInput"),
 
   // Toolbar & Search & View Switcher
   searchInput: document.querySelector("#searchInput"),
@@ -192,13 +191,16 @@ function isDateThisMonth(dateStr) {
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
 }
 
-// One definition of "pitches sent this week": an opportunity past Lead that
-// was created or moved this week. Home and Statistics must agree on it.
+// One definition of "pitches sent this week": an opportunity that moved
+// past Lead this week. Movement is read from statusHistory, never from
+// createdAt or updatedAt, so editing a note on an old opportunity does
+// not inflate the count. Home and Statistics must agree on it.
 function countPitchedThisWeek(platforms) {
-  return platforms.filter((p) => {
-    const isPitched = p.status !== STATUS_ENUM.WISHLIST;
-    return isPitched && (isDateThisWeek(p.createdAt) || isDateThisWeek(p.updatedAt));
-  }).length;
+  return platforms.filter((p) =>
+    (p.statusHistory || []).some(
+      (entry) => entry.status !== STATUS_ENUM.WISHLIST && isDateThisWeek(entry.at)
+    )
+  ).length;
 }
 
 // True when the opportunity has ever sat in the given stage. The funnel is
@@ -530,10 +532,10 @@ function renderStatistics() {
   const weeklyGoal = settings.weeklyGoal || 10;
 
   const total = all.length;
-  const offer = all.filter((p) => p.status === STATUS_ENUM.OFFER).length;
 
-  // Real date-based filter for active additions
-  const thisWeekCount = all.filter((p) => isDateThisWeek(p.createdAt)).length;
+  // "Pitches sent this week" uses the single shared definition: an
+  // opportunity that moved past Lead this week (see countPitchedThisWeek).
+  const weeklyPitchedCount = countPitchedThisWeek(all);
   const thisMonthCount = all.filter((p) => isDateThisMonth(p.createdAt)).length;
 
   // Funnel counts come from recorded history: only stages the opportunity
@@ -545,12 +547,10 @@ function renderStatistics() {
   const conversionPct = formatConversion(everDiskusi, everPitched);
 
   elements.kpiTotalApplications.textContent = total;
-  elements.kpiThisWeek.textContent = thisWeekCount;
+  elements.kpiThisWeek.textContent = weeklyPitchedCount;
   elements.kpiThisMonth.textContent = thisMonthCount;
   elements.kpiInterviewConversion.textContent = conversionPct;
 
-  // Same "pitches sent this week" definition as the Home gauge.
-  const weeklyPitchedCount = countPitchedThisWeek(all);
   const remainingWeekly = Math.max(0, weeklyGoal - weeklyPitchedCount);
   elements.statsGoalProgressText.textContent =
     remainingWeekly > 0
@@ -561,7 +561,7 @@ function renderStatistics() {
     elements.conversionAnalysisList.innerHTML = `
       <div class="breakdown-row"><span>Pitched → Diskusi</span><span>${formatConversion(everDiskusi, everPitched)}</span></div>
       <div class="breakdown-row"><span>Diskusi → Deal</span><span>${formatConversion(everDeal, everDiskusi)}</span></div>
-      <div class="breakdown-row"><span>Overall Win Rate</span><span>${total > 0 ? Math.round((offer / total) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Overall Win Rate</span><span>${formatConversion(everDeal, everPitched)}</span></div>
     `;
   }
 
@@ -768,9 +768,7 @@ function switchTab(tabName) {
       refreshCVVault();
     }
     else if (tabName === "linkedintools") {
-      elements.pageTitle.textContent = "LinkedIn Optimization Suite";
-      if (!elements.liOutreachOutput.value) generateLinkedinOutreach();
-      generateLinkedinHeadlines();
+      elements.pageTitle.textContent = "LinkedIn Outreach for Gigs";
     }
   }
 
@@ -906,53 +904,58 @@ async function deleteCV(id) {
 
 /* LinkedIn Tools Functions */
 function generateLinkedinOutreach() {
-  const type = elements.liOutreachType?.value || "recruiter";
-  const recipient = elements.liRecipientName?.value.trim() || "Sarah";
-  const company = elements.liCompanyName?.value.trim() || "Company";
-  const role = elements.liTargetRole?.value.trim() || "Software Engineer";
+  const type = elements.liOutreachType?.value || "pitch";
+  const recipient = elements.liRecipientName?.value.trim();
+  const client = elements.liCompanyName?.value.trim();
+  const service = elements.liTargetRole?.value.trim();
   const myName = settingsStore.get().userName || "Yudhan";
 
+  // No invented facts: every specific claim comes from a field above.
+  // Empty fields fall back to neutral wording, never to a made-up
+  // person, company, service, or experience claim.
+  const greeting = recipient ? `Hi ${recipient},` : "Hi there,";
+  const clientName = client || "your team";
+  const serviceText = service || "freelance projects";
+
   let msg = "";
-  if (type === "recruiter") {
-    msg = `Hi ${recipient},
+  if (type === "pitch") {
+    msg = `${greeting}
 
-I recently applied for the ${role} opening at ${company} and wanted to reach out directly to express my enthusiasm.
+I work on ${serviceText} and wanted to reach out to ${clientName} to see if that could be useful for an upcoming project.
 
-With extensive experience building performant, responsive web applications and reliable client-side architectures, I am confident my technical execution aligns closely with what your team is building.
+If there is something coming up, I would be glad to share a couple of relevant examples and a short note on how I would approach it.
 
-I would love to connect and share a quick snapshot of my work if you have a moment. Either way, appreciate your time!
+Either way, thanks for your time.
 
 Best regards,
 ${myName}`;
-  } else if (type === "referral") {
-    msg = `Hi ${recipient},
+  } else if (type === "followup") {
+    msg = `${greeting}
 
-Hope you're having a productive week! I came across your profile and noticed the inspiring work you're doing at ${company}.
+I wanted to follow up on the proposal I sent to ${clientName} about ${serviceText}.
 
-I am preparing to submit an application for the ${role} position. Given your firsthand experience there, I would greatly value any quick perspective you might have on the engineering culture. If you feel comfortable, I would also be honored by an internal referral!
+If it would help, I can answer any questions or adjust the scope. Happy to pick it up again whenever you are ready.
 
-Thanks so much for considering,
+Thanks,
 ${myName}`;
-  } else if (type === "coffee") {
-    msg = `Hi ${recipient},
+  } else if (type === "enquiry") {
+    msg = `${greeting}
 
-I've been following ${company}'s recent technical milestones and love the direction you're taking with developer experience.
+I am interested in the gig work on ${client || "your platform"} and wanted to ask how to get started.
 
-As an engineer passionate about clean architectures and scalable frontends, I would love to buy you a virtual coffee for 15 minutes to learn more about how your team tackles complex challenges.
+I work on ${serviceText}. If there is a current opening that fits, I would be glad to share my background and take the next step.
 
-No pressure at all, and thank you for your time!
+Thanks for your time.
 
 Best,
 ${myName}`;
   } else {
-    // Thank you
-    msg = `Hi ${recipient},
+    // Post-call thank-you
+    msg = `${greeting}
 
-Thank you for taking the time to speak with me today about the ${role} position at ${company}.
+Thank you for the call about ${serviceText} with ${clientName}.
 
-I really enjoyed our discussion regarding your engineering roadmaps and upcoming features. Our conversation confirmed my strong enthusiasm for joining ${company} and contributing to your team's velocity.
-
-Please let me know if there are any additional details or code samples I can provide. Looking forward to the next steps!
+I enjoyed the conversation and would be glad to continue if the timing works on your side. Please let me know if there is anything else I can share.
 
 Warmly,
 ${myName}`;
@@ -962,28 +965,39 @@ ${myName}`;
 }
 
 function generateLinkedinHeadlines() {
-  const kw = elements.liHeadlineKeywords?.value.trim() || "React, TypeScript, Scalable Architecture, Performance";
-  const role = elements.liTargetRole?.value.trim() || "Software Engineer";
+  const kw = elements.liHeadlineKeywords?.value.trim();
+  const service = elements.liTargetRole?.value.trim();
 
+  if (!elements.liHeadlineResults) return;
+
+  // No invented persona: without a service or keywords there is nothing
+  // honest to headline, so say so instead of generating a fake one.
+  if (!kw && !service) {
+    elements.liHeadlineResults.innerHTML = `
+      <div class="li-headline-card">
+        <span class="li-headline-text">Fill in Service / Offer and keywords above, then generate.</span>
+      </div>`;
+    return;
+  }
+
+  const join = (...parts) => parts.filter(Boolean).join(" | ");
   const headlines = [
-    `${role} | High-Velocity Web Engineering | ${kw} | Open to Opportunities`,
-    `${role} • Specializing in ${kw} • Scalable User Experiences`,
-    `${role} | Transforming Ambiguity into Resilient Systems | ${kw}`,
-    `Senior ${role} | Zero-Dependency Architecture & Performance | ${kw}`
+    join(service, kw, "Open to Opportunities"),
+    service && kw ? `${service} • Specializing in ${kw}` : join(service, kw),
+    join(kw, service),
+    join(service, "Available for freelance work"),
   ];
 
-  if (elements.liHeadlineResults) {
-    elements.liHeadlineResults.innerHTML = headlines
-      .map(
-        (h) => `
-        <div class="li-headline-card">
-          <span class="li-headline-text">${h}</span>
-          <button class="secondary-btn sm copy-headline-btn" data-text="${h.replace(/"/g, '&quot;')}" type="button">📋</button>
-        </div>
-      `
-      )
-      .join("");
-  }
+  elements.liHeadlineResults.innerHTML = headlines
+    .map(
+      (h) => `
+      <div class="li-headline-card">
+        <span class="li-headline-text">${h}</span>
+        <button class="secondary-btn sm copy-headline-btn" data-text="${h.replace(/"/g, '&quot;')}" type="button">📋</button>
+      </div>
+    `
+    )
+    .join("");
 }
 
 function convertUnicode(text, style) {
@@ -1100,7 +1114,6 @@ function openSettingsDialog() {
   const settings = settingsStore.get();
   elements.settingsUserNameInput.value = settings.userName;
   elements.settingsWeeklyGoalInput.value = settings.weeklyGoal;
-  if (elements.settingsGeminiApiKeyInput) elements.settingsGeminiApiKeyInput.value = settings.geminiApiKey || "";
   elements.settingsDialog.showModal();
   elements.settingsUserNameInput.focus();
 }
@@ -1112,8 +1125,7 @@ function closeSettingsDialog() {
 function saveSettings() {
   const userName = elements.settingsUserNameInput.value.trim() || "Yudhan";
   const weeklyGoal = Math.max(1, parseInt(elements.settingsWeeklyGoalInput.value, 10) || 10);
-  const geminiApiKey = elements.settingsGeminiApiKeyInput ? elements.settingsGeminiApiKeyInput.value.trim() : "";
-  settingsStore.update({ userName, weeklyGoal, geminiApiKey });
+  settingsStore.update({ userName, weeklyGoal });
   closeSettingsDialog();
   render();
 }

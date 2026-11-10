@@ -285,7 +285,6 @@ const portalsAdapter = new LocalStorageAdapter(PORTALS_KEY);
 const DEFAULT_SETTINGS = {
   userName: "Yudhan",
   weeklyGoal: 10,
-  geminiApiKey: "",
 };
 
 export const settingsStore = {
@@ -294,11 +293,17 @@ export const settingsStore = {
     if (!data || typeof data !== "object" || Array.isArray(data)) {
       return { ...DEFAULT_SETTINGS };
     }
-    return {
+    const cleaned = {
       userName: (data.userName || DEFAULT_SETTINGS.userName).trim(),
       weeklyGoal: Math.max(1, parseInt(data.weeklyGoal, 10) || DEFAULT_SETTINGS.weeklyGoal),
-      geminiApiKey: (data.geminiApiKey || "").trim(),
     };
+    // One-time migration (v2.9.0): the Gemini API key setting had no
+    // consumer after the Resume Builder was removed, so any stored key is
+    // deleted from storage the first time settings load.
+    if (data.geminiApiKey !== undefined) {
+      settingsAdapter.set(cleaned);
+    }
+    return cleaned;
   },
   update(patch) {
     const current = this.get();
@@ -306,7 +311,6 @@ export const settingsStore = {
       ...current,
       userName: patch.userName !== undefined ? patch.userName.trim() : current.userName,
       weeklyGoal: patch.weeklyGoal !== undefined ? Math.max(1, parseInt(patch.weeklyGoal, 10) || 10) : current.weeklyGoal,
-      geminiApiKey: patch.geminiApiKey !== undefined ? patch.geminiApiKey.trim() : current.geminiApiKey,
     };
     settingsAdapter.set(updated);
     return updated;

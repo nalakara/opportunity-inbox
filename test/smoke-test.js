@@ -263,5 +263,56 @@ const updatedSeed = portalStore.update("portal-micro1", { status: "registered" }
 assert.equal(updatedSeed.status, PORTAL_STATUS.REGISTERED);
 console.log("  ✓ portal seed list (9 portals, idempotent) passed.");
 
+// 10. Gemini API key removal + LinkedIn reframe (v2.9.0)
+console.log("10. Testing Gemini key removal and LinkedIn reframe...");
+
+// A legacy settings record carrying a Gemini key must be migrated on load:
+// the key is deleted from storage and never appears in settings or export.
+memoryStorage.set(
+  "opportunity-inbox.settings.v1",
+  JSON.stringify({ userName: "Yudhan Sebastian", weeklyGoal: 15, geminiApiKey: "AIzaSy-legacy-key" })
+);
+const migratedSettings = settingsStore.get();
+assert.equal("geminiApiKey" in migratedSettings, false, "settings must not carry geminiApiKey");
+assert.equal(migratedSettings.userName, "Yudhan Sebastian");
+assert.equal(migratedSettings.weeklyGoal, 15);
+assert.ok(
+  !memoryStorage.get("opportunity-inbox.settings.v1").includes("geminiApiKey"),
+  "migration must delete the stored key"
+);
+
+// Updating settings must not reintroduce the key.
+settingsStore.update({ userName: "Yudhan Sebastian", weeklyGoal: 15 });
+assert.equal("geminiApiKey" in settingsStore.get(), false);
+
+// The exported JSON must not contain the key anywhere.
+const exportedAfterMigration = platformStore.exportJson();
+assert.ok(!exportedAfterMigration.includes("geminiApiKey"), "exported JSON must not contain geminiApiKey");
+
+// Source checks: no Gemini references and no invented LinkedIn persona left.
+const storageJs = fs.readFileSync(new URL("../src/storage.js", import.meta.url), "utf-8");
+// storage.js may only read the key to delete it (one-time migration); it
+// must never store it as a field.
+assert.ok(!storageJs.includes("geminiApiKey:"), "storage.js must not store geminiApiKey as a field");
+assert.ok(storageJs.includes("if (data.geminiApiKey !== undefined)"), "migration check must exist");
+const appJs = fs.readFileSync(new URL("../src/app.js", import.meta.url), "utf-8");
+assert.ok(!appJs.includes("geminiApiKey"), "app.js must not mention geminiApiKey");
+assert.ok(!appJs.includes('"Sarah"'), "outreach default Sarah must be gone");
+assert.ok(!appJs.includes('"Company"'), "outreach default Company must be gone");
+assert.ok(!appJs.includes('"Software Engineer"'), "outreach default Software Engineer must be gone");
+assert.ok(!appJs.includes("React, TypeScript, Scalable Architecture, Performance"), "headline default keywords must be gone");
+assert.ok(!html.includes("Gemini"), "index.html must not mention Gemini");
+assert.ok(!html.includes("settingsGeminiApiKeyInput"), "index.html must not keep the Gemini input");
+assert.ok(html.includes("LinkedIn Outreach for Gigs"), "LinkedIn heading must be reframed");
+assert.ok(html.includes('value="pitch"') && html.includes("Client pitch"), "pitch type must exist");
+assert.ok(html.includes('value="followup"') && html.includes("Proposal follow-up"), "follow-up type must exist");
+assert.ok(html.includes('value="enquiry"') && html.includes("Portal / AI-training gig enquiry"), "enquiry type must exist");
+assert.ok(html.includes('value="thankyou"') && html.includes("Post-call thank-you"), "thank-you type must exist");
+assert.ok(!html.includes("Direct Recruiter Outreach"), "recruiter outreach type must be gone");
+assert.ok(html.includes("e.g. Upwork client, Mercor"), "Target Client placeholder must be freelance");
+assert.ok(html.includes("e.g. Logo refresh for F&B brands"), "Service / Offer placeholder must be freelance");
+assert.ok(html.includes("e.g. Logo design, hospitality & F&B, 13 yrs"), "headline placeholder must be freelance");
+console.log("  ✓ Gemini key removed and LinkedIn reframed for freelance gigs.");
+
 console.log("\n🎉 ALL SMOKE TESTS PASSED CLEANLY!");
 

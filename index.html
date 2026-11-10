@@ -419,7 +419,7 @@
           <section class="tab-view" id="viewLinkedinTools" data-tab="linkedintools" style="display: none;">
             <div class="card" style="padding: 24px; margin-bottom: 24px;">
               <div class="card-header">
-                <h3>💼 LinkedIn Optimization Suite</h3>
+                <h3>💼 LinkedIn Outreach for Gigs</h3>
               </div>
               <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: -8px;">Craft high-conversion cold outreach messages, stand-out headlines, and formatted posts without leaving your local workspace.</p>
             </div>
@@ -434,10 +434,10 @@
                   <div class="form-group">
                     <label for="liOutreachType">Outreach Objective</label>
                     <select id="liOutreachType">
-                      <option value="recruiter">Direct Recruiter Outreach (Application submitted)</option>
-                      <option value="referral">Asking an Employee for a Referral</option>
-                      <option value="coffee">Informational Coffee Chat Request</option>
-                      <option value="thankYou">Post-Interview Thank You Note</option>
+                      <option value="pitch">Client pitch (cold outreach to a potential client)</option>
+                      <option value="followup">Proposal follow-up (nudge after a sent proposal)</option>
+                      <option value="enquiry">Portal / AI-training gig enquiry</option>
+                      <option value="thankyou">Post-call thank-you note</option>
                     </select>
                   </div>
 
@@ -447,14 +447,14 @@
                       <input id="liRecipientName" placeholder="e.g. Sarah" />
                     </div>
                     <div class="form-group" style="flex: 1;">
-                      <label for="liCompanyName">Target Company</label>
-                      <input id="liCompanyName" placeholder="e.g. Shopify" />
+                      <label for="liCompanyName">Target Client</label>
+                      <input id="liCompanyName" placeholder="e.g. Upwork client, Mercor" />
                     </div>
                   </div>
 
                   <div class="form-group">
-                    <label for="liTargetRole">Target Role</label>
-                    <input id="liTargetRole" placeholder="e.g. Senior Frontend Engineer" />
+                    <label for="liTargetRole">Service / Offer</label>
+                    <input id="liTargetRole" placeholder="e.g. Logo refresh for F&B brands" />
                   </div>
 
                   <button class="primary-btn" id="liGenerateOutreachBtn" type="button" style="width: 100%;">
@@ -479,7 +479,7 @@
                 <div class="cl-config-form">
                   <div class="form-group">
                     <label for="liHeadlineKeywords">Key Domains & Value Prop</label>
-                    <input id="liHeadlineKeywords" placeholder="e.g. React, TypeScript, Performance, Ex-Startup Lead" />
+                    <input id="liHeadlineKeywords" placeholder="e.g. Logo design, hospitality & F&B, 13 yrs" />
                   </div>
                   <button class="secondary-btn" id="liGenerateHeadlineBtn" type="button">Generate 4 Headline Styles</button>
 
@@ -689,12 +689,6 @@
           <label for="settingsWeeklyGoalInput">Weekly Pitch Goal</label>
           <input id="settingsWeeklyGoalInput" name="settingsWeeklyGoal" type="number" min="1" max="100" placeholder="10" required />
           <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Target number of pitches you aim to send every week.</small>
-        </div>
-
-        <div class="form-group">
-          <label for="settingsGeminiApiKeyInput">Gemini API Key (optional)</label>
-          <input id="settingsGeminiApiKeyInput" name="geminiApiKey" type="password" placeholder="AIzaSy..." autocomplete="off" />
-          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Optional for live AI rewrites & deep analysis. Stored only in local storage.</small>
         </div>
 
         <div class="form-actions">
