@@ -252,6 +252,27 @@ function isDateThisMonth(dateStr) {
   return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
 }
 
+// One definition of "pitches sent this week": an opportunity past Lead that
+// was created or moved this week. Home and Statistics must agree on it.
+function countPitchedThisWeek(platforms) {
+  return platforms.filter((p) => {
+    const isPitched = p.status !== STATUS_ENUM.WISHLIST;
+    return isPitched && (isDateThisWeek(p.createdAt) || isDateThisWeek(p.updatedAt));
+  }).length;
+}
+
+// True when the opportunity has ever sat in the given stage. The funnel is
+// measured from recorded history, never inferred from the current stage.
+function hasReachedStage(platform, stage) {
+  return (platform.statusHistory || []).some((entry) => entry.status === stage);
+}
+
+// A conversion rate, or "–" when no opportunity ever entered the stage.
+function formatConversion(reached, entered) {
+  if (entered === 0) return "–";
+  return `${Math.round((reached / entered) * 100)}%`;
+}
+
 function getFollowUpBadge(followUpDate, status) {
   if (!followUpDate) return "";
   if (status === STATUS_ENUM.OFFER || status === STATUS_ENUM.REJECTED || status === STATUS_ENUM.GHOSTED) {
@@ -536,11 +557,8 @@ function renderHome() {
   const settings = settingsStore.get();
   const weeklyGoal = settings.weeklyGoal || 10;
   
-  // Weekly count: pitches sent/progressed this week
-  const weeklyAppliedCount = allPlatforms.filter((p) => {
-    const isApplied = p.status !== STATUS_ENUM.WISHLIST;
-    return isApplied && (isDateThisWeek(p.createdAt) || isDateThisWeek(p.updatedAt));
-  }).length;
+  // Weekly count: pitches sent/progressed this week (shared definition, see countPitchedThisWeek)
+  const weeklyAppliedCount = countPitchedThisWeek(allPlatforms);
 
   elements.homeWeeklyAppliedCount.textContent = weeklyAppliedCount;
   const progressPercent = Math.min(100, (weeklyAppliedCount / weeklyGoal) * 100);
@@ -572,33 +590,37 @@ function renderStatistics() {
   const weeklyGoal = settings.weeklyGoal || 10;
 
   const total = all.length;
-  const applied = all.filter((p) => p.status === STATUS_ENUM.APPLIED).length;
-  const interviewing = all.filter((p) => p.status === STATUS_ENUM.INTERVIEWING).length;
   const offer = all.filter((p) => p.status === STATUS_ENUM.OFFER).length;
 
   // Real date-based filter for active additions
   const thisWeekCount = all.filter((p) => isDateThisWeek(p.createdAt)).length;
   const thisMonthCount = all.filter((p) => isDateThisMonth(p.createdAt)).length;
 
-  const totalActioned = applied + interviewing + offer;
-  const conversionPct = totalActioned > 0 ? Math.round(((interviewing + offer) / totalActioned) * 100) : 0;
+  // Funnel counts come from recorded history: only stages the opportunity
+  // actually sat in count as reached. A Deal that skipped Diskusi does not
+  // count as a Diskusi conversion.
+  const everPitched = all.filter((p) => hasReachedStage(p, STATUS_ENUM.APPLIED)).length;
+  const everDiskusi = all.filter((p) => hasReachedStage(p, STATUS_ENUM.INTERVIEWING)).length;
+  const everDeal = all.filter((p) => hasReachedStage(p, STATUS_ENUM.OFFER)).length;
+  const conversionPct = formatConversion(everDiskusi, everPitched);
 
   elements.kpiTotalApplications.textContent = total;
   elements.kpiThisWeek.textContent = thisWeekCount;
   elements.kpiThisMonth.textContent = thisMonthCount;
-  elements.kpiInterviewConversion.textContent = `${conversionPct}%`;
+  elements.kpiInterviewConversion.textContent = conversionPct;
 
-  const remainingWeekly = Math.max(0, weeklyGoal - thisWeekCount);
+  // Same "pitches sent this week" definition as the Home gauge.
+  const weeklyPitchedCount = countPitchedThisWeek(all);
+  const remainingWeekly = Math.max(0, weeklyGoal - weeklyPitchedCount);
   elements.statsGoalProgressText.textContent =
     remainingWeekly > 0
       ? `You need ${remainingWeekly} more pitches to reach your weekly pitch goal of ${weeklyGoal}.`
       : `Awesome! You have achieved your weekly pitch goal of ${weeklyGoal} pitches!`;
 
   if (elements.conversionAnalysisList) {
-    const appliedOrHigher = applied + interviewing + offer;
     elements.conversionAnalysisList.innerHTML = `
-      <div class="breakdown-row"><span>Pitched → Diskusi</span><span>${appliedOrHigher > 0 ? Math.round(((interviewing + offer) / appliedOrHigher) * 100) : 0}%</span></div>
-      <div class="breakdown-row"><span>Diskusi → Deal</span><span>${interviewing > 0 ? Math.round((offer / (interviewing + offer)) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Pitched → Diskusi</span><span>${formatConversion(everDiskusi, everPitched)}</span></div>
+      <div class="breakdown-row"><span>Diskusi → Deal</span><span>${formatConversion(everDeal, everDiskusi)}</span></div>
       <div class="breakdown-row"><span>Overall Win Rate</span><span>${total > 0 ? Math.round((offer / total) * 100) : 0}%</span></div>
     `;
   }

@@ -197,5 +197,50 @@ assert.ok(parsed.education.includes("Universitas Negeri Malang"));
 assert.ok(parsed.projects.includes("Roast Navigator"));
 console.log("  ✓ Resume parser correctly extracted all 10 fields.");
 
+// 8. Status History & Funnel Inputs
+console.log("8. Testing status history recording & legacy backfill...");
+const lead = platformStore.create({
+  name: "Acme Studio",
+  category: "Logo Refresh",
+  url: "",
+  status: "WISHLIST",
+});
+assert.deepEqual(lead.statusHistory, [{ status: "WISHLIST", at: lead.createdAt }]);
+
+const pitched = platformStore.update(lead.id, { status: "APPLIED" });
+assert.equal(pitched.statusHistory.length, 2);
+assert.equal(pitched.statusHistory[1].status, "APPLIED");
+
+// A no-op update (same stage) must not append a duplicate entry.
+const untouched = platformStore.update(lead.id, { note: "hello" });
+assert.equal(untouched.statusHistory.length, 2);
+
+const deal = platformStore.update(lead.id, { status: "OFFER" });
+assert.equal(deal.statusHistory.length, 3);
+assert.equal(deal.statusHistory[2].status, "OFFER");
+
+// Legacy import without history backfills a single entry from the stage.
+const legacyJson = JSON.stringify({
+  version: 2,
+  platforms: [
+    {
+      id: "legacy-1",
+      name: "Old Client",
+      status: "OFFER",
+      createdAt: "2026-11-01T00:00:00.000Z",
+      updatedAt: "2026-11-01T00:00:00.000Z",
+    },
+  ],
+  contacts: [],
+  settings: {},
+  resume: null,
+});
+platformStore.importJson(legacyJson, "merge");
+const legacy = platformStore.get("legacy-1");
+assert.equal(legacy.statusHistory.length, 1);
+assert.equal(legacy.statusHistory[0].status, "OFFER");
+assert.equal(legacy.statusHistory[0].at, "2026-11-01T00:00:00.000Z");
+console.log("  ✓ status history recorded, no-op updates ignored, legacy imports backfilled.");
+
 console.log("\n🎉 ALL SMOKE TESTS PASSED CLEANLY!");
 

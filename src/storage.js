@@ -42,6 +42,25 @@ export function normalizeStatus(status) {
 }
 
 /**
+ * Status history records every stage an opportunity has sat in, so the
+ * funnel measures real movement instead of inferring it from the current
+ * stage. Entries are { status, at }. Items stored before history existed
+ * backfill a single entry from their current stage.
+ */
+export function normalizeStatusHistory(item) {
+  const fallback = [
+    { status: normalizeStatus(item.status), at: item.createdAt || item.updatedAt || "" },
+  ];
+  if (!Array.isArray(item.statusHistory) || item.statusHistory.length === 0) {
+    return fallback;
+  }
+  const cleaned = item.statusHistory
+    .filter((entry) => entry && typeof entry === "object" && STATUS_ENUM[entry.status])
+    .map((entry) => ({ status: entry.status, at: entry.at || item.createdAt || "" }));
+  return cleaned.length > 0 ? cleaned : fallback;
+}
+
+/**
  * LocalStorageAdapter encapsulates raw localStorage operations,
  * ensuring UI and app code remain decoupled from window.localStorage.
  */
@@ -90,6 +109,7 @@ export const platformStore = {
     const platforms = rawPlatforms.map((p) => ({
       ...p,
       status: normalizeStatus(p.status),
+      statusHistory: normalizeStatusHistory(p),
     }));
     return platforms.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   },
@@ -101,12 +121,14 @@ export const platformStore = {
 
   create(input) {
     const timestamp = now();
+    const status = normalizeStatus(input.status);
     const platform = {
       id: createId(),
       name: (input.name || "").trim(),
       category: (input.category || "").trim(),
       url: (input.url || "").trim(),
-      status: normalizeStatus(input.status),
+      status,
+      statusHistory: [{ status, at: timestamp }],
       followUpDate: (input.followUpDate || "").trim(),
       note: (input.note || "").trim(),
       createdAt: timestamp,
@@ -128,6 +150,11 @@ export const platformStore = {
       }
 
       const targetStatus = patch.status !== undefined ? normalizeStatus(patch.status) : normalizeStatus(platform.status);
+      const history = normalizeStatusHistory(platform);
+      const nextHistory =
+        targetStatus !== normalizeStatus(platform.status)
+          ? [...history, { status: targetStatus, at: timestamp }]
+          : history;
 
       updatedItem = {
         ...platform,
@@ -138,6 +165,7 @@ export const platformStore = {
         followUpDate: patch.followUpDate !== undefined ? patch.followUpDate.trim() : (platform.followUpDate || ""),
         note: patch.note !== undefined ? patch.note.trim() : platform.note,
         status: targetStatus,
+        statusHistory: nextHistory,
         updatedAt: timestamp,
       };
       return updatedItem;
@@ -188,6 +216,7 @@ export const platformStore = {
         category: (item.category || "").trim(),
         url: (item.url || "").trim(),
         status: normalizeStatus(item.status),
+        statusHistory: normalizeStatusHistory(item),
         followUpDate: (item.followUpDate || "").trim(),
         note: (item.note || "").trim(),
         createdAt: item.createdAt || now(),
