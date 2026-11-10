@@ -1490,7 +1490,7 @@ button {
   }
 }
 
-/* RESUME BUILDER SHEET (ATS STANDARD) */
+/* RESUME BUILDER SHEET (single-column document) */
 .resume-sheet-container {
   background: var(--surface);
   border: 1px solid var(--border);
