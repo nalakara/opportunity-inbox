@@ -40,7 +40,7 @@ const elements = {
   searchInput: document.querySelector("#searchInput"),
   sortBySelect: document.querySelector("#sortBySelect"),
   captureButton: document.querySelector("#captureButton"),
-  viewKanbanBtn: document.querySelector("#viewKanbanBtn"),
+  viewCardsBtn: document.querySelector("#viewCardsBtn"),
   viewListBtn: document.querySelector("#viewListBtn"),
 
   // Dialog Elements
@@ -77,7 +77,7 @@ const elements = {
   portalFormError: document.querySelector("#portalFormError"),
 
   // Board Containers
-  kanbanBoard: document.querySelector("#kanbanBoard"),
+  boardGrid: document.querySelector("#boardGrid"),
   listBoard: document.querySelector("#listBoard"),
 
   // Home View Containers
@@ -184,7 +184,7 @@ const elements = {
 };
 
 let activeTab = "board";
-let boardViewMode = "kanban"; // 'kanban' | 'list'
+let boardViewMode = "cards"; // 'cards' | 'list'
 let searchQuery = "";
 let portalSearchQuery = "";
 let sortBy = "updatedDesc";
@@ -291,29 +291,29 @@ function getProcessedPlatforms() {
   return platforms;
 }
 
-function renderKanbanBoard() {
+function renderCardsBoard() {
   const platforms = getProcessedPlatforms();
-  elements.kanbanBoard.innerHTML = "";
+  elements.boardGrid.innerHTML = "";
 
   STAGES_ORDER.forEach((stage) => {
     const stageItems = platforms.filter((p) => p.status === stage);
     const stageLabel = STATUS_LABELS[stage] || stage;
 
     const col = document.createElement("div");
-    col.className = "kanban-column";
+    col.className = "stage-card";
     col.dataset.stage = stage;
 
     const header = document.createElement("div");
-    header.className = "kanban-column-header";
+    header.className = "stage-card-header";
     header.innerHTML = `
-      <div class="kanban-column-title">
+      <div class="stage-card-title">
         <span>${stageLabel}</span>
       </div>
-      <span class="kanban-column-count">${stageItems.length}</span>
+      <span class="stage-card-count">${stageItems.length}</span>
     `;
 
     const cardsContainer = document.createElement("div");
-    cardsContainer.className = "kanban-cards-container";
+    cardsContainer.className = "stage-cards";
     cardsContainer.dataset.stage = stage;
 
     // Drag-over visual feedback on drop target
@@ -353,7 +353,7 @@ function renderKanbanBoard() {
         const url = normalizeUrl(item.url);
         const followUpHtml = getFollowUpBadge(item.followUpDate, item.status);
         const card = document.createElement("div");
-        card.className = "kanban-card";
+        card.className = "opportunity-card";
         card.dataset.id = item.id;
         card.draggable = true;
 
@@ -368,14 +368,14 @@ function renderKanbanBoard() {
         card.addEventListener("dragend", () => {
           card.classList.remove("is-dragging");
           draggedCardId = null;
-          document.querySelectorAll(".kanban-cards-container").forEach((c) => c.classList.remove("drag-over"));
+          document.querySelectorAll(".stage-cards").forEach((c) => c.classList.remove("drag-over"));
         });
 
         card.innerHTML = `
-          <div class="kanban-card-title">${item.name}</div>
-          <div class="kanban-card-meta">${item.category ? `📍 ${item.category}` : "Uncategorized"}</div>
+          <div class="opportunity-card-title">${item.name}</div>
+          <div class="opportunity-card-meta">${item.category ? `📍 ${item.category}` : "Uncategorized"}</div>
           ${followUpHtml ? `<div>${followUpHtml}</div>` : ""}
-          <div class="kanban-card-footer">
+          <div class="opportunity-card-footer">
             ${
               url
                 ? `<a href="${url}" target="_blank" rel="noopener" class="text-link-btn" style="font-size:0.78rem;">Open ↗</a>`
@@ -392,7 +392,7 @@ function renderKanbanBoard() {
     }
 
     const addBtn = document.createElement("button");
-    addBtn.className = "kanban-add-btn stage-add-btn";
+    addBtn.className = "stage-card-add-btn stage-add-btn";
     addBtn.type = "button";
     addBtn.dataset.stage = stage;
     addBtn.textContent = "+ Add opportunity";
@@ -400,7 +400,7 @@ function renderKanbanBoard() {
     col.appendChild(header);
     col.appendChild(cardsContainer);
     col.appendChild(addBtn);
-    elements.kanbanBoard.appendChild(col);
+    elements.boardGrid.appendChild(col);
   });
 }
 
@@ -491,16 +491,16 @@ function renderListBoard() {
 }
 
 function renderBoard() {
-  if (boardViewMode === "kanban") {
-    elements.kanbanBoard.style.display = "flex";
+  if (boardViewMode === "cards") {
+    elements.boardGrid.style.display = "grid";
     elements.listBoard.style.display = "none";
-    elements.viewKanbanBtn.classList.add("is-active");
+    elements.viewCardsBtn.classList.add("is-active");
     elements.viewListBtn.classList.remove("is-active");
-    renderKanbanBoard();
+    renderCardsBoard();
   } else {
-    elements.kanbanBoard.style.display = "none";
+    elements.boardGrid.style.display = "none";
     elements.listBoard.style.display = "flex";
-    elements.viewKanbanBtn.classList.remove("is-active");
+    elements.viewCardsBtn.classList.remove("is-active");
     elements.viewListBtn.classList.add("is-active");
     renderListBoard();
   }
@@ -1389,8 +1389,8 @@ elements.mobileNavLinks.forEach((link) => {
   link.addEventListener("click", () => switchTab(link.dataset.tab));
 });
 
-elements.viewKanbanBtn?.addEventListener("click", () => {
-  boardViewMode = "kanban";
+elements.viewCardsBtn?.addEventListener("click", () => {
+  boardViewMode = "cards";
   renderBoard();
 });
 
@@ -1418,8 +1418,8 @@ elements.sortBySelect?.addEventListener("change", (e) => {
   renderBoard();
 });
 
-// Click delegation for Kanban Board and List Board
-[elements.kanbanBoard, elements.listBoard].forEach((container) => {
+// Click delegation for Cards Board and List Board
+[elements.boardGrid, elements.listBoard].forEach((container) => {
   container?.addEventListener("click", (e) => {
     const addBtn = e.target.closest(".stage-add-btn");
     if (addBtn) {

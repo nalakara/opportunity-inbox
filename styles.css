@@ -614,19 +614,16 @@ button {
   color: var(--text-main);
 }
 
-/* KANBAN BOARD COLUMNS (Aniq-UI Squircle Dark) */
-.kanban-board {
-  display: flex;
+/* BOARD GRID: stage cards that wrap (2x4 on wide screens, 1 column on a phone) */
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 20px;
-  overflow-x: auto;
   padding-bottom: 20px;
-  scrollbar-width: thin;
-  align-items: flex-start;
+  align-items: start;
 }
 
-.kanban-column {
-  width: 310px;
-  flex-shrink: 0;
+.stage-card {
   background: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
@@ -636,7 +633,7 @@ button {
   box-shadow: var(--shadow-card);
 }
 
-.kanban-column-header {
+.stage-card-header {
   padding: 14px 18px;
   color: var(--text-main);
   background: var(--surface);
@@ -653,13 +650,13 @@ button {
   letter-spacing: 0.08em;
 }
 
-.kanban-column[data-stage="WISHLIST"] .kanban-column-title::before,
-.kanban-column[data-stage="APPLIED"] .kanban-column-title::before,
-.kanban-column[data-stage="INTERVIEWING"] .kanban-column-title::before,
-.kanban-column[data-stage="OFFER"] .kanban-column-title::before,
-.kanban-column[data-stage="REJECTED"] .kanban-column-title::before,
-.kanban-column[data-stage="GHOSTED"] .kanban-column-title::before,
-.kanban-column[data-stage="FOLLOW_UP"] .kanban-column-title::before {
+.stage-card[data-stage="WISHLIST"] .stage-card-title::before,
+.stage-card[data-stage="APPLIED"] .stage-card-title::before,
+.stage-card[data-stage="INTERVIEWING"] .stage-card-title::before,
+.stage-card[data-stage="OFFER"] .stage-card-title::before,
+.stage-card[data-stage="REJECTED"] .stage-card-title::before,
+.stage-card[data-stage="GHOSTED"] .stage-card-title::before,
+.stage-card[data-stage="FOLLOW_UP"] .stage-card-title::before {
   content: "";
   width: 8px;
   height: 8px;
@@ -667,21 +664,21 @@ button {
   flex-shrink: 0;
 }
 
-.kanban-column[data-stage="WISHLIST"] .kanban-column-title::before { background: var(--status-wishlist); }
-.kanban-column[data-stage="APPLIED"] .kanban-column-title::before { background: var(--status-applied); }
-.kanban-column[data-stage="INTERVIEWING"] .kanban-column-title::before { background: var(--status-interviewing); }
-.kanban-column[data-stage="OFFER"] .kanban-column-title::before { background: var(--status-offer); }
-.kanban-column[data-stage="REJECTED"] .kanban-column-title::before { background: var(--status-rejected); }
-.kanban-column[data-stage="GHOSTED"] .kanban-column-title::before { background: var(--status-ghosted); }
-.kanban-column[data-stage="FOLLOW_UP"] .kanban-column-title::before { background: var(--status-followup); }
+.stage-card[data-stage="WISHLIST"] .stage-card-title::before { background: var(--status-wishlist); }
+.stage-card[data-stage="APPLIED"] .stage-card-title::before { background: var(--status-applied); }
+.stage-card[data-stage="INTERVIEWING"] .stage-card-title::before { background: var(--status-interviewing); }
+.stage-card[data-stage="OFFER"] .stage-card-title::before { background: var(--status-offer); }
+.stage-card[data-stage="REJECTED"] .stage-card-title::before { background: var(--status-rejected); }
+.stage-card[data-stage="GHOSTED"] .stage-card-title::before { background: var(--status-ghosted); }
+.stage-card[data-stage="FOLLOW_UP"] .stage-card-title::before { background: var(--status-followup); }
 
-.kanban-column-title {
+.stage-card-title {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.kanban-column-count {
+.stage-card-count {
   background: var(--surface-muted);
   color: var(--text-muted);
   font-size: 0.72rem;
@@ -691,7 +688,7 @@ button {
   border: 1px solid var(--border);
 }
 
-.kanban-cards-container {
+.stage-cards {
   padding: 14px;
   overflow-y: auto;
   display: flex;
@@ -701,14 +698,14 @@ button {
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.kanban-cards-container.drag-over {
+.stage-cards.drag-over {
   background: rgba(200, 52, 31, 0.08);
   outline: 2px dashed var(--accent);
   outline-offset: -6px;
   border-radius: var(--radius-lg);
 }
 
-.kanban-card {
+.opportunity-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -722,18 +719,18 @@ button {
   user-select: none;
 }
 
-.kanban-card:active {
+.opportunity-card:active {
   cursor: grabbing;
 }
 
-.kanban-card.is-dragging {
+.opportunity-card.is-dragging {
   opacity: 0.45;
   transform: scale(0.96) rotate(1deg);
   border-color: var(--accent);
   box-shadow: 0 14px 28px rgba(22, 19, 14, 0.2);
 }
 
-.kanban-card:hover {
+.opportunity-card:hover {
   transform: none;
   border-color: var(--border-strong);
   box-shadow: var(--shadow-sm);
@@ -768,18 +765,18 @@ button {
   border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
-.kanban-card-title {
+.opportunity-card-title {
   font-weight: 800;
   font-size: 0.98rem;
   color: var(--text-main);
 }
 
-.kanban-card-meta {
+.opportunity-card-meta {
   color: var(--text-muted);
   font-size: 0.82rem;
 }
 
-.kanban-card-footer {
+.opportunity-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -788,7 +785,7 @@ button {
   border-top: 1px solid var(--border-highlight);
 }
 
-.kanban-add-btn {
+.stage-card-add-btn {
   margin: 10px 14px 14px;
   padding: 10px;
   background: var(--surface);
@@ -801,7 +798,7 @@ button {
   width: calc(100% - 28px);
 }
 
-.kanban-add-btn:hover {
+.stage-card-add-btn:hover {
   background: var(--surface-hover);
   color: var(--accent);
   border-color: var(--accent);
@@ -1164,18 +1161,6 @@ button {
 
   .content-container {
     padding: 20px 16px 90px 16px;
-  }
-
-  /* Kanban Smartphone Horizontal Snap Scroll */
-  .kanban-board {
-    scroll-snap-type: x mandatory;
-    scroll-padding: 16px;
-  }
-
-  .kanban-column {
-    scroll-snap-align: start;
-    width: calc(100vw - 48px);
-    max-width: 320px;
   }
 
   /* Mobile Bottom Navigation Dock */
@@ -1654,7 +1639,7 @@ button {
 .badge,
 .follow-up-badge,
 .portal-status-badge,
-.kanban-column-count,
+.stage-card-count,
 .stage-badge {
   font-family: var(--font-mono);
 }
@@ -1730,7 +1715,7 @@ button {
     background: rgba(20, 18, 14, 0.95);
   }
 
-  .kanban-card.is-dragging {
+  .opportunity-card.is-dragging {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5);
   }
 }

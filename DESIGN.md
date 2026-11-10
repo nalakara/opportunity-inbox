@@ -70,7 +70,7 @@ Semantic colours for badges and scanner feedback (text-safe on paper): ok `#1e7a
 ## Layout
 
 - Left sidebar (260px) with the red brand mark, numbered-style nav, and the user chip at the bottom. On mobile it becomes a fixed drawer plus a bottom nav.
-- Content area: kicker + title + toolbar, then the board or the page content. Kanban columns are 310px wide with a paper header (stage dot + name + count chip); the list view uses the same header as an accordion bar.
+- Content area: kicker + title + toolbar, then the board or the page content. Stage cards sit in a wrapping grid (auto-fill, min 320px — 4 across / 2 rows on a wide screen, 1 column on a phone), each with a paper header (stage dot + name + count chip); the list view uses the same header as an accordion bar.
 - The board is the one place colour is allowed to show up at all, and only as dots.
 
 ## Accessibility

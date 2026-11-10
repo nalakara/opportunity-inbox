@@ -20,7 +20,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 ## Features
 
 ### 📋 Dual-View Pipeline Tracking
-- **Interactive Kanban Board**: Visualize opportunities across 7 structured stages with native **Drag & Drop** support:
+- **Interactive Board Grid**: Seven stage cards in a wrapping grid (4 across on wide screens) with native **Drag & Drop** support:
   - 💡 **Lead**: Prospects & potential clients discovered.
   - 📩 **Pitched**: Pitches & proposals sent.
   - 🗣️ **Diskusi**: Active discussions, calls & negotiations.
