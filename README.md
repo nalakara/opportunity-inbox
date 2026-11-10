@@ -43,7 +43,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 - **⚙️ Dynamic User Preferences**: Customize your display name and weekly pitch target directly in local storage without any accounts.
 
 ### Freelance Tool Suite
-- **📄 Resume Builder**: Create a clean, single-column resume. Features **Upload / Import** for existing CVs (.pdf, .txt, .md, .json) with intelligent local field-matching, live preview sheet, Markdown copy/export, and clean `@media print` PDF generation.
+- **🗄️ CV Vault**: Store finished CV PDFs from CV Studio (label, note, upload date) in IndexedDB, ready to **Open / Download** whenever a portal asks for a CV upload. PDF only, max 10 MB per file; files live in this browser only and are not included in the JSON backup.
 - **✉️ Proposal Drafter**: Draft short, tailored freelance proposals in 4 tones (*Problem-first, Proof-led, Question-led, Warm Outreach*). Supports auto-linking with saved opportunities, live Markdown editing, word count metrics, `.md` download, and clean print-to-PDF formatting.
 - **💼 LinkedIn Optimization Suite**: Craft high-conversion recruiter outreach InMails, referral requests, keyword-rich headlines, and Unicode post styling (bold, italic, mono).
 - **Quick Capture Shortcut**: Press `⌘K` (Mac) or `Ctrl+K` (Windows/Linux) anywhere to open the capture dialog.
@@ -65,7 +65,7 @@ Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers 
 ├── styles.css            # Cabinet Editorial design system (light paper + auto dark mode, self-hosted fonts), responsive styling & print sheets
 ├── src/
 │   ├── app.js            # View routing, DOM rendering, tool logic & event delegation
-│   └── storage.js        # Stores (Opportunities, Portals, Settings, Resume) & JSON backup
+│   └── storage.js        # Stores (Opportunities, Portals, Settings, CV Vault) & JSON backup
 ├── test/
 │   └── smoke-test.js     # Zero-dependency native Node.js smoke test suite
 ├── package.json          # Project metadata and test scripts

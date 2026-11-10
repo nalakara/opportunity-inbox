@@ -1455,98 +1455,89 @@ button {
     overflow: visible !important;
   }
 
-  #resumePrintArea, #resumePrintArea * {
-    visibility: visible;
-  }
-  #resumePrintArea {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-  }
-  .resume-sheet {
-    box-shadow: none !important;
-    padding: 0 !important;
-    border: none !important;
-  }
 }
 
-/* RESUME BUILDER SHEET (single-column document) */
-.resume-sheet-container {
-  background: var(--surface);
+/* CV VAULT (v2.8.0): finished CVs stored as files, ready to download for portal uploads */
+.cv-vault-note {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: -8px;
+}
+
+.cv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.cv-card {
+  background: var(--surface-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  overflow-y: auto;
-  max-height: 750px;
-}
-
-.resume-sheet {
-  background: #FFFFFF;
-  color: #111827;
-  padding: 40px;
-  border-radius: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-size: 0.88rem;
-}
-
-.resume-header {
-  text-align: center;
-  border-bottom: 2px solid #111827;
-  padding-bottom: 12px;
-  margin-bottom: 18px;
-}
-
-.resume-name {
-  font-size: 1.6rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #111827;
-  margin-bottom: 4px;
-}
-
-.resume-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #4B5563;
-  margin-bottom: 6px;
-}
-
-.resume-contacts {
-  font-size: 0.8rem;
-  color: #6B7280;
+  border-radius: var(--radius-xl);
+  padding: 18px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.cv-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
-.resume-section {
-  margin-bottom: 18px;
-}
-
-.resume-section-title {
-  font-size: 0.92rem;
+.cv-card-label {
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-bottom: 1px solid #D1D5DB;
-  padding-bottom: 3px;
-  margin-bottom: 8px;
-  color: #111827;
+  font-size: 1rem;
+  color: var(--text-main);
+  line-height: 1.3;
 }
 
-.resume-body-text {
-  color: #374151;
-  white-space: pre-wrap;
-  line-height: 1.6;
+.cv-card-size {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.cv-card-meta {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cv-card-note {
+  color: var(--text-main);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.cv-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-highlight);
+}
+
+.cv-empty {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-xl);
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 20px;
 }
 
 /* LINKEDIN HEADLINES */
@@ -1566,37 +1557,6 @@ button {
   font-weight: 600;
   color: var(--text-main);
   line-height: 1.4;
-}
-
-/* RESUME IMPORT & UPLOAD */
-.import-tabs {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 4px;
-}
-
-.import-tab-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.import-tab-btn:hover {
-  color: var(--text-main);
-}
-
-.import-tab-btn.is-active {
-  background: var(--surface-card);
-  color: var(--accent);
-  box-shadow: var(--shadow-sm);
 }
 
 .file-dropzone {

@@ -27,10 +27,11 @@ const {
   seedPortalsIfEmpty,
   PORTAL_STATUS,
   settingsStore,
-  resumeStore,
+  cvVaultStore,
+  validateCVFile,
+  createCVRecord,
+  formatFileSize,
   STATUS_ENUM,
-  DEFAULT_RESUME,
-  parseRawResumeText,
 } = await import("../src/storage.js");
 
 console.log("Running Opportunity Inbox Suite Smoke Tests...\n");
@@ -101,23 +102,43 @@ assert.equal(updatedSettings.userName, "Yudhan Sebastian");
 assert.equal(updatedSettings.weeklyGoal, 15);
 console.log("  ✓ settingsStore passed.");
 
-// 4. Resume Store
-console.log("4. Testing resumeStore...");
-const initialResume = resumeStore.get();
-assert.equal(initialResume.fullName, DEFAULT_RESUME.fullName);
+// 4. CV Vault Store (IndexedDB in browsers; in-memory fallback in Node)
+console.log("4. Testing cvVaultStore...");
+const pdfFile = { name: "cv-yudhan-2026.pdf", type: "application/pdf", size: 184320 };
+const txtFile = { name: "notes.txt", type: "text/plain", size: 1024 };
+const bigFile = { name: "huge.pdf", type: "application/pdf", size: 11 * 1024 * 1024 };
 
-resumeStore.save({
-  ...initialResume,
-  fullName: "Yudhan S.",
-  title: "Staff Engineer",
-});
-const savedResume = resumeStore.get();
-assert.equal(savedResume.fullName, "Yudhan S.");
-assert.equal(savedResume.title, "Staff Engineer");
+assert.equal(validateCVFile(pdfFile).ok, true);
+assert.equal(validateCVFile(txtFile).ok, false);
+assert.equal(validateCVFile(bigFile).ok, false);
+assert.equal(formatFileSize(184320), "180 KB");
+assert.equal(formatFileSize(0), "0 KB");
 
-resumeStore.reset();
-assert.equal(resumeStore.get().fullName, DEFAULT_RESUME.fullName);
-console.log("  ✓ resumeStore passed.");
+const record = createCVRecord({ file: pdfFile, label: "", note: "for Upwork" });
+assert.equal(record.label, "cv-yudhan-2026");
+assert.equal(record.fileName, "cv-yudhan-2026.pdf");
+assert.equal(record.note, "for Upwork");
+assert.ok(record.id);
+
+const fakeBlob = new Blob(["%PDF-fake"], { type: "application/pdf" });
+await cvVaultStore.add(record, fakeBlob);
+const stored = await cvVaultStore.list();
+assert.equal(stored.length, 1);
+assert.equal(stored[0].id, record.id);
+assert.equal(stored[0].label, "cv-yudhan-2026");
+assert.equal(stored[0].blob, undefined, "list() returns metadata only, no blob");
+
+const roundTrip = await cvVaultStore.getBlob(record.id);
+assert.ok(roundTrip);
+assert.equal(roundTrip.size, fakeBlob.size);
+
+const updated = await cvVaultStore.update(record.id, { label: "CV Full 2026" });
+assert.equal(updated.label, "CV Full 2026");
+assert.equal((await cvVaultStore.list())[0].label, "CV Full 2026");
+
+await cvVaultStore.remove(record.id);
+assert.equal((await cvVaultStore.list()).length, 0);
+console.log("  ✓ cvVaultStore passed (in-memory fallback).");
 
 // 5. JSON Export & Import V2
 console.log("5. Testing JSON Export & Import round-trip...");
@@ -127,7 +148,6 @@ assert.equal(parsedExport.version, 2);
 assert.ok(Array.isArray(parsedExport.platforms));
 assert.ok(Array.isArray(parsedExport.portals));
 assert.ok(parsedExport.settings);
-assert.ok(parsedExport.resume);
 
 // Clear storage & verify import restores
 memoryStorage.clear();
@@ -151,7 +171,7 @@ const expectedTabs = [
   "statistics",
   "portals",
   "proposal",
-  "resumebuilder",
+  "cvvault",
   "linkedintools",
 ];
 
@@ -169,43 +189,13 @@ for (const tab of expectedTabs) {
 }
 console.log("  ✓ Tab navigation and view container mapping verified.");
 
-// 7. Resume Text Extraction & Matching Test
-console.log("7. Testing Resume Parser & Field Matching...");
-const sampleCV = `Yudhan Sebastian
-Senior Graphic Designer • Brand & Visual Communication
-Bali, Indonesia · yudhansebastian@gmail.com · github.com/nalakara
-
-Senior graphic designer and creative manager with 20+ years of professional experience across hospitality, brand communication, marketing, and independent creative practice.
-
-EXPERTISE
-Visual & Brand Design
-Creative Direction
-AI-Assisted Creative Work
-
-EXPERIENCE
-Creative Manager | Peppers Seminyak, Bali (2013 - 2026)
-• Led day-to-day graphic design and brand consistency.
-
-EDUCATION
-Bachelor Degree in Visual Communication Design | Universitas Negeri Malang
-
-PROJECTS
-Roast Navigator & Beauty Batch OS
-• Built modular business workflows and AI-assisted creative tools.
-`;
-
-const parsed = parseRawResumeText(sampleCV);
-assert.equal(parsed.fullName, "Yudhan Sebastian");
-assert.equal(parsed.title, "Senior Graphic Designer • Brand & Visual Communication");
-assert.equal(parsed.email, "yudhansebastian@gmail.com");
-assert.equal(parsed.location, "Bali, Indonesia");
-assert.equal(parsed.website, "https://github.com/nalakara");
-assert.ok(parsed.summary.includes("20+ years"));
-assert.ok(parsed.skills.includes("Visual & Brand Design"));
-assert.ok(parsed.experience.includes("Peppers Seminyak"));
-assert.ok(parsed.education.includes("Universitas Negeri Malang"));
-assert.ok(parsed.projects.includes("Roast Navigator"));
-console.log("  ✓ Resume parser correctly extracted all 10 fields.");
+// 7. CV Vault File Validation
+console.log("7. Testing CV Vault file validation...");
+assert.equal(validateCVFile(null).ok, false);
+assert.equal(validateCVFile({ name: "cv.PDF", type: "", size: 100 }).ok, true, "extension check covers a missing MIME type");
+assert.equal(validateCVFile({ name: "cv.docx", type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", size: 100 }).ok, false);
+assert.equal(createCVRecord({ file: { name: "My CV.pdf", type: "application/pdf", size: 5000 }, label: "  CV Design  " }).label, "CV Design");
+console.log("  ✓ CV Vault file validation passed.");
 
 // 8. Status History & Funnel Inputs
 console.log("8. Testing status history recording & legacy backfill...");
@@ -243,7 +233,6 @@ const legacyJson = JSON.stringify({
   ],
   portals: [],
   settings: {},
-  resume: null,
 });
 platformStore.importJson(legacyJson, "merge");
 const legacy = platformStore.get("legacy-1");

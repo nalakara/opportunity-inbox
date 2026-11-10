@@ -25,7 +25,7 @@ A quiet pipeline board for freelance opportunities: Lead / Pitched / Diskusi / D
 
 - **Archivo** (500 / 700 / 800) for headings and UI. Self-hosted woff2 in `assets/fonts/`, loaded via `@font-face` in `styles.css`. No Google Fonts link anywhere — the app is offline-first and must render the same offline.
 - **IBM Plex Mono** (400 / 500 / 600) for labels: kickers, section titles, stage names, KPI labels, table headers, badges, pills, counts. Uppercase with wide letter-spacing.
-- Body text is Archivo. The resume sheet preview keeps its own document typography (system sans, paper-white) — it is a document, not app chrome.
+- Body text is Archivo.
 
 ## Color Palette
 
@@ -64,7 +64,7 @@ Semantic colours for badges and scanner feedback (text-safe on paper): ok `#1e7a
 - **One trap, handled:** white text on the bright dark accent `#e0583f` is only 3.73:1, so the primary button and the avatar use dark ink `#14120e` on it instead (5.02:1). The accent as *text* on dark passes (4.61:1).
 - **Stage colours get lighter muted variants** in dark mode (e.g. Lead `#7ba3b8`, Diskusi `#7ba889`, Follow Up `#c9a24e`) so the dots still read on dark; Deal takes the dark accent.
 - **Semantic colours switch to their light variants** in dark mode: ok `#34d399`, warn `#fbbf24`, bad `#f87171`, info `#60a5fa`.
-- **Hardcoded exceptions** live inside the dark block (dialog shadow/backdrop, sidebar backdrop, mobile nav background, dragging shadow). The resume sheet stays a white document in both modes — it is a document, not app chrome.
+- **Hardcoded exceptions** live inside the dark block (dialog shadow/backdrop, sidebar backdrop, mobile nav background, dragging shadow).
 - **Theme-color follows too:** `index.html` carries a light and a dark `theme-color` meta tag with matching `media` attributes.
 
 ## Layout
@@ -90,5 +90,5 @@ Semantic colours for badges and scanner feedback (text-safe on paper): ok `#1e7a
 ## What NOT to change
 
 - The seven stage names and their meanings, the funnel definition, the weekly pitch target, and the Portals directory — the reskin is visual only.
-- The tool suite (resume builder, proposal drafter, LinkedIn suite) keeps its own document styling where it renders documents (resume sheet, print sheets).
+- The tool suite (CV vault, proposal drafter, LinkedIn suite) keeps its own document styling where it renders documents (proposal print sheet).
 - Do not reintroduce gradients, glows, pill radii, or an external font dependency. Do not copy The Cabinet's 390px title-clipping flaw: the page title must fit at 390px.

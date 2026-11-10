@@ -74,7 +74,7 @@
           <div class="nav-section-title">TOOLS</div>
           <ul class="nav-group secondary-tools">
             <li><button class="nav-link" data-tab="proposal" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Proposal Drafter</span></button></li>
-            <li><button class="nav-link" data-tab="resumebuilder" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Resume Builder</span></button></li>
+            <li><button class="nav-link" data-tab="cvvault" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg><span>CV Vault</span></button></li>
             <li><button class="nav-link" data-tab="linkedintools" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg><span>LinkedIn Tools</span></button></li>
           </ul>
         </nav>
@@ -387,106 +387,31 @@
             </div>
           </section>
 
-          <!-- View: RESUME BUILDER -->
-          <section class="tab-view" id="viewResumebuilder" data-tab="resumebuilder" style="display: none;">
-            <div class="cl-workspace">
-              <!-- Left Form / Config Column -->
-              <div class="card cl-form-card">
-                <div class="card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                  <h3>📄 Resume Details</h3>
-                  <div style="display: flex; gap: 8px;">
-                    <button class="secondary-btn sm" id="rbImportResumeBtn" type="button" title="Upload PDF, Markdown, TXT, or JSON resume">📤 Import Resume</button>
-                    <button class="secondary-btn sm" id="rbLoadSampleBtn" type="button">Load Sample Data</button>
-                  </div>
-                </div>
-
-                <form id="rbForm" class="cl-config-form">
-                  <div class="form-row" style="display: flex; gap: 12px;">
-                    <div class="form-group" style="flex: 1;">
-                      <label for="rbFullName">Full Name <span class="required-star">*</span></label>
-                      <input id="rbFullName" required />
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                      <label for="rbTitle">Target Title / Headline</label>
-                      <input id="rbTitle" placeholder="e.g. Senior Frontend Engineer" />
-                    </div>
-                  </div>
-
-                  <div class="form-row" style="display: flex; gap: 12px;">
-                    <div class="form-group" style="flex: 1;">
-                      <label for="rbEmail">Email</label>
-                      <input id="rbEmail" type="email" />
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                      <label for="rbPhone">Phone</label>
-                      <input id="rbPhone" />
-                    </div>
-                  </div>
-
-                  <div class="form-row" style="display: flex; gap: 12px;">
-                    <div class="form-group" style="flex: 1;">
-                      <label for="rbLocation">Location</label>
-                      <input id="rbLocation" placeholder="e.g. Jakarta, ID (Remote)" />
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                      <label for="rbWebsite">Portfolio / GitHub / LinkedIn</label>
-                      <input id="rbWebsite" placeholder="https://github.com/username" />
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="rbSummary">Professional Summary</label>
-                    <textarea id="rbSummary" rows="3" placeholder="Brief narrative highlighting impact, core domains, and technical focus..."></textarea>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="rbSkills">Core Skills & Technologies</label>
-                    <textarea id="rbSkills" rows="2" placeholder="e.g. JavaScript (ES6+), React, Node.js, TypeScript, SQL, Docker, CI/CD"></textarea>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="rbExperience">Work Experience</label>
-                    <textarea id="rbExperience" rows="6" placeholder="Job Title | Company (Years)&#10;• Led project resulting in 40% performance gain...&#10;• Architected client-side caching..."></textarea>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="rbEducation">Education</label>
-                    <textarea id="rbEducation" rows="2" placeholder="B.S. in Computer Science | University (Graduation Year)"></textarea>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="rbProjects">Key Projects</label>
-                    <textarea id="rbProjects" rows="3" placeholder="Project Name (URL)&#10;• Built local-first application using PWA and Service Workers..."></textarea>
-                  </div>
-
-                  <div class="form-actions" style="margin-top: 8px;">
-                    <button class="primary-btn" id="rbSaveBtn" type="button" style="width: 100%;">
-                      💾 Save & Update Resume
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- Right Preview Column -->
-              <div class="card cl-preview-card">
-                <div class="cl-preview-header">
-                  <div>
-                    <h3 style="margin-bottom: 2px;">Resume Preview</h3>
-                    <span class="cl-meta-text">Single-column • High Contrast • 1-Page Layout</span>
-                  </div>
-                  <div class="cl-actions-group">
-                    <button class="secondary-btn sm" id="rbCopyMdBtn" type="button" title="Copy Markdown">📋 Copy .md</button>
-                    <button class="secondary-btn sm" id="rbDownloadMdBtn" type="button" title="Download .md">📥 .md</button>
-                    <button class="secondary-btn sm" id="rbPrintBtn" type="button" title="Print to PDF">🖨️ Print / PDF</button>
-                  </div>
-                </div>
-
-                <div class="resume-sheet-container" id="resumePrintArea">
-                  <div class="resume-sheet" id="resumePreviewSheet">
-                    <!-- Rendered via JS -->
-                  </div>
+          <!-- View: CV VAULT -->
+          <section class="tab-view" id="viewCvvault" data-tab="cvvault" style="display: none;">
+            <div class="card" style="padding: 24px; margin-bottom: 24px;">
+              <div class="card-header" style="justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <h3>CV Vault</h3>
+                <div style="display: flex; gap: 8px;">
+                  <a class="secondary-btn sm" href="https://cv-studio-sable-kappa.vercel.app/" target="_blank" rel="noopener" title="Edit your CVs in CV Studio">Edit in CV Studio ↗</a>
+                  <button class="primary-btn sm" id="cvUploadBtn" type="button">+ Upload CV (PDF)</button>
+                  <input type="file" id="cvFileInput" accept="application/pdf,.pdf" style="display: none;" />
                 </div>
               </div>
+              <p class="cv-vault-note">Finished CVs, ready to download whenever a portal asks for an upload. Files are stored in this browser only (IndexedDB) and are not included in the JSON backup. Edit a CV in CV Studio, export the PDF, upload it here.</p>
+            </div>
+
+            <div class="file-dropzone" id="cvDropzone">
+              <p style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Drag &amp; drop a CV PDF here</p>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">PDF only, max 10 MB per file</p>
+            </div>
+
+            <div class="cv-grid" id="cvGrid">
+              <!-- Rendered via JS -->
+            </div>
+
+            <div class="cv-empty" id="cvEmptyState" style="display: none;">
+              No CVs stored yet. Upload a finished PDF from CV Studio and it will be one click away the next time a portal asks for a CV.
             </div>
           </section>
 
@@ -724,67 +649,25 @@
       </form>
     </dialog>
 
-    <!-- Modal Dialog for Resume Import & Upload -->
-    <dialog class="capture-dialog" id="resumeImportDialog" style="max-width: 600px;">
-      <form class="capture-form" id="resumeImportForm" method="dialog">
+    <!-- Modal Dialog for CV Vault edit -->
+    <dialog class="capture-dialog" id="cvEditDialog" style="max-width: 480px;">
+      <form class="capture-form" id="cvEditForm" method="dialog">
         <div class="dialog-heading">
-          <h2>Import Existing Resume</h2>
-          <button class="icon-button" id="closeResumeImportDialogButton" type="button" aria-label="Close dialog">×</button>
+          <h2>Edit CV</h2>
+          <button class="icon-button" id="closeCvEditDialogButton" type="button" aria-label="Close dialog">×</button>
         </div>
-
-        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: -8px; margin-bottom: 16px;">
-          Upload your existing CV (.pdf, .txt, .md, .json) or paste text. Fields are parsed locally on your device.
-        </p>
-
-        <!-- Import Mode Tabs -->
-        <div class="import-tabs" style="display: flex; gap: 8px; margin-bottom: 16px;">
-          <button class="import-tab-btn is-active" id="importTabFileBtn" type="button">📁 Upload File</button>
-          <button class="import-tab-btn" id="importTabPasteBtn" type="button">📋 Paste Text</button>
+        <div class="form-group">
+          <label for="cvLabelInput">Label</label>
+          <input id="cvLabelInput" placeholder="e.g. CV Full 2026" />
         </div>
-
-        <!-- Mode A: File Upload Dropzone -->
-        <div id="importFileSection">
-          <div class="file-dropzone" id="resumeFileDropzone">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent); margin-bottom: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;" id="dropzoneMainText">Drag & drop your resume file here</p>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Supports PDF, Markdown (.md), Plain Text (.txt), or JSON</p>
-            <button class="secondary-btn sm" id="browseResumeFileBtn" type="button">Browse Local File</button>
-            <input type="file" id="resumeFileInput" accept=".pdf,.txt,.md,.json,text/plain,application/pdf,application/json" style="display: none;" />
-          </div>
+        <div class="form-group">
+          <label for="cvNoteInput">Note (optional)</label>
+          <input id="cvNoteInput" placeholder="e.g. for Upwork, latest from CV Studio" />
         </div>
-
-        <!-- Mode B: Paste Text -->
-        <div id="importPasteSection" style="display: none;">
-          <div class="form-group">
-            <label for="resumePasteInput">Paste Raw Resume / CV Text</label>
-            <textarea id="resumePasteInput" rows="7" placeholder="Paste full resume text copied from PDF, Word, or LinkedIn profile here..."></textarea>
-          </div>
-          <button class="secondary-btn sm" id="parsePastedResumeBtn" type="button" style="width: 100%; margin-top: 4px;">Extract & Match Fields</button>
-        </div>
-
-        <!-- Extraction Status & Preview Box -->
-        <div class="import-status-box" id="importStatusBox" style="display: none; margin-top: 16px;">
-          <div class="card" style="padding: 14px; background: var(--surface); border: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span style="font-weight: 700; font-size: 0.88rem; color: var(--text-main);">Detected Resume Fields</span>
-              <span class="badge" id="importConfidenceBadge" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">Parsed</span>
-            </div>
-            <div id="importParsedSummary" style="font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
-              <!-- Rendered via JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Optional Gemini AI Extraction CTA if API Key exists -->
-        <div id="importAiOptionBox" style="display: none; margin-top: 12px;">
-          <button class="secondary-btn sm" id="geminiEnhanceResumeBtn" type="button" style="width: 100%; font-size: 0.82rem;">
-            Refine & Polish Extraction with Gemini AI
-          </button>
-        </div>
-
+        <p id="cvEditFileMeta" style="color: var(--text-muted); font-size: 0.82rem;"></p>
         <div class="form-actions" style="margin-top: 20px;">
-          <button class="secondary-btn" id="cancelResumeImportButton" type="button">Cancel</button>
-          <button class="primary-btn" id="applyResumeImportBtn" type="button" disabled>Apply to Resume Form</button>
+          <button class="secondary-btn" id="cancelCvEditButton" type="button">Cancel</button>
+          <button class="primary-btn" id="saveCvEditButton" type="button">Save</button>
         </div>
       </form>
     </dialog>

@@ -187,7 +187,6 @@ export const platformStore = {
       platforms: adapter.get(),
       portals: portalsAdapter.get(),
       settings: settingsStore.get(),
-      resume: resumeStore.get(),
     };
     return JSON.stringify(payload, null, 2);
   },
@@ -205,7 +204,6 @@ export const platformStore = {
         if (Array.isArray(parsed.platforms)) platformArray = parsed.platforms;
         if (Array.isArray(parsed.portals)) portalArray = parsed.portals;
         if (parsed.settings) incomingSettings = parsed.settings;
-        if (parsed.resume) resumeStore.save(parsed.resume);
       } else {
         throw new Error("Invalid backup file format.");
       }
@@ -280,11 +278,9 @@ export const platformStore = {
 
 const SETTINGS_KEY = "opportunity-inbox.settings.v1";
 const PORTALS_KEY = "opportunity-inbox.portals.v1";
-const RESUME_KEY = "opportunity-inbox.resume.v1";
 
 const settingsAdapter = new LocalStorageAdapter(SETTINGS_KEY);
 const portalsAdapter = new LocalStorageAdapter(PORTALS_KEY);
-const resumeAdapter = new LocalStorageAdapter(RESUME_KEY);
 
 const DEFAULT_SETTINGS = {
   userName: "Yudhan",
@@ -317,204 +313,6 @@ export const settingsStore = {
   },
 };
 
-export const DEFAULT_RESUME = {
-  fullName: "Yudhan Sebastian",
-  title: "Frontend & Full Stack Software Engineer",
-  email: "yudhan@example.com",
-  phone: "+62 812 3456 7890",
-  location: "Jakarta, Indonesia (Remote)",
-  website: "https://github.com/nalakara",
-  summary: "Results-driven Software Engineer with 5+ years of experience engineering high-performance web applications, resilient client-side systems, and intuitive design systems. Passionate about zero-dependency architecture, accessibility, and high developer velocity.",
-  skills: "JavaScript (ES6+), TypeScript, React, HTML5, CSS3, Node.js, WebSockets, Service Workers, Git, REST APIs, Performance Optimization",
-  experience: `Senior Frontend Engineer | Tech Platform Inc. (2023 - Present)
-• Architected high-performance web applications serving 100k+ active users with sub-second page loads.
-• Spearheaded local-first offline caching strategies using Service Workers, reducing network overhead by 45%.
-• Mentored 5 junior engineers and established automated linting, testing, and accessibility guidelines.
-
-Web Application Developer | Creative Studio (2021 - 2023)
-• Engineered responsive customer-facing web dashboards with modular component architectures.
-• Collaborated closely with cross-functional product and design teams to iterate rapidly from wireframes to production.
-• Optimized Core Web Vitals (LCP, CLS, INP) achieving consistent 95+ Lighthouse scores.`,
-  education: `B.S. in Computer Science | State University (2017 - 2021)
-• Graduated with Honors. Focus on Distributed Systems & Software Engineering.`,
-  projects: `Opportunity Inbox (github.com/nalakara/opportunity-inbox)
-• Local-first job search pipeline and CRM with zero cloud dependencies and offline-ready storage.
-• Built with pure vanilla JavaScript, CSS3 design system, and Service Worker caching.`
-};
-
-export const resumeStore = {
-  get() {
-    const raw = resumeAdapter.get();
-    if (!raw || typeof raw !== "object" || Array.isArray(raw) || !raw.fullName) {
-      return { ...DEFAULT_RESUME };
-    }
-    return raw;
-  },
-  save(data) {
-    resumeAdapter.set(data);
-    return data;
-  },
-  reset() {
-    resumeAdapter.set(DEFAULT_RESUME);
-    return { ...DEFAULT_RESUME };
-  }
-};
-
-export function parseRawResumeText(rawText) {
-  if (!rawText || typeof rawText !== "string") {
-    return {
-      fullName: "",
-      title: "",
-      email: "",
-      phone: "",
-      location: "",
-      website: "",
-      summary: "",
-      skills: "",
-      experience: "",
-      education: "",
-      projects: "",
-    };
-  }
-
-  const lines = rawText
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-
-  const result = {
-    fullName: "",
-    title: "",
-    email: "",
-    phone: "",
-    location: "",
-    website: "",
-    summary: "",
-    skills: "",
-    experience: "",
-    education: "",
-    projects: "",
-  };
-
-  if (lines.length === 0) return result;
-
-  // 1. Email extraction
-  const emailMatch = rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  if (emailMatch) {
-    result.email = emailMatch[0].trim();
-  }
-
-  // 2. Phone extraction (avoid matching years like 2011 - 2013)
-  const phoneMatches = rawText.matchAll(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,5}/g);
-  for (const match of phoneMatches) {
-    const candidate = match[0].trim();
-    if (candidate.length >= 8 && !/20\d\d/.test(candidate)) {
-      result.phone = candidate;
-      break;
-    }
-  }
-
-  // 3. Website / Portfolio / GitHub / LinkedIn
-  const urlMatches = rawText.matchAll(/(?:https?:\/\/)?(?:www\.)?(github\.com\/[a-zA-Z0-9_-]+|linkedin\.com\/in\/[a-zA-Z0-9_-]+|[a-zA-Z0-9-]+\.(?:com|org|dev|io|me|net|app|id)(?:\/[^\s·|,]*)?)/gi);
-  for (const match of urlMatches) {
-    const candidate = match[0].trim();
-    if (result.email && result.email.toLowerCase().includes(candidate.toLowerCase())) {
-      continue;
-    }
-    result.website = candidate.startsWith("http") ? candidate : `https://${candidate}`;
-    break;
-  }
-
-  // 4. Section detection keywords
-  const SECTION_PATTERNS = {
-    skills: /^(EXPERTISE|CORE COMPETENCIES|SKILLS|TECHNICAL SKILLS|TOOLS|AREAS OF EXPERTISE|COMPETENCIES)$/i,
-    experience: /^(EXPERIENCE|WORK EXPERIENCE|PROFESSIONAL EXPERIENCE|EMPLOYMENT HISTORY|WORK HISTORY|INDEPENDENT PRACTICE|EARLY CAREER)$/i,
-    education: /^(EDUCATION|ACADEMIC BACKGROUND|EDUCATION & CREDENTIALS|DEGREES)$/i,
-    projects: /^(PROJECTS|SELECTED PROJECTS|KEY PROJECTS|PORTFOLIO|SELECTED PUBLIC GITHUB PROJECTS)$/i,
-    summary: /^(SUMMARY|PROFESSIONAL SUMMARY|ABOUT ME|PROFILE|EXECUTIVE SUMMARY)$/i,
-    credentials: /^(CREDENTIALS|CERTIFICATIONS|CERTIFICATES|AWARDS|LANGUAGES)$/i,
-  };
-
-  let currentSection = "header";
-  const sections = {
-    header: [],
-    summary: [],
-    skills: [],
-    experience: [],
-    education: [],
-    projects: [],
-    credentials: [],
-  };
-
-  for (const line of lines) {
-    let matchedKey = null;
-    for (const [key, regex] of Object.entries(SECTION_PATTERNS)) {
-      if (regex.test(line)) {
-        matchedKey = key;
-        break;
-      }
-    }
-
-    if (matchedKey) {
-      currentSection = matchedKey;
-    } else {
-      sections[currentSection].push(line);
-    }
-  }
-
-  // 5. Process Header Lines
-  const headerLines = sections.header;
-  if (headerLines.length > 0) {
-    result.fullName = headerLines[0];
-  }
-  if (headerLines.length > 1) {
-    result.title = headerLines[1];
-  }
-
-  // Location from contact line (usually line 2 or 3)
-  for (let i = 2; i < Math.min(5, headerLines.length); i++) {
-    const line = headerLines[i];
-    const tokens = line.split(/[·|•]/).map((t) => t.trim());
-    for (const t of tokens) {
-      if (
-        t &&
-        !t.includes("@") &&
-        !t.includes("http") &&
-        !t.includes(".com") &&
-        !t.includes("github") &&
-        !t.includes("linkedin")
-      ) {
-        if (/^[A-Za-z\s]+(?:,\s*[A-Za-z\s]+)?$/.test(t) && t.length > 2 && t.length < 50) {
-          result.location = t;
-          break;
-        }
-      }
-    }
-    if (result.location) break;
-  }
-
-  // Summary
-  if (sections.summary.length > 0) {
-    result.summary = sections.summary.join("\n\n");
-  } else if (headerLines.length > 3) {
-    result.summary = headerLines.slice(3).join(" ");
-  }
-
-  // Skills
-  const skillsList = [...sections.skills, ...(sections.credentials || [])];
-  result.skills = skillsList.join("\n");
-
-  // Experience
-  result.experience = sections.experience.join("\n\n");
-
-  // Education
-  result.education = sections.education.join("\n\n");
-
-  // Projects
-  result.projects = sections.projects.join("\n\n");
-
-  return result;
-}
 
 export const PORTAL_CATEGORIES = ["AI Training", "Marketplace", "Microtask", "Other"];
 
@@ -622,5 +420,163 @@ export const portalStore = {
   remove(id) {
     const remaining = portalsAdapter.get().filter((p) => p.id !== id);
     portalsAdapter.set(remaining);
+  },
+};
+
+/* ------------------------------------------------------------------ */
+/* CV Vault: finished CV files, stored in IndexedDB (not localStorage: */
+/* PDFs are too big for the ~5 MB localStorage budget). Files are NOT  */
+/* included in the JSON backup/export; they live in this browser only  */
+/* until a backend exists. In environments without IndexedDB (the Node */
+/* smoke test), an in-memory map backs the same async interface.       */
+/* ------------------------------------------------------------------ */
+
+const CV_VAULT_DB_NAME = "opportunity-inbox-cv-vault";
+const CV_VAULT_STORE_NAME = "cvs";
+const CV_VAULT_DB_VERSION = 1;
+
+export const CV_VAULT_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+export function validateCVFile(file) {
+  if (!file) return { ok: false, error: "No file selected." };
+  const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+  if (!isPdf) return { ok: false, error: "CV Vault stores PDF files only." };
+  if (file.size > CV_VAULT_MAX_FILE_SIZE) {
+    return { ok: false, error: "File is larger than 10 MB." };
+  }
+  return { ok: true, error: "" };
+}
+
+export function createCVRecord({ file, label, note }) {
+  const baseName = (file.name || "cv.pdf").replace(/\.pdf$/i, "");
+  const timestamp = now();
+  return {
+    id: createId(),
+    label: (label || "").trim() || baseName,
+    fileName: file.name || "cv.pdf",
+    fileSize: file.size || 0,
+    fileType: file.type || "application/pdf",
+    note: (note || "").trim(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
+export function formatFileSize(bytes) {
+  if (!bytes) return "0 KB";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+const cvVaultMemory = new Map();
+
+function cvVaultIdbAvailable() {
+  return typeof indexedDB !== "undefined";
+}
+
+function openCvVaultDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(CV_VAULT_DB_NAME, CV_VAULT_DB_VERSION);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains(CV_VAULT_STORE_NAME)) {
+        req.result.createObjectStore(CV_VAULT_STORE_NAME, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function cvVaultStoreHandle(db, mode) {
+  return db.transaction(CV_VAULT_STORE_NAME, mode).objectStore(CV_VAULT_STORE_NAME);
+}
+
+function cvVaultRequest(req) {
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function stripCvBlob(row) {
+  const { blob, ...meta } = row;
+  return meta;
+}
+
+export const cvVaultStore = {
+  async list() {
+    if (!cvVaultIdbAvailable()) {
+      return [...cvVaultMemory.values()].map(stripCvBlob).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    }
+    const db = await openCvVaultDb();
+    try {
+      const rows = await cvVaultRequest(cvVaultStoreHandle(db, "readonly").getAll());
+      return rows.map(stripCvBlob).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    } finally {
+      db.close();
+    }
+  },
+
+  async add(record, blob) {
+    const row = { ...record, blob };
+    if (!cvVaultIdbAvailable()) {
+      cvVaultMemory.set(record.id, row);
+      return { ...record };
+    }
+    const db = await openCvVaultDb();
+    try {
+      await cvVaultRequest(cvVaultStoreHandle(db, "readwrite").put(row));
+      return { ...record };
+    } finally {
+      db.close();
+    }
+  },
+
+  async update(id, patch) {
+    if (!cvVaultIdbAvailable()) {
+      const row = cvVaultMemory.get(id);
+      if (!row) return null;
+      const updated = { ...row, ...patch, updatedAt: now() };
+      cvVaultMemory.set(id, updated);
+      return stripCvBlob(updated);
+    }
+    const db = await openCvVaultDb();
+    try {
+      const store = cvVaultStoreHandle(db, "readwrite");
+      const row = await cvVaultRequest(store.get(id));
+      if (!row) return null;
+      const updated = { ...row, ...patch, updatedAt: now() };
+      await cvVaultRequest(store.put(updated));
+      return stripCvBlob(updated);
+    } finally {
+      db.close();
+    }
+  },
+
+  async remove(id) {
+    if (!cvVaultIdbAvailable()) {
+      cvVaultMemory.delete(id);
+      return;
+    }
+    const db = await openCvVaultDb();
+    try {
+      await cvVaultRequest(cvVaultStoreHandle(db, "readwrite").delete(id));
+    } finally {
+      db.close();
+    }
+  },
+
+  async getBlob(id) {
+    if (!cvVaultIdbAvailable()) {
+      return cvVaultMemory.get(id)?.blob || null;
+    }
+    const db = await openCvVaultDb();
+    try {
+      const row = await cvVaultRequest(cvVaultStoreHandle(db, "readonly").get(id));
+      return row?.blob || null;
+    } finally {
+      db.close();
+    }
   },
 };

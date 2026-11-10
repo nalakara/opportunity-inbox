@@ -1,4 +1,4 @@
-import { platformStore, settingsStore, portalStore, seedPortalsIfEmpty, PORTAL_STATUS, PORTAL_STATUS_LABELS, resumeStore, DEFAULT_RESUME, STATUS_ENUM, STATUS_LABELS, parseRawResumeText } from "./storage.js";
+import { platformStore, settingsStore, portalStore, seedPortalsIfEmpty, PORTAL_STATUS, PORTAL_STATUS_LABELS, cvVaultStore, validateCVFile, createCVRecord, formatFileSize, STATUS_ENUM, STATUS_LABELS } from "./storage.js";
 
 const STAGES_ORDER = [
   STATUS_ENUM.WISHLIST,
@@ -120,48 +120,21 @@ const elements = {
   clPrintBtn: document.querySelector("#clPrintBtn"),
   clOutputTextarea: document.querySelector("#clOutputTextarea"),
 
-  // Resume Builder Elements
-  viewResumebuilder: document.querySelector("#viewResumebuilder"),
-  rbLoadSampleBtn: document.querySelector("#rbLoadSampleBtn"),
-  rbFullName: document.querySelector("#rbFullName"),
-  rbTitle: document.querySelector("#rbTitle"),
-  rbEmail: document.querySelector("#rbEmail"),
-  rbPhone: document.querySelector("#rbPhone"),
-  rbLocation: document.querySelector("#rbLocation"),
-  rbWebsite: document.querySelector("#rbWebsite"),
-  rbSummary: document.querySelector("#rbSummary"),
-  rbSkills: document.querySelector("#rbSkills"),
-  rbExperience: document.querySelector("#rbExperience"),
-  rbEducation: document.querySelector("#rbEducation"),
-  rbProjects: document.querySelector("#rbProjects"),
-  rbSaveBtn: document.querySelector("#rbSaveBtn"),
-  rbImportResumeBtn: document.querySelector("#rbImportResumeBtn"),
-  rbCopyMdBtn: document.querySelector("#rbCopyMdBtn"),
-  rbDownloadMdBtn: document.querySelector("#rbDownloadMdBtn"),
-  rbPrintBtn: document.querySelector("#rbPrintBtn"),
-  resumePreviewSheet: document.querySelector("#resumePreviewSheet"),
-
-  // Resume Import Dialog Elements
-  resumeImportDialog: document.querySelector("#resumeImportDialog"),
-  resumeImportForm: document.querySelector("#resumeImportForm"),
-  closeResumeImportDialogButton: document.querySelector("#closeResumeImportDialogButton"),
-  cancelResumeImportButton: document.querySelector("#cancelResumeImportButton"),
-  importTabFileBtn: document.querySelector("#importTabFileBtn"),
-  importTabPasteBtn: document.querySelector("#importTabPasteBtn"),
-  importFileSection: document.querySelector("#importFileSection"),
-  importPasteSection: document.querySelector("#importPasteSection"),
-  resumeFileDropzone: document.querySelector("#resumeFileDropzone"),
-  browseResumeFileBtn: document.querySelector("#browseResumeFileBtn"),
-  resumeFileInput: document.querySelector("#resumeFileInput"),
-  dropzoneMainText: document.querySelector("#dropzoneMainText"),
-  resumePasteInput: document.querySelector("#resumePasteInput"),
-  parsePastedResumeBtn: document.querySelector("#parsePastedResumeBtn"),
-  importStatusBox: document.querySelector("#importStatusBox"),
-  importParsedSummary: document.querySelector("#importParsedSummary"),
-  importConfidenceBadge: document.querySelector("#importConfidenceBadge"),
-  importAiOptionBox: document.querySelector("#importAiOptionBox"),
-  geminiEnhanceResumeBtn: document.querySelector("#geminiEnhanceResumeBtn"),
-  applyResumeImportBtn: document.querySelector("#applyResumeImportBtn"),
+  // CV Vault Elements
+  viewCvvault: document.querySelector("#viewCvvault"),
+  cvUploadBtn: document.querySelector("#cvUploadBtn"),
+  cvFileInput: document.querySelector("#cvFileInput"),
+  cvDropzone: document.querySelector("#cvDropzone"),
+  cvGrid: document.querySelector("#cvGrid"),
+  cvEmptyState: document.querySelector("#cvEmptyState"),
+  cvEditDialog: document.querySelector("#cvEditDialog"),
+  cvEditForm: document.querySelector("#cvEditForm"),
+  closeCvEditDialogButton: document.querySelector("#closeCvEditDialogButton"),
+  cancelCvEditButton: document.querySelector("#cancelCvEditButton"),
+  saveCvEditButton: document.querySelector("#saveCvEditButton"),
+  cvLabelInput: document.querySelector("#cvLabelInput"),
+  cvNoteInput: document.querySelector("#cvNoteInput"),
+  cvEditFileMeta: document.querySelector("#cvEditFileMeta"),
 
   // LinkedIn Tools Elements
   viewLinkedinTools: document.querySelector("#viewLinkedinTools"),
@@ -757,7 +730,7 @@ const TAB_VIEW_MAP = {
   statistics: "viewStatistics",
   portals: "viewPortals",
   proposal: "viewProposal",
-  resumebuilder: "viewResumebuilder",
+  cvvault: "viewCvvault",
   linkedintools: "viewLinkedinTools",
 };
 
@@ -790,9 +763,9 @@ function switchTab(tabName) {
       populateClJobSelect();
       if (!elements.clOutputTextarea.value) generateProposal();
     }
-    else if (tabName === "resumebuilder") {
-      elements.pageTitle.textContent = "Resume Builder";
-      renderResumeBuilder();
+    else if (tabName === "cvvault") {
+      elements.pageTitle.textContent = "CV Vault";
+      refreshCVVault();
     }
     else if (tabName === "linkedintools") {
       elements.pageTitle.textContent = "LinkedIn Optimization Suite";
@@ -814,356 +787,121 @@ function render() {
   if (activeTab === "home") renderHome();
   if (activeTab === "statistics") renderStatistics();
   if (activeTab === "portals") renderPortals();
-  if (activeTab === "resumebuilder") renderResumeBuilder();
+  if (activeTab === "cvvault") renderCVVault();
 }
 
-/* Resume Builder Functions */
-function renderResumeBuilder() {
-  const resume = resumeStore.get();
-  if (elements.rbFullName) elements.rbFullName.value = resume.fullName || "";
-  if (elements.rbTitle) elements.rbTitle.value = resume.title || "";
-  if (elements.rbEmail) elements.rbEmail.value = resume.email || "";
-  if (elements.rbPhone) elements.rbPhone.value = resume.phone || "";
-  if (elements.rbLocation) elements.rbLocation.value = resume.location || "";
-  if (elements.rbWebsite) elements.rbWebsite.value = resume.website || "";
-  if (elements.rbSummary) elements.rbSummary.value = resume.summary || "";
-  if (elements.rbSkills) elements.rbSkills.value = resume.skills || "";
-  if (elements.rbExperience) elements.rbExperience.value = resume.experience || "";
-  if (elements.rbEducation) elements.rbEducation.value = resume.education || "";
-  if (elements.rbProjects) elements.rbProjects.value = resume.projects || "";
+/* CV Vault Functions: finished CVs stored as files (IndexedDB), ready to download */
+let cvVaultCache = [];
+let editingCvId = null;
 
-  renderResumeSheet(resume);
-}
-
-function renderResumeSheet(resume) {
-  if (!elements.resumePreviewSheet) return;
-  const contacts = [resume.email, resume.phone, resume.location, resume.website].filter(Boolean).join(" • ");
-
-  elements.resumePreviewSheet.innerHTML = `
-    <header class="resume-header">
-      <div class="resume-name">${resume.fullName || "Untitled Name"}</div>
-      ${resume.title ? `<div class="resume-title">${resume.title}</div>` : ""}
-      ${contacts ? `<div class="resume-contacts">${contacts}</div>` : ""}
-    </header>
-
-    ${resume.summary ? `
-      <section class="resume-section">
-        <div class="resume-section-title">Professional Summary</div>
-        <div class="resume-body-text">${resume.summary}</div>
-      </section>
-    ` : ""}
-
-    ${resume.skills ? `
-      <section class="resume-section">
-        <div class="resume-section-title">Skills & Technologies</div>
-        <div class="resume-body-text">${resume.skills}</div>
-      </section>
-    ` : ""}
-
-    ${resume.experience ? `
-      <section class="resume-section">
-        <div class="resume-section-title">Professional Experience</div>
-        <div class="resume-body-text">${resume.experience}</div>
-      </section>
-    ` : ""}
-
-    ${resume.projects ? `
-      <section class="resume-section">
-        <div class="resume-section-title">Key Projects</div>
-        <div class="resume-body-text">${resume.projects}</div>
-      </section>
-    ` : ""}
-
-    ${resume.education ? `
-      <section class="resume-section">
-        <div class="resume-section-title">Education & Credentials</div>
-        <div class="resume-body-text">${resume.education}</div>
-      </section>
-    ` : ""}
-  `;
-}
-
-function saveResumeFromInputs() {
-  const data = {
-    fullName: elements.rbFullName?.value.trim() || "Untitled",
-    title: elements.rbTitle?.value.trim() || "",
-    email: elements.rbEmail?.value.trim() || "",
-    phone: elements.rbPhone?.value.trim() || "",
-    location: elements.rbLocation?.value.trim() || "",
-    website: elements.rbWebsite?.value.trim() || "",
-    summary: elements.rbSummary?.value.trim() || "",
-    skills: elements.rbSkills?.value.trim() || "",
-    experience: elements.rbExperience?.value.trim() || "",
-    education: elements.rbEducation?.value.trim() || "",
-    projects: elements.rbProjects?.value.trim() || "",
-  };
-  resumeStore.save(data);
-  renderResumeSheet(data);
-  alert("✅ Resume saved successfully!");
-}
-
-function getResumeMarkdown() {
-  const r = resumeStore.get();
-  return `# ${r.fullName}
-**${r.title}**
-${[r.email, r.phone, r.location, r.website].filter(Boolean).join(" | ")}
-
-## Professional Summary
-${r.summary}
-
-## Skills & Technologies
-${r.skills}
-
-## Experience
-${r.experience}
-
-## Projects
-${r.projects}
-
-## Education
-${r.education}
-`;
-}
-
-/* Resume Upload & Import Logic */
-let pendingImportedResume = null;
-let lastImportedRawText = "";
-
-function openResumeImportDialog() {
-  if (!elements.resumeImportDialog) return;
-  pendingImportedResume = null;
-  lastImportedRawText = "";
-  if (elements.resumeFileInput) elements.resumeFileInput.value = "";
-  if (elements.resumePasteInput) elements.resumePasteInput.value = "";
-  if (elements.importStatusBox) elements.importStatusBox.style.display = "none";
-  if (elements.applyResumeImportBtn) elements.applyResumeImportBtn.disabled = true;
-  if (elements.resumeFileDropzone) {
-    elements.resumeFileDropzone.classList.remove("has-file", "dragover");
-    if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = "Drag & drop your resume file here";
-  }
-
-  const settings = settingsStore.get();
-  if (elements.importAiOptionBox) {
-    elements.importAiOptionBox.style.display = settings.geminiApiKey ? "block" : "none";
-  }
-
-  switchImportTab("file");
-  elements.resumeImportDialog.showModal();
-}
-
-function closeResumeImportDialog() {
-  elements.resumeImportDialog?.close();
-}
-
-function switchImportTab(tab) {
-  if (tab === "file") {
-    elements.importTabFileBtn?.classList.add("is-active");
-    elements.importTabPasteBtn?.classList.remove("is-active");
-    if (elements.importFileSection) elements.importFileSection.style.display = "block";
-    if (elements.importPasteSection) elements.importPasteSection.style.display = "none";
-  } else {
-    elements.importTabPasteBtn?.classList.add("is-active");
-    elements.importTabFileBtn?.classList.remove("is-active");
-    if (elements.importPasteSection) elements.importPasteSection.style.display = "block";
-    if (elements.importFileSection) elements.importFileSection.style.display = "none";
-  }
-}
-
-async function extractTextFromPdf(file) {
-  if (!window.pdfjsLib) {
-    await new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-      script.onload = () => {
-        if (window.pdfjsLib) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-          resolve();
-        } else {
-          reject(new Error("PDF library initialization failed"));
-        }
-      };
-      script.onerror = () => reject(new Error("Unable to load PDF parser from CDN. Please paste text directly into the Paste Text tab."));
-      document.head.appendChild(script);
-    });
-  }
-
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = "";
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const page = await pdf.getPage(pageNum);
-    const content = await page.getTextContent();
-    const strings = content.items.map((item) => item.str);
-    fullText += strings.join(" ") + "\n\n";
-  }
-  return fullText;
-}
-
-async function processResumeFile(file) {
-  if (!file) return;
-  if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = `Reading ${file.name}...`;
-
+async function refreshCVVault() {
   try {
-    let parsedData = null;
-    let rawText = "";
-
-    if (file.name.endsWith(".json") || file.type === "application/json") {
-      const jsonText = await file.text();
-      const parsedJson = JSON.parse(jsonText);
-      const target = parsedJson.resume || parsedJson;
-      parsedData = {
-        fullName: target.fullName || target.name || "",
-        title: target.title || target.headline || "",
-        email: target.email || "",
-        phone: target.phone || "",
-        location: target.location || "",
-        website: target.website || target.url || "",
-        summary: target.summary || "",
-        skills: target.skills || (Array.isArray(target.skills) ? target.skills.join(", ") : ""),
-        experience: target.experience || (Array.isArray(target.experience) ? JSON.stringify(target.experience, null, 2) : ""),
-        education: target.education || "",
-        projects: target.projects || "",
-      };
-      rawText = jsonText;
-    } else if (file.name.endsWith(".pdf") || file.type === "application/pdf") {
-      rawText = await extractTextFromPdf(file);
-      parsedData = parseRawResumeText(rawText);
-    } else {
-      rawText = await file.text();
-      parsedData = parseRawResumeText(rawText);
-    }
-
-    lastImportedRawText = rawText;
-    pendingImportedResume = parsedData;
-    displayParsedPreview(parsedData, file.name);
+    cvVaultCache = await cvVaultStore.list();
   } catch (err) {
-    console.error("Resume file extraction error:", err);
-    alert(`Could not extract resume from file: ${err.message}`);
-    if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = "Drag & drop your resume file here";
+    console.error("CV Vault load failed:", err);
+    cvVaultCache = [];
   }
+  renderCVVault();
 }
 
-function processPastedResume() {
-  const text = elements.resumePasteInput?.value.trim();
-  if (!text) {
-    alert("Please paste resume text first.");
-    return;
+function renderCVVault() {
+  if (!elements.cvGrid) return;
+  const items = cvVaultCache;
+  if (elements.cvEmptyState) {
+    elements.cvEmptyState.style.display = items.length === 0 ? "block" : "none";
   }
-  lastImportedRawText = text;
-  const parsedData = parseRawResumeText(text);
-  pendingImportedResume = parsedData;
-  displayParsedPreview(parsedData, "Pasted Text");
+  elements.cvGrid.innerHTML = items
+    .map(
+      (cv) => `
+    <article class="cv-card" data-id="${cv.id}">
+      <div class="cv-card-header">
+        <div class="cv-card-label">${cv.label}</div>
+        <span class="cv-card-size">${formatFileSize(cv.fileSize)}</span>
+      </div>
+      <div class="cv-card-meta">
+        <span>${cv.fileName}</span>
+        <span>Uploaded ${cv.createdAt ? new Date(cv.createdAt).toLocaleDateString() : ""}</span>
+      </div>
+      ${cv.note ? `<div class="cv-card-note">${cv.note}</div>` : ""}
+      <div class="cv-card-actions">
+        <button class="secondary-btn sm cv-open-btn" type="button" data-id="${cv.id}">Open</button>
+        <button class="secondary-btn sm cv-download-btn" type="button" data-id="${cv.id}">Download</button>
+        <button class="secondary-btn sm cv-edit-btn" type="button" data-id="${cv.id}">Edit</button>
+        <button class="secondary-btn sm cv-delete-btn" type="button" data-id="${cv.id}">Delete</button>
+      </div>
+    </article>`
+    )
+    .join("");
 }
 
-function displayParsedPreview(data, sourceLabel) {
-  if (!elements.importStatusBox || !elements.importParsedSummary) return;
-
-  elements.importStatusBox.style.display = "block";
-  if (elements.applyResumeImportBtn) elements.applyResumeImportBtn.disabled = false;
-  if (elements.resumeFileDropzone) {
-    elements.resumeFileDropzone.classList.add("has-file");
-    if (elements.dropzoneMainText) elements.dropzoneMainText.textContent = `✓ ${sourceLabel} processed`;
-  }
-
-  const items = [
-    data.fullName ? `👤 <strong>Name:</strong> ${data.fullName}` : "👤 <strong>Name:</strong> <em>Not detected</em>",
-    data.title ? `💼 <strong>Title:</strong> ${data.title}` : null,
-    data.email ? `✉️ <strong>Email:</strong> ${data.email}` : null,
-    data.location ? `📍 <strong>Location:</strong> ${data.location}` : null,
-    data.website ? `🔗 <strong>Link:</strong> ${data.website}` : null,
-    data.skills ? `🛠️ <strong>Skills:</strong> Detected` : null,
-    data.experience ? `🏢 <strong>Experience:</strong> Detected` : null,
-    data.education ? `🎓 <strong>Education:</strong> Detected` : null,
-    data.projects ? `📁 <strong>Projects:</strong> Detected` : null,
-  ].filter(Boolean);
-
-  elements.importParsedSummary.innerHTML = items.map((i) => `<div>${i}</div>`).join("");
-}
-
-function applyImportedResume() {
-  if (!pendingImportedResume) return;
-
-  if (elements.rbFullName) elements.rbFullName.value = pendingImportedResume.fullName || "";
-  if (elements.rbTitle) elements.rbTitle.value = pendingImportedResume.title || "";
-  if (elements.rbEmail) elements.rbEmail.value = pendingImportedResume.email || "";
-  if (elements.rbPhone) elements.rbPhone.value = pendingImportedResume.phone || "";
-  if (elements.rbLocation) elements.rbLocation.value = pendingImportedResume.location || "";
-  if (elements.rbWebsite) elements.rbWebsite.value = pendingImportedResume.website || "";
-  if (elements.rbSummary) elements.rbSummary.value = pendingImportedResume.summary || "";
-  if (elements.rbSkills) elements.rbSkills.value = pendingImportedResume.skills || "";
-  if (elements.rbExperience) elements.rbExperience.value = pendingImportedResume.experience || "";
-  if (elements.rbEducation) elements.rbEducation.value = pendingImportedResume.education || "";
-  if (elements.rbProjects) elements.rbProjects.value = pendingImportedResume.projects || "";
-
-  resumeStore.save(pendingImportedResume);
-  renderResumeSheet(pendingImportedResume);
-  closeResumeImportDialog();
-  alert("✅ Resume imported and matched to form successfully!");
-}
-
-async function enhanceResumeWithGemini() {
-  const settings = settingsStore.get();
-  if (!settings.geminiApiKey) {
-    alert("Please enter a Gemini API Key in Settings first.");
-    return;
-  }
-  if (!lastImportedRawText) {
-    alert("Please upload a file or paste text first.");
-    return;
-  }
-
-  const btn = elements.geminiEnhanceResumeBtn;
-  const originalText = btn.textContent;
-  btn.textContent = "Analyzing with Gemini AI...";
-  btn.disabled = true;
-
-  try {
-    const prompt = `You are an expert resume parsing engine. Extract and organize the following raw resume into a clean JSON structure with these exact keys:
-"fullName": string,
-"title": string,
-"email": string,
-"phone": string,
-"location": string,
-"website": string,
-"summary": string,
-"skills": string (clear list or bulleted technical and domain competencies),
-"experience": string (formatted work history entries with Title | Company (Dates) and bullet achievements),
-"education": string (degrees, universities, graduation years),
-"projects": string (project names, URLs, descriptions).
-
-Return ONLY valid JSON matching this schema with no markdown code fences:
-
-RAW RESUME:
-${lastImportedRawText.slice(0, 10000)}`;
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${settings.geminiApiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Gemini API error ${response.status}`);
+async function handleCVFiles(fileList) {
+  const files = [...(fileList || [])];
+  if (files.length === 0) return;
+  for (const file of files) {
+    const check = validateCVFile(file);
+    if (!check.ok) {
+      alert(`${file.name}: ${check.error}`);
+      continue;
     }
-
-    const data = await response.json();
-    const jsonStr = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    const cleanJson = jsonStr.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
-    const parsed = JSON.parse(cleanJson);
-
-    pendingImportedResume = parsed;
-    displayParsedPreview(parsed, "Gemini AI Enhanced");
-    alert("Resume polished and structured via Gemini AI!");
-  } catch (err) {
-    console.error("Gemini enhancement failed:", err);
-    alert(`Gemini AI extraction error: ${err.message}. Local extraction remains available.`);
-  } finally {
-    btn.textContent = originalText;
-    btn.disabled = false;
+    const record = createCVRecord({ file });
+    await cvVaultStore.add(record, file);
   }
+  await refreshCVVault();
+}
+
+async function downloadCV(id) {
+  const cv = cvVaultCache.find((c) => c.id === id);
+  const blob = await cvVaultStore.getBlob(id);
+  if (!cv || !blob) return;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = cv.fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function openCV(id) {
+  const blob = await cvVaultStore.getBlob(id);
+  if (!blob) return;
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function openCVEditDialog(id) {
+  const cv = cvVaultCache.find((c) => c.id === id);
+  if (!cv || !elements.cvEditDialog) return;
+  editingCvId = id;
+  if (elements.cvLabelInput) elements.cvLabelInput.value = cv.label || "";
+  if (elements.cvNoteInput) elements.cvNoteInput.value = cv.note || "";
+  if (elements.cvEditFileMeta) {
+    elements.cvEditFileMeta.textContent = `${cv.fileName} · ${formatFileSize(cv.fileSize)} · uploaded ${cv.createdAt ? new Date(cv.createdAt).toLocaleDateString() : ""}`;
+  }
+  elements.cvEditDialog.showModal();
+}
+
+function closeCVEditDialog() {
+  elements.cvEditDialog?.close();
+  editingCvId = null;
+}
+
+async function saveCVEdit() {
+  if (!editingCvId) return;
+  const label = elements.cvLabelInput?.value.trim() || "";
+  const note = elements.cvNoteInput?.value.trim() || "";
+  const patch = { note };
+  if (label) patch.label = label;
+  await cvVaultStore.update(editingCvId, patch);
+  await refreshCVVault();
+}
+
+async function deleteCV(id) {
+  const cv = cvVaultCache.find((c) => c.id === id);
+  if (!cv) return;
+  if (!confirm(`Delete "${cv.label}" from the CV Vault? The file is removed from this browser.`)) return;
+  await cvVaultStore.remove(id);
+  await refreshCVVault();
 }
 
 /* LinkedIn Tools Functions */
@@ -1623,75 +1361,39 @@ elements.clPrintBtn?.addEventListener("click", () => {
   window.print();
 });
 
-// Resume Builder Event Listeners
-elements.rbImportResumeBtn?.addEventListener("click", openResumeImportDialog);
-elements.closeResumeImportDialogButton?.addEventListener("click", closeResumeImportDialog);
-elements.cancelResumeImportButton?.addEventListener("click", closeResumeImportDialog);
-
-elements.importTabFileBtn?.addEventListener("click", () => switchImportTab("file"));
-elements.importTabPasteBtn?.addEventListener("click", () => switchImportTab("paste"));
-
-elements.browseResumeFileBtn?.addEventListener("click", () => {
-  elements.resumeFileInput?.click();
+// CV Vault Event Listeners
+elements.cvUploadBtn?.addEventListener("click", () => elements.cvFileInput?.click());
+elements.cvFileInput?.addEventListener("change", async (e) => {
+  await handleCVFiles(e.target.files);
+  if (elements.cvFileInput) elements.cvFileInput.value = "";
 });
-
-elements.resumeFileInput?.addEventListener("change", (e) => {
-  const file = e.target.files?.[0];
-  if (file) processResumeFile(file);
-});
-
-elements.resumeFileDropzone?.addEventListener("dragover", (e) => {
+elements.cvDropzone?.addEventListener("click", () => elements.cvFileInput?.click());
+elements.cvDropzone?.addEventListener("dragover", (e) => {
   e.preventDefault();
-  elements.resumeFileDropzone.classList.add("dragover");
+  elements.cvDropzone.classList.add("dragover");
 });
-
-elements.resumeFileDropzone?.addEventListener("dragleave", () => {
-  elements.resumeFileDropzone.classList.remove("dragover");
+elements.cvDropzone?.addEventListener("dragleave", () => {
+  elements.cvDropzone.classList.remove("dragover");
 });
-
-elements.resumeFileDropzone?.addEventListener("drop", (e) => {
+elements.cvDropzone?.addEventListener("drop", async (e) => {
   e.preventDefault();
-  elements.resumeFileDropzone.classList.remove("dragover");
-  const file = e.dataTransfer.files?.[0];
-  if (file) processResumeFile(file);
+  elements.cvDropzone.classList.remove("dragover");
+  await handleCVFiles(e.dataTransfer.files);
 });
-
-elements.parsePastedResumeBtn?.addEventListener("click", processPastedResume);
-elements.applyResumeImportBtn?.addEventListener("click", applyImportedResume);
-elements.geminiEnhanceResumeBtn?.addEventListener("click", enhanceResumeWithGemini);
-
-elements.rbLoadSampleBtn?.addEventListener("click", () => {
-  if (confirm("Load sample tech resume? This will overwrite your current draft in the editor.")) {
-    resumeStore.reset();
-    renderResumeBuilder();
-  }
+elements.cvGrid?.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-id]");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  if (btn.classList.contains("cv-open-btn")) await openCV(id);
+  else if (btn.classList.contains("cv-download-btn")) await downloadCV(id);
+  else if (btn.classList.contains("cv-edit-btn")) openCVEditDialog(id);
+  else if (btn.classList.contains("cv-delete-btn")) await deleteCV(id);
 });
-
-elements.rbSaveBtn?.addEventListener("click", saveResumeFromInputs);
-
-elements.rbCopyMdBtn?.addEventListener("click", () => {
-  const md = getResumeMarkdown();
-  navigator.clipboard.writeText(md).then(() => {
-    const orig = elements.rbCopyMdBtn.textContent;
-    elements.rbCopyMdBtn.textContent = "✅ Copied!";
-    setTimeout(() => { elements.rbCopyMdBtn.textContent = orig; }, 2000);
-  });
-});
-
-elements.rbDownloadMdBtn?.addEventListener("click", () => {
-  const md = getResumeMarkdown();
-  const name = (resumeStore.get().fullName || "resume").toLowerCase().replace(/[^a-z0-9]/g, "-");
-  const blob = new Blob([md], { type: "text/markdown" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `resume-${name}.md`;
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-elements.rbPrintBtn?.addEventListener("click", () => {
-  window.print();
+elements.closeCvEditDialogButton?.addEventListener("click", closeCVEditDialog);
+elements.cancelCvEditButton?.addEventListener("click", closeCVEditDialog);
+elements.saveCvEditButton?.addEventListener("click", async () => {
+  await saveCVEdit();
+  closeCVEditDialog();
 });
 
 // LinkedIn Tools Event Listeners
@@ -1745,4 +1447,5 @@ elements.liCopyFormatBtn?.addEventListener("click", () => {
 });
 
 seedPortalsIfEmpty();
+refreshCVVault();
 switchTab("board");
