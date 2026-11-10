@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0F172A" />
-    <meta name="description" content="Opportunity Inbox - Local-first opportunity platform & job search tracker" />
+    <meta name="description" content="Opportunity Inbox - Local-first opportunity platform & freelance pipeline tracker" />
     
     <!-- iOS / PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -131,7 +131,7 @@
               <div class="card weekly-card">
                 <div class="card-header">
                   <h3>Weekly Progress</h3>
-                  <span class="goal-pill" id="homeGoalPill">Weekly goal: 10</span>
+                  <span class="goal-pill" id="homeGoalPill">Weekly pitch goal: 10</span>
                 </div>
                 <div class="gauge-container">
                   <svg viewBox="0 0 100 55" class="gauge-svg">
@@ -140,7 +140,7 @@
                   </svg>
                   <div class="gauge-value">
                     <span class="gauge-number" id="homeWeeklyAppliedCount">0</span>
-                    <span class="gauge-label">jobs applied</span>
+                    <span class="gauge-label">pitches sent</span>
                   </div>
                 </div>
               </div>
@@ -187,7 +187,7 @@
                 </div>
 
                 <button class="primary-btn" id="captureButton" type="button">
-                  + Add job
+                  + Add opportunity
                 </button>
               </div>
             </div>
@@ -207,14 +207,14 @@
           <section class="tab-view" id="viewStatistics" data-tab="statistics" style="display: none;">
             <div class="stats-header">
               <h2>📊 Statistics</h2>
-              <p>Track your applications, conversions, and job search progress.</p>
+              <p>Track your opportunities, conversions, and pitch momentum.</p>
             </div>
 
             <!-- KPI Metric Cards -->
             <div class="kpi-grid">
               <div class="kpi-card purple">
                 <div class="kpi-info">
-                  <span class="kpi-label">Total Applications</span>
+                  <span class="kpi-label">Total Opportunities</span>
                   <span class="kpi-value" id="kpiTotalApplications">0</span>
                 </div>
                 <div class="kpi-icon">📈</div>
@@ -222,7 +222,7 @@
 
               <div class="kpi-card blue">
                 <div class="kpi-info">
-                  <span class="kpi-label">Applications This Week</span>
+                  <span class="kpi-label">Added This Week</span>
                   <span class="kpi-value" id="kpiThisWeek">0</span>
                 </div>
                 <div class="kpi-icon">👥</div>
@@ -230,7 +230,7 @@
 
               <div class="kpi-card orange">
                 <div class="kpi-info">
-                  <span class="kpi-label">Applications This Month</span>
+                  <span class="kpi-label">Added This Month</span>
                   <span class="kpi-value" id="kpiThisMonth">0</span>
                 </div>
                 <div class="kpi-icon">🏆</div>
@@ -238,7 +238,7 @@
 
               <div class="kpi-card green">
                 <div class="kpi-info">
-                  <span class="kpi-label">Interview Conversion</span>
+                  <span class="kpi-label">Diskusi Conversion</span>
                   <span class="kpi-value" id="kpiInterviewConversion">0%</span>
                 </div>
                 <div class="kpi-icon">🎯</div>
@@ -249,20 +249,20 @@
             <div class="insights-grid">
               <div class="insight-card blue">
                 <div class="insight-header">
-                  <span class="insight-title">Not enough jobs applied</span>
+                  <span class="insight-title">Not enough pitches sent</span>
                   <span class="badge low">low</span>
                 </div>
-                <p>You need to apply to at least 5 jobs to get detailed conversion insights.</p>
-                <button class="primary-btn sm" id="statsApplyTrigger" type="button">Apply to jobs</button>
+                <p>You need to send at least 5 pitches to get detailed conversion insights.</p>
+                <button class="primary-btn sm" id="statsApplyTrigger" type="button">Go to Board</button>
               </div>
 
               <div class="insight-card yellow">
                 <div class="insight-header">
-                  <span class="insight-title">Apply More This Week</span>
+                  <span class="insight-title">Pitch More This Week</span>
                   <span class="badge medium">medium</span>
                 </div>
-                <p id="statsGoalProgressText">You need 10 more applications to reach your weekly goal of 10.</p>
-                <button class="secondary-btn sm" id="statsAddMoreTrigger" type="button">Add More Jobs</button>
+                <p id="statsGoalProgressText">You need 10 more pitches to reach your weekly pitch goal of 10.</p>
+                <button class="secondary-btn sm" id="statsAddMoreTrigger" type="button">Add More</button>
               </div>
             </div>
 
@@ -275,7 +275,7 @@
                 </div>
               </div>
               <div class="card breakdown-card">
-                <h3>Application Pipeline Breakdown</h3>
+                <h3>Pipeline Breakdown</h3>
                 <div class="breakdown-list" id="pipelineBreakdownList">
                   <!-- Generated via JS -->
                 </div>
@@ -774,15 +774,15 @@
     <dialog class="capture-dialog" id="captureDialog">
       <form class="capture-form" id="captureForm" method="dialog">
         <div class="dialog-heading">
-          <h2 id="dialogTitle">Add Job Application</h2>
+          <h2 id="dialogTitle">Add Opportunity</h2>
           <button class="icon-button" id="closeDialogButton" type="button" aria-label="Close dialog">×</button>
         </div>
 
         <input id="editingId" type="hidden" />
 
         <div class="form-group">
-          <label for="nameInput">Company / Position <span class="required-star">*</span></label>
-          <input id="nameInput" name="name" autocomplete="off" placeholder="e.g. Microsoft, Frontend Developer" required />
+          <label for="nameInput">Client / Project <span class="required-star">*</span></label>
+          <input id="nameInput" name="name" autocomplete="off" placeholder="e.g. Acme Studio, Logo Refresh" required />
         </div>
 
         <div class="form-group">
@@ -791,19 +791,19 @@
         </div>
 
         <div class="form-group">
-          <label for="urlInput">Job Posting URL</label>
-          <input id="urlInput" name="url" inputmode="url" type="url" autocomplete="off" placeholder="https://example.com/careers/job" />
+          <label for="urlInput">Opportunity URL</label>
+          <input id="urlInput" name="url" inputmode="url" type="url" autocomplete="off" placeholder="https://example.com/opportunity" />
         </div>
 
         <div class="form-group">
           <label for="statusSelectInput">Stage / Status</label>
           <select id="statusSelectInput" name="status">
-            <option value="WISHLIST">Wishlist</option>
-            <option value="APPLIED">Applied</option>
-            <option value="INTERVIEWING">Interviewing</option>
-            <option value="OFFER">Offer</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="GHOSTED">Ghosted</option>
+            <option value="WISHLIST">Lead</option>
+            <option value="APPLIED">Pitched</option>
+            <option value="INTERVIEWING">Diskusi</option>
+            <option value="OFFER">Deal</option>
+            <option value="REJECTED">Gagal</option>
+            <option value="GHOSTED">Tanpa kabar</option>
             <option value="FOLLOW_UP">Follow Up</option>
           </select>
         </div>
@@ -822,7 +822,7 @@
 
         <div class="form-actions">
           <button class="secondary-btn" id="cancelButton" type="button">Cancel</button>
-          <button class="primary-btn" type="submit">Save Job</button>
+          <button class="primary-btn" type="submit">Save</button>
         </div>
       </form>
     </dialog>
@@ -955,9 +955,9 @@
         </div>
 
         <div class="form-group">
-          <label for="settingsWeeklyGoalInput">Weekly Application Goal</label>
+          <label for="settingsWeeklyGoalInput">Weekly Pitch Goal</label>
           <input id="settingsWeeklyGoalInput" name="settingsWeeklyGoal" type="number" min="1" max="100" placeholder="10" required />
-          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Target number of applications you aim to submit every week.</small>
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Target number of pitches you aim to send every week.</small>
         </div>
 
         <div class="form-group">

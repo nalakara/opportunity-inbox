@@ -6,10 +6,10 @@
 
 ## 1. Identity & Character
 
-Opportunity Inbox is built for candidates who value clarity, privacy, and speed over subscription clutter and bloated ATS portals. The aesthetic is **Obsidian Minimal** — a calm, dark workspace designed to reduce cognitive load during the intense job search process.
+Opportunity Inbox is built for freelancers who value clarity, privacy, and speed over subscription clutter and bloated trackers. The aesthetic is **Obsidian Minimal** — a calm, dark workspace designed to reduce cognitive load during the intense pitch-and-follow-up process.
 
 - **Tone**: Focused, competent, quiet, respectful of user attention.
-- **Audience**: Software engineers, tech professionals, and modern knowledge workers managing active multi-stage application pipelines.
+- **Audience**: Freelancers, independent professionals, and modern knowledge workers managing active multi-stage opportunity pipelines.
 - **Philosophy**: Local-first, zero-build, zero-tracking, instant load.
 
 ---

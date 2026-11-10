@@ -357,7 +357,7 @@ function renderKanbanBoard() {
     if (stageItems.length === 0) {
       cardsContainer.innerHTML = `
         <div style="padding: 12px; color: #64748B; font-size: 0.8rem; text-align: center; font-style: italic;">
-          Drop jobs here or + Add
+          Drop opportunities here or + Add
         </div>
       `;
     } else {
@@ -407,7 +407,7 @@ function renderKanbanBoard() {
     addBtn.className = "kanban-add-btn stage-add-btn";
     addBtn.type = "button";
     addBtn.dataset.stage = stage;
-    addBtn.textContent = "+ Add job";
+    addBtn.textContent = "+ Add opportunity";
 
     col.appendChild(header);
     col.appendChild(cardsContainer);
@@ -436,7 +436,7 @@ function renderListBoard() {
         <span class="stage-title">${stageLabel}</span>
         <span class="stage-badge">${stageItems.length}</span>
       </div>
-      <button class="stage-add-btn" type="button" data-stage="${stage}">+ Add job</button>
+      <button class="stage-add-btn" type="button" data-stage="${stage}">+ Add opportunity</button>
     `;
 
     const body = document.createElement("div");
@@ -445,7 +445,7 @@ function renderListBoard() {
     if (stageItems.length === 0) {
       body.innerHTML = `
         <div style="padding: 16px 20px; color: #64748B; font-size: 0.85rem; font-style: italic;">
-          No jobs in ${stageLabel} stage.
+          No opportunities in ${stageLabel} stage.
         </div>
       `;
     } else {
@@ -454,9 +454,9 @@ function renderListBoard() {
       table.innerHTML = `
         <thead>
           <tr>
-            <th>Company / Position</th>
+            <th>Client / Project</th>
             <th>Location / Tag</th>
-            <th>Applied Date</th>
+            <th>Added Date</th>
             <th>Follow-up</th>
             <th>URL</th>
             <th style="text-align: right;">Actions</th>
@@ -528,7 +528,7 @@ function renderUserProfile() {
   if (elements.sidebarUserName) elements.sidebarUserName.textContent = name;
   if (elements.sidebarUserGoal) elements.sidebarUserGoal.textContent = `Goal: ${goal}/wk`;
   if (elements.homeGreeting) elements.homeGreeting.textContent = `Good morning, ${name} 👋`;
-  if (elements.homeGoalPill) elements.homeGoalPill.textContent = `Weekly goal: ${goal}`;
+  if (elements.homeGoalPill) elements.homeGoalPill.textContent = `Weekly pitch goal: ${goal}`;
 }
 
 function renderHome() {
@@ -536,7 +536,7 @@ function renderHome() {
   const settings = settingsStore.get();
   const weeklyGoal = settings.weeklyGoal || 10;
   
-  // Weekly count: jobs applied/progressed this week
+  // Weekly count: pitches sent/progressed this week
   const weeklyAppliedCount = allPlatforms.filter((p) => {
     const isApplied = p.status !== STATUS_ENUM.WISHLIST;
     return isApplied && (isDateThisWeek(p.createdAt) || isDateThisWeek(p.updatedAt));
@@ -591,14 +591,14 @@ function renderStatistics() {
   const remainingWeekly = Math.max(0, weeklyGoal - thisWeekCount);
   elements.statsGoalProgressText.textContent =
     remainingWeekly > 0
-      ? `You need ${remainingWeekly} more applications to reach your weekly goal of ${weeklyGoal}.`
-      : `Awesome! You have achieved your weekly goal of ${weeklyGoal} applications!`;
+      ? `You need ${remainingWeekly} more pitches to reach your weekly pitch goal of ${weeklyGoal}.`
+      : `Awesome! You have achieved your weekly pitch goal of ${weeklyGoal} pitches!`;
 
   if (elements.conversionAnalysisList) {
     const appliedOrHigher = applied + interviewing + offer;
     elements.conversionAnalysisList.innerHTML = `
-      <div class="breakdown-row"><span>Applied → Interview</span><span>${appliedOrHigher > 0 ? Math.round(((interviewing + offer) / appliedOrHigher) * 100) : 0}%</span></div>
-      <div class="breakdown-row"><span>Interview → Offer</span><span>${interviewing > 0 ? Math.round((offer / (interviewing + offer)) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Pitched → Diskusi</span><span>${appliedOrHigher > 0 ? Math.round(((interviewing + offer) / appliedOrHigher) * 100) : 0}%</span></div>
+      <div class="breakdown-row"><span>Diskusi → Deal</span><span>${interviewing > 0 ? Math.round((offer / (interviewing + offer)) * 100) : 0}%</span></div>
       <div class="breakdown-row"><span>Overall Win Rate</span><span>${total > 0 ? Math.round((offer / total) * 100) : 0}%</span></div>
     `;
   }

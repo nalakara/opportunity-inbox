@@ -10,13 +10,15 @@ export const STATUS_ENUM = {
   FOLLOW_UP: "FOLLOW_UP",
 };
 
+// Freelance-facing stage names (conditioned 2026-11-10).
+// Enum keys stay stable so stored localStorage data survives renames.
 export const STATUS_LABELS = {
-  [STATUS_ENUM.WISHLIST]: "Wishlist",
-  [STATUS_ENUM.APPLIED]: "Applied",
-  [STATUS_ENUM.INTERVIEWING]: "Interviewing",
-  [STATUS_ENUM.OFFER]: "Offer",
-  [STATUS_ENUM.REJECTED]: "Rejected",
-  [STATUS_ENUM.GHOSTED]: "Ghosted",
+  [STATUS_ENUM.WISHLIST]: "Lead",
+  [STATUS_ENUM.APPLIED]: "Pitched",
+  [STATUS_ENUM.INTERVIEWING]: "Diskusi",
+  [STATUS_ENUM.OFFER]: "Deal",
+  [STATUS_ENUM.REJECTED]: "Gagal",
+  [STATUS_ENUM.GHOSTED]: "Tanpa kabar",
   [STATUS_ENUM.FOLLOW_UP]: "Follow Up",
 };
 

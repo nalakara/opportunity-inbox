@@ -1,6 +1,6 @@
 # Opportunity Inbox
 
-A clean, quiet productivity, local-first Progressive Web App (PWA) designed for tracking job search pipelines, opportunities, and application stages.
+A clean, quiet productivity, local-first Progressive Web App (PWA) designed for tracking freelance pipelines, opportunities, and deal stages.
 
 🌐 **Live Demo**: [opportunity-inbox.vercel.app](https://opportunity-inbox.vercel.app)
 
@@ -8,10 +8,10 @@ A clean, quiet productivity, local-first Progressive Web App (PWA) designed for 
 
 ## 🎯 Core Product Intent
 
-Searching for jobs and managing opportunities often leads to fragmented spreadsheets, noisy subscription-based ATS trackers, or forgotten applications. 
+Finding gigs and managing opportunities often leads to fragmented spreadsheets, noisy subscription-based trackers, or forgotten pitches. 
 
 **Opportunity Inbox** answers at a single glance:
-> **"What opportunities am I pursuing, what stage is each application in, and am I hitting my weekly momentum?"**
+> **"What opportunities am I pursuing, what stage is each pitch in, and am I hitting my weekly momentum?"**
 
 Built 100% offline-ready, zero-build, and local-first with zero tracking, external databases, or subscriptions.
 
@@ -20,13 +20,13 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 ## ✨ Features
 
 ### 📋 Dual-View Pipeline Tracking
-- **Interactive Kanban Board**: Visualize applications across 7 structured stages with native **Drag & Drop** support:
-  - 💡 **Wishlist**: Discovered roles & target companies.
-  - 📩 **Applied**: Applications submitted.
-  - 🗣️ **Interviewing**: Active recruiter screens and technical rounds.
-  - 🎉 **Offer**: Offers received and under negotiation.
-  - 🛑 **Rejected**: Decisions closed by employer.
-  - 👻 **Ghosted**: Inactive applications without responses.
+- **Interactive Kanban Board**: Visualize opportunities across 7 structured stages with native **Drag & Drop** support:
+  - 💡 **Lead**: Prospects & potential clients discovered.
+  - 📩 **Pitched**: Pitches & proposals sent.
+  - 🗣️ **Diskusi**: Active discussions, calls & negotiations.
+  - 🎉 **Deal**: Deals agreed, terms under negotiation.
+  - 🛑 **Gagal**: Closed lost, no deal.
+  - 👻 **Tanpa kabar**: Gone quiet, no response.
   - ⏰ **Follow Up**: Opportunities requiring an active nudge or check-in (with smart **Overdue / Due Today** badges).
 - **Accordion List View**: Compact, expandable table view for quick audits and bulk review.
 - **Real-time Live Search & Sorting**: Instant filtering across company names, roles, tags/locations, and notes; sort by recent updates, name (A–Z), or category.
@@ -34,13 +34,13 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 
 ### 📊 Habit & Analytics Dashboards
 - **Home Dashboard**:
-  - **Weekly Goal Progress Gauge**: Dynamic SVG circular gauge meter tracking your target applications per week (customizable via Settings).
+  - **Weekly Goal Progress Gauge**: Dynamic SVG circular gauge meter tracking your target pitches per week (customizable via Settings).
   - **Pipeline Breakdown**: Visual distribution bars showing current pipeline health.
 - **Statistics & Conversion Funnel**:
-  - Key Performance Indicators (KPIs): Total Applications, Applications This Week (real calendar-week filter), Applications This Month, and Interview Conversion Rate.
-  - Funnel metrics: *Applied → Interview*, *Interview → Offer*, and *Overall Win Rate*.
-  - Actionable guidance when application momentum slows down.
-- **⚙️ Dynamic User Preferences**: Customize your display name and weekly application target directly in local storage without any accounts.
+  - Key Performance Indicators (KPIs): Total Opportunities, Added This Week (real calendar-week filter), Added This Month, and Diskusi Conversion Rate.
+  - Funnel metrics: *Pitched → Diskusi*, *Diskusi → Deal*, and *Overall Win Rate*.
+  - Actionable guidance when pitch momentum slows down.
+- **⚙️ Dynamic User Preferences**: Customize your display name and weekly pitch target directly in local storage without any accounts.
 
 ### ⚡ Power-User & Job Search Tool Suite
 - **📄 ATS Resume Builder**: Create crisp, ATS-compliant, single-column tech resumes. Features **Upload / Import** for existing CVs (.pdf, .txt, .md, .json) with intelligent local field-matching, live preview sheet, Markdown copy/export, and clean `@media print` PDF generation.
