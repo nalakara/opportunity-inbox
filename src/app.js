@@ -1,4 +1,4 @@
-import { platformStore, settingsStore, contactStore, resumeStore, DEFAULT_RESUME, STATUS_ENUM, STATUS_LABELS, parseRawResumeText } from "./storage.js";
+import { platformStore, settingsStore, portalStore, seedPortalsIfEmpty, PORTAL_STATUS, PORTAL_STATUS_LABELS, resumeStore, DEFAULT_RESUME, STATUS_ENUM, STATUS_LABELS, parseRawResumeText } from "./storage.js";
 
 const STAGES_ORDER = [
   STATUS_ENUM.WISHLIST,
@@ -58,24 +58,23 @@ const elements = {
   noteInput: document.querySelector("#noteInput"),
   formError: document.querySelector("#formError"),
 
-  // Contacts Elements
-  viewContacts: document.querySelector("#viewContacts"),
-  contactSearchInput: document.querySelector("#contactSearchInput"),
-  addContactBtn: document.querySelector("#addContactBtn"),
-  contactsGrid: document.querySelector("#contactsGrid"),
-  contactDialog: document.querySelector("#contactDialog"),
-  contactForm: document.querySelector("#contactForm"),
-  closeContactDialogButton: document.querySelector("#closeContactDialogButton"),
-  cancelContactButton: document.querySelector("#cancelContactButton"),
-  contactDialogTitle: document.querySelector("#contactDialogTitle"),
-  contactEditingId: document.querySelector("#contactEditingId"),
-  contactNameInput: document.querySelector("#contactNameInput"),
-  contactCompanyInput: document.querySelector("#contactCompanyInput"),
-  contactRoleInput: document.querySelector("#contactRoleInput"),
-  contactEmailInput: document.querySelector("#contactEmailInput"),
-  contactLinkedinInput: document.querySelector("#contactLinkedinInput"),
-  contactNoteInput: document.querySelector("#contactNoteInput"),
-  contactFormError: document.querySelector("#contactFormError"),
+  // Portals Elements
+  viewPortals: document.querySelector("#viewPortals"),
+  portalSearchInput: document.querySelector("#portalSearchInput"),
+  addPortalBtn: document.querySelector("#addPortalBtn"),
+  portalsGrid: document.querySelector("#portalsGrid"),
+  portalDialog: document.querySelector("#portalDialog"),
+  portalForm: document.querySelector("#portalForm"),
+  closePortalDialogButton: document.querySelector("#closePortalDialogButton"),
+  cancelPortalButton: document.querySelector("#cancelPortalButton"),
+  portalDialogTitle: document.querySelector("#portalDialogTitle"),
+  portalEditingId: document.querySelector("#portalEditingId"),
+  portalNameInput: document.querySelector("#portalNameInput"),
+  portalUrlInput: document.querySelector("#portalUrlInput"),
+  portalCategoryInput: document.querySelector("#portalCategoryInput"),
+  portalStatusInput: document.querySelector("#portalStatusInput"),
+  portalRemarksInput: document.querySelector("#portalRemarksInput"),
+  portalFormError: document.querySelector("#portalFormError"),
 
   // Board Containers
   kanbanBoard: document.querySelector("#kanbanBoard"),
@@ -219,7 +218,7 @@ const elements = {
 let activeTab = "board";
 let boardViewMode = "kanban"; // 'kanban' | 'list'
 let searchQuery = "";
-let contactSearchQuery = "";
+let portalSearchQuery = "";
 let sortBy = "updatedDesc";
 let draggedCardId = null;
 
@@ -633,70 +632,75 @@ function renderStatistics() {
   }
 }
 
-function renderContacts() {
-  let contacts = contactStore.list();
-  if (contactSearchQuery) {
-    const q = contactSearchQuery.toLowerCase();
-    contacts = contacts.filter((c) =>
-      c.name.toLowerCase().includes(q) ||
-      (c.company && c.company.toLowerCase().includes(q)) ||
-      (c.role && c.role.toLowerCase().includes(q)) ||
-      (c.note && c.note.toLowerCase().includes(q))
+function renderPortals() {
+  let portals = portalStore.list();
+  if (portalSearchQuery) {
+    const q = portalSearchQuery.toLowerCase();
+    portals = portals.filter((p) =>
+      p.name.toLowerCase().includes(q) ||
+      (p.category && p.category.toLowerCase().includes(q)) ||
+      (p.remarks && p.remarks.toLowerCase().includes(q)) ||
+      PORTAL_STATUS_LABELS[p.status].toLowerCase().includes(q)
     );
   }
 
-  if (!elements.contactsGrid) return;
-  elements.contactsGrid.innerHTML = "";
+  if (!elements.portalsGrid) return;
+  elements.portalsGrid.innerHTML = "";
 
-  if (contacts.length === 0) {
-    elements.contactsGrid.innerHTML = `
+  if (portals.length === 0) {
+    elements.portalsGrid.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; color: var(--text-muted); background: var(--surface-card); border: 1px dashed var(--border); border-radius: var(--radius-lg);">
-        <p style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">No contacts found</p>
-        <p style="font-size: 0.88rem; margin-bottom: 18px;">Track recruiters, referrers, and hiring managers here to build your networking momentum.</p>
-        <button class="primary-btn sm" id="emptyAddContactBtn" type="button">+ Add First Contact</button>
+        <p style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">No portals found</p>
+        <p style="font-size: 0.88rem; margin-bottom: 18px;">Add the freelance gig portals you use, and note whether you are registered on each one.</p>
+        <button class="primary-btn sm" id="emptyAddPortalBtn" type="button">+ Add First Portal</button>
       </div>
     `;
-    document.querySelector("#emptyAddContactBtn")?.addEventListener("click", () => openContactDialog());
+    document.querySelector("#emptyAddPortalBtn")?.addEventListener("click", () => openPortalDialog());
     return;
   }
 
-  contacts.forEach((contact) => {
+  const registeredCount = portals.filter((p) => p.status === PORTAL_STATUS.REGISTERED).length;
+  const summary = document.createElement("div");
+  summary.style.cssText = "grid-column: 1 / -1; font-size: 0.85rem; color: var(--text-muted);";
+  summary.textContent = `${portals.length} portal${portals.length === 1 ? "" : "s"} · ${registeredCount} registered · ${portals.length - registeredCount} not registered`;
+  elements.portalsGrid.appendChild(summary);
+
+  portals.forEach((portal) => {
     const card = document.createElement("div");
-    card.className = "contact-card";
-    card.dataset.id = contact.id;
+    card.className = "portal-card";
+    card.dataset.id = portal.id;
 
-    const emailBtn = contact.email
-      ? `<a href="mailto:${contact.email}" class="contact-channel-btn" title="Send email">✉️ ${contact.email}</a>`
-      : "";
-    const linkedinUrl = normalizeUrl(contact.linkedin);
-    const linkedinBtn = linkedinUrl
-      ? `<a href="${linkedinUrl}" target="_blank" rel="noopener" class="contact-channel-btn" title="Open profile">💼 Profile ↗</a>`
+    const isRegistered = portal.status === PORTAL_STATUS.REGISTERED;
+    const statusLabel = PORTAL_STATUS_LABELS[portal.status];
+    const siteUrl = normalizeUrl(portal.url);
+    const siteBtn = siteUrl
+      ? `<a href="${siteUrl}" target="_blank" rel="noopener" class="portal-channel-btn" title="Open portal">🔗 Visit site ↗</a>`
       : "";
 
-    const dateStr = contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : "";
+    const dateStr = portal.createdAt ? new Date(portal.createdAt).toLocaleDateString() : "";
 
     card.innerHTML = `
-      <div class="contact-card-header">
+      <div class="portal-card-header">
         <div>
-          <div class="contact-name">${contact.name}</div>
-          ${contact.role ? `<div class="contact-role">${contact.role}</div>` : ""}
+          <div class="portal-name">${portal.name}</div>
+          ${portal.category ? `<div class="portal-category">${portal.category}</div>` : ""}
         </div>
-        ${contact.company ? `<span class="contact-company-badge">🏢 ${contact.company}</span>` : ""}
+        <span class="portal-status-badge ${isRegistered ? "is-registered" : "is-not-registered"}">${isRegistered ? "✓ " : ""}${statusLabel}</span>
       </div>
 
-      ${(contact.email || contact.linkedin) ? `<div class="contact-channels">${emailBtn}${linkedinBtn}</div>` : ""}
+      ${siteBtn ? `<div class="portal-channels">${siteBtn}</div>` : ""}
 
-      ${contact.note ? `<div class="contact-note">${contact.note}</div>` : ""}
+      ${portal.remarks ? `<div class="portal-remarks">${portal.remarks}</div>` : ""}
 
-      <div class="contact-card-footer">
+      <div class="portal-card-footer">
         <span style="font-size:0.75rem; color:var(--text-light);">${dateStr ? `Added ${dateStr}` : ""}</span>
         <div>
-          <button class="action-row-btn edit-contact-btn" data-id="${contact.id}" type="button">✏️ Edit</button>
-          <button class="action-row-btn delete-contact-btn" data-id="${contact.id}" type="button">🗑️ Delete</button>
+          <button class="action-row-btn edit-portal-btn" data-id="${portal.id}" type="button">✏️ Edit</button>
+          <button class="action-row-btn delete-portal-btn" data-id="${portal.id}" type="button">🗑️ Delete</button>
         </div>
       </div>
     `;
-    elements.contactsGrid.appendChild(card);
+    elements.portalsGrid.appendChild(card);
   });
 }
 
@@ -810,7 +814,7 @@ const TAB_VIEW_MAP = {
   home: "viewHome",
   board: "viewBoard",
   statistics: "viewStatistics",
-  contacts: "viewContacts",
+  portals: "viewPortals",
   coverletter: "viewCoverletter",
   resumebuilder: "viewResumebuilder",
   resumescore: "viewResumescore",
@@ -841,7 +845,7 @@ function switchTab(tabName) {
     if (tabName === "home") elements.pageTitle.textContent = "Home Dashboard";
     else if (tabName === "board") elements.pageTitle.textContent = "Opportunity Board";
     else if (tabName === "statistics") elements.pageTitle.textContent = "Statistics";
-    else if (tabName === "contacts") elements.pageTitle.textContent = "Network & Contacts";
+    else if (tabName === "portals") elements.pageTitle.textContent = "Freelance Portals";
     else if (tabName === "coverletter") {
       elements.pageTitle.textContent = "Cover Letter Generator";
       populateClJobSelect();
@@ -878,7 +882,7 @@ function render() {
   if (activeTab === "board") renderBoard();
   if (activeTab === "home") renderHome();
   if (activeTab === "statistics") renderStatistics();
-  if (activeTab === "contacts") renderContacts();
+  if (activeTab === "portals") renderPortals();
   if (activeTab === "resumebuilder") renderResumeBuilder();
 }
 
@@ -1545,52 +1549,50 @@ function savePlatform() {
   render();
 }
 
-/* Contacts Dialog Functions */
-function openContactDialog(contact = null) {
-  elements.contactForm.reset();
-  elements.contactFormError.textContent = "";
-  elements.contactEditingId.value = contact?.id ?? "";
-  elements.contactDialogTitle.textContent = contact ? "Edit Contact" : "Add Network Contact";
-  elements.contactNameInput.value = contact?.name ?? "";
-  elements.contactCompanyInput.value = contact?.company ?? "";
-  elements.contactRoleInput.value = contact?.role ?? "";
-  elements.contactEmailInput.value = contact?.email ?? "";
-  elements.contactLinkedinInput.value = contact?.linkedin ?? "";
-  elements.contactNoteInput.value = contact?.note ?? "";
-  elements.contactDialog.showModal();
-  elements.contactNameInput.focus();
+/* Portal Dialog Functions */
+function openPortalDialog(portal = null) {
+  elements.portalForm.reset();
+  elements.portalFormError.textContent = "";
+  elements.portalEditingId.value = portal?.id ?? "";
+  elements.portalDialogTitle.textContent = portal ? "Edit Portal" : "Add Portal";
+  elements.portalNameInput.value = portal?.name ?? "";
+  elements.portalUrlInput.value = portal?.url ?? "";
+  elements.portalCategoryInput.value = portal?.category ?? "Other";
+  elements.portalStatusInput.value = portal?.status ?? PORTAL_STATUS.NOT_REGISTERED;
+  elements.portalRemarksInput.value = portal?.remarks ?? "";
+  elements.portalDialog.showModal();
+  elements.portalNameInput.focus();
 }
 
-function closeContactDialog() {
-  elements.contactDialog.close();
+function closePortalDialog() {
+  elements.portalDialog.close();
 }
 
-function saveContact() {
-  const name = elements.contactNameInput.value.trim();
+function savePortal() {
+  const name = elements.portalNameInput.value.trim();
   if (!name) {
-    elements.contactFormError.textContent = "Contact name is required.";
-    elements.contactNameInput.focus();
+    elements.portalFormError.textContent = "Portal name is required.";
+    elements.portalNameInput.focus();
     return;
   }
 
   const input = {
     name,
-    company: elements.contactCompanyInput.value,
-    role: elements.contactRoleInput.value,
-    email: elements.contactEmailInput.value,
-    linkedin: elements.contactLinkedinInput.value,
-    note: elements.contactNoteInput.value,
+    url: elements.portalUrlInput.value,
+    category: elements.portalCategoryInput.value,
+    status: elements.portalStatusInput.value,
+    remarks: elements.portalRemarksInput.value,
   };
 
-  const editingId = elements.contactEditingId.value;
+  const editingId = elements.portalEditingId.value;
   if (editingId) {
-    contactStore.update(editingId, input);
+    portalStore.update(editingId, input);
   } else {
-    contactStore.create(input);
+    portalStore.create(input);
   }
 
-  closeContactDialog();
-  renderContacts();
+  closePortalDialog();
+  renderPortals();
 }
 
 /* Settings Dialog Functions */
@@ -1714,33 +1716,33 @@ elements.settingsForm?.addEventListener("submit", (e) => {
   saveSettings();
 });
 
-// Contacts event listeners
-elements.addContactBtn?.addEventListener("click", () => openContactDialog());
-elements.closeContactDialogButton?.addEventListener("click", closeContactDialog);
-elements.cancelContactButton?.addEventListener("click", closeContactDialog);
-elements.contactForm?.addEventListener("submit", (e) => {
+// Portals event listeners
+elements.addPortalBtn?.addEventListener("click", () => openPortalDialog());
+elements.closePortalDialogButton?.addEventListener("click", closePortalDialog);
+elements.cancelPortalButton?.addEventListener("click", closePortalDialog);
+elements.portalForm?.addEventListener("submit", (e) => {
   e.preventDefault();
-  saveContact();
+  savePortal();
 });
-elements.contactSearchInput?.addEventListener("input", (e) => {
-  contactSearchQuery = e.target.value;
-  renderContacts();
+elements.portalSearchInput?.addEventListener("input", (e) => {
+  portalSearchQuery = e.target.value;
+  renderPortals();
 });
 
-elements.contactsGrid?.addEventListener("click", (e) => {
-  const editBtn = e.target.closest(".edit-contact-btn");
+elements.portalsGrid?.addEventListener("click", (e) => {
+  const editBtn = e.target.closest(".edit-portal-btn");
   if (editBtn) {
-    const contact = contactStore.get(editBtn.dataset.id);
-    if (contact) openContactDialog(contact);
+    const portal = portalStore.get(editBtn.dataset.id);
+    if (portal) openPortalDialog(portal);
     return;
   }
 
-  const deleteBtn = e.target.closest(".delete-contact-btn");
+  const deleteBtn = e.target.closest(".delete-portal-btn");
   if (deleteBtn) {
-    const contact = contactStore.get(deleteBtn.dataset.id);
-    if (contact && confirm(`Are you sure you want to delete contact "${contact.name}"?`)) {
-      contactStore.remove(contact.id);
-      renderContacts();
+    const portal = portalStore.get(deleteBtn.dataset.id);
+    if (portal && confirm(`Are you sure you want to delete portal "${portal.name}"?`)) {
+      portalStore.remove(portal.id);
+      renderPortals();
     }
   }
 });
@@ -2017,4 +2019,5 @@ elements.liCopyFormatBtn?.addEventListener("click", () => {
   });
 });
 
+seedPortalsIfEmpty();
 switchTab("board");

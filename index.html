@@ -64,9 +64,9 @@
               </button>
             </li>
             <li>
-              <button class="nav-link" data-tab="contacts" type="button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span>Contacts</span>
+              <button class="nav-link" data-tab="portals" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Portals</span>
               </button>
             </li>
           </ul>
@@ -283,22 +283,22 @@
             </div>
           </section>
 
-          <!-- View: CONTACTS -->
-          <section class="tab-view" id="viewContacts" data-tab="contacts" style="display: none;">
+          <!-- View: PORTALS -->
+          <section class="tab-view" id="viewPortals" data-tab="portals" style="display: none;">
             <div class="board-toolbar">
               <div class="search-box">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="contactSearchInput" placeholder="Search contact name, company, role..." />
+                <input type="text" id="portalSearchInput" placeholder="Search portal name, category, remarks..." />
               </div>
 
               <div class="toolbar-actions">
-                <button class="primary-btn" id="addContactBtn" type="button">
-                  + Add Contact
+                <button class="primary-btn" id="addPortalBtn" type="button">
+                  + Add Portal
                 </button>
               </div>
             </div>
 
-            <div class="contacts-grid" id="contactsGrid">
+            <div class="portals-grid" id="portalsGrid">
               <!-- Rendered via JS -->
             </div>
           </section>
@@ -760,9 +760,9 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
         <span>Board</span>
       </button>
-      <button class="mobile-nav-link" data-tab="contacts" type="button">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span>Contacts</span>
+      <button class="mobile-nav-link" data-tab="portals" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Portals</span>
       </button>
       <button class="mobile-nav-link" data-tab="statistics" type="button">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -815,7 +815,7 @@
 
         <div class="form-group">
           <label for="noteInput">Notes / Details</label>
-          <textarea id="noteInput" name="note" rows="3" placeholder="Key contact, salary expectation, next steps..."></textarea>
+          <textarea id="noteInput" name="note" rows="3" placeholder="Key contact, rate expectation, next steps..."></textarea>
         </div>
 
         <p class="form-error" id="formError" role="alert"></p>
@@ -827,51 +827,54 @@
       </form>
     </dialog>
 
-    <!-- Modal Dialog for Add/Edit Contact -->
-    <dialog class="capture-dialog" id="contactDialog">
-      <form class="capture-form" id="contactForm" method="dialog">
+    <!-- Modal Dialog for Add/Edit Portal -->
+    <dialog class="capture-dialog" id="portalDialog">
+      <form class="capture-form" id="portalForm" method="dialog">
         <div class="dialog-heading">
-          <h2 id="contactDialogTitle">Add Network Contact</h2>
-          <button class="icon-button" id="closeContactDialogButton" type="button" aria-label="Close dialog">×</button>
+          <h2 id="portalDialogTitle">Add Portal</h2>
+          <button class="icon-button" id="closePortalDialogButton" type="button" aria-label="Close dialog">×</button>
         </div>
 
-        <input id="contactEditingId" type="hidden" />
+        <input id="portalEditingId" type="hidden" />
 
         <div class="form-group">
-          <label for="contactNameInput">Contact Name <span class="required-star">*</span></label>
-          <input id="contactNameInput" name="contactName" autocomplete="off" placeholder="e.g. Sarah Jenkins" required />
-        </div>
-
-        <div class="form-group">
-          <label for="contactCompanyInput">Company / Organization</label>
-          <input id="contactCompanyInput" name="contactCompany" autocomplete="off" placeholder="e.g. Stripe, Google" />
+          <label for="portalNameInput">Portal Name <span class="required-star">*</span></label>
+          <input id="portalNameInput" name="portalName" autocomplete="off" placeholder="e.g. Mercor, Upwork" required />
         </div>
 
         <div class="form-group">
-          <label for="contactRoleInput">Role / Relationship</label>
-          <input id="contactRoleInput" name="contactRole" autocomplete="off" placeholder="e.g. Recruiter, Engineering Manager, Referral" />
+          <label for="portalUrlInput">Website URL</label>
+          <input id="portalUrlInput" name="portalUrl" type="url" autocomplete="off" placeholder="https://mercor.com" />
         </div>
 
         <div class="form-group">
-          <label for="contactEmailInput">Email Address</label>
-          <input id="contactEmailInput" name="contactEmail" type="email" autocomplete="off" placeholder="sarah@example.com" />
+          <label for="portalCategoryInput">Category</label>
+          <select id="portalCategoryInput" name="portalCategory">
+            <option value="AI Training">AI Training</option>
+            <option value="Marketplace">Marketplace</option>
+            <option value="Microtask">Microtask</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
 
         <div class="form-group">
-          <label for="contactLinkedinInput">LinkedIn or Profile URL</label>
-          <input id="contactLinkedinInput" name="contactLinkedin" type="url" autocomplete="off" placeholder="https://linkedin.com/in/username" />
+          <label for="portalStatusInput">Registration Status</label>
+          <select id="portalStatusInput" name="portalStatus">
+            <option value="not_registered">Not registered</option>
+            <option value="registered">Registered</option>
+          </select>
         </div>
 
         <div class="form-group">
-          <label for="contactNoteInput">Notes / Interaction History</label>
-          <textarea id="contactNoteInput" name="contactNote" rows="3" placeholder="Referred via Tech Meetup, offered to review resume..."></textarea>
+          <label for="portalRemarksInput">Remarks</label>
+          <textarea id="portalRemarksInput" name="portalRemarks" rows="3" placeholder="e.g. Registered since Nov 2026; contract ended; waiting for review..."></textarea>
         </div>
 
-        <p class="form-error" id="contactFormError" role="alert"></p>
+        <p class="form-error" id="portalFormError" role="alert"></p>
 
         <div class="form-actions">
-          <button class="secondary-btn" id="cancelContactButton" type="button">Cancel</button>
-          <button class="primary-btn" type="submit">Save Contact</button>
+          <button class="secondary-btn" id="cancelPortalButton" type="button">Cancel</button>
+          <button class="primary-btn" type="submit">Save Portal</button>
         </div>
       </form>
     </dialog>

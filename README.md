@@ -30,7 +30,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
   - ⏰ **Follow Up**: Opportunities requiring an active nudge or check-in (with smart **Overdue / Due Today** badges).
 - **Accordion List View**: Compact, expandable table view for quick audits and bulk review.
 - **Real-time Live Search & Sorting**: Instant filtering across company names, roles, tags/locations, and notes; sort by recent updates, name (A–Z), or category.
-- **👥 Networking & Contacts CRM**: Built-in recruiter and referral directory linking contacts, company affiliations, direct emails, and LinkedIn profiles.
+- **🌐 Freelance Portals**: A directory of freelance gig portals (Mercor, iMerit Scholars, OneForma, Micro1, Upwork, ...) with registration status and remarks. Seeded with a researched list on first run; add, edit, or remove portals by hand.
 
 ### 📊 Habit & Analytics Dashboards
 - **Home Dashboard**:
@@ -67,7 +67,7 @@ Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers 
 ├── styles.css            # Obsidian Dark design system, responsive styling & print sheets
 ├── src/
 │   ├── app.js            # View routing, DOM rendering, tool logic & event delegation
-│   └── storage.js        # Stores (Opportunities, Contacts, Settings, Resume) & JSON backup
+│   └── storage.js        # Stores (Opportunities, Portals, Settings, Resume) & JSON backup
 ├── test/
 │   └── smoke-test.js     # Zero-dependency native Node.js smoke test suite
 ├── package.json          # Project metadata and test scripts

@@ -185,7 +185,7 @@ export const platformStore = {
       version: 2,
       exportedAt: now(),
       platforms: adapter.get(),
-      contacts: contactsAdapter.get(),
+      portals: portalsAdapter.get(),
       settings: settingsStore.get(),
       resume: resumeStore.get(),
     };
@@ -196,14 +196,14 @@ export const platformStore = {
     try {
       const parsed = JSON.parse(jsonString);
       let platformArray = [];
-      let contactArray = [];
+      let portalArray = [];
       let incomingSettings = null;
 
       if (Array.isArray(parsed)) {
         platformArray = parsed;
       } else if (parsed && typeof parsed === "object") {
         if (Array.isArray(parsed.platforms)) platformArray = parsed.platforms;
-        if (Array.isArray(parsed.contacts)) contactArray = parsed.contacts;
+        if (Array.isArray(parsed.portals)) portalArray = parsed.portals;
         if (parsed.settings) incomingSettings = parsed.settings;
         if (parsed.resume) resumeStore.save(parsed.resume);
       } else {
@@ -239,30 +239,29 @@ export const platformStore = {
         adapter.set(merged);
       }
 
-      // Process contacts if present
-      if (contactArray.length > 0) {
-        const validatedContacts = contactArray.map((c) => ({
-          id: c.id || createId(),
-          name: (c.name || "Untitled Contact").trim(),
-          company: (c.company || "").trim(),
-          role: (c.role || "").trim(),
-          email: (c.email || "").trim(),
-          linkedin: (c.linkedin || "").trim(),
-          note: (c.note || "").trim(),
-          createdAt: c.createdAt || now(),
-          updatedAt: c.updatedAt || now(),
+      // Process portals if present
+      if (portalArray.length > 0) {
+        const validatedPortals = portalArray.map((p) => ({
+          id: p.id || createId(),
+          name: (p.name || "Untitled Portal").trim(),
+          url: (p.url || "").trim(),
+          category: normalizePortalCategory(p.category),
+          status: normalizePortalStatus(p.status),
+          remarks: (p.remarks || "").trim(),
+          createdAt: p.createdAt || now(),
+          updatedAt: p.updatedAt || now(),
         }));
 
         if (mode === "replace") {
-          contactsAdapter.set(validatedContacts);
+          portalsAdapter.set(validatedPortals);
         } else {
-          const existingContacts = contactsAdapter.get();
-          const existingContactIds = new Set(existingContacts.map((c) => c.id));
-          const mergedContacts = [...existingContacts];
-          validatedContacts.forEach((c) => {
-            if (!existingContactIds.has(c.id)) mergedContacts.push(c);
+          const existingPortals = portalsAdapter.get();
+          const existingPortalIds = new Set(existingPortals.map((p) => p.id));
+          const mergedPortals = [...existingPortals];
+          validatedPortals.forEach((p) => {
+            if (!existingPortalIds.has(p.id)) mergedPortals.push(p);
           });
-          contactsAdapter.set(mergedContacts);
+          portalsAdapter.set(mergedPortals);
         }
       }
 
@@ -271,7 +270,7 @@ export const platformStore = {
         settingsStore.update(incomingSettings);
       }
 
-      return { success: true, count: validated.length, contactsCount: contactArray.length };
+      return { success: true, count: validated.length, portalsCount: portalArray.length };
     } catch (err) {
       console.error("Failed to import JSON data:", err);
       return { success: false, error: err.message };
@@ -280,11 +279,11 @@ export const platformStore = {
 };
 
 const SETTINGS_KEY = "opportunity-inbox.settings.v1";
-const CONTACTS_KEY = "opportunity-inbox.contacts.v1";
+const PORTALS_KEY = "opportunity-inbox.portals.v1";
 const RESUME_KEY = "opportunity-inbox.resume.v1";
 
 const settingsAdapter = new LocalStorageAdapter(SETTINGS_KEY);
-const contactsAdapter = new LocalStorageAdapter(CONTACTS_KEY);
+const portalsAdapter = new LocalStorageAdapter(PORTALS_KEY);
 const resumeAdapter = new LocalStorageAdapter(RESUME_KEY);
 
 const DEFAULT_SETTINGS = {
@@ -517,55 +516,111 @@ export function parseRawResumeText(rawText) {
   return result;
 }
 
-export const contactStore = {
+export const PORTAL_CATEGORIES = ["AI Training", "Marketplace", "Microtask", "Other"];
+
+export const PORTAL_STATUS = {
+  REGISTERED: "registered",
+  NOT_REGISTERED: "not_registered",
+};
+
+export const PORTAL_STATUS_LABELS = {
+  [PORTAL_STATUS.REGISTERED]: "Registered",
+  [PORTAL_STATUS.NOT_REGISTERED]: "Not registered",
+};
+
+export function normalizePortalStatus(status) {
+  return status === PORTAL_STATUS.REGISTERED ? PORTAL_STATUS.REGISTERED : PORTAL_STATUS.NOT_REGISTERED;
+}
+
+export function normalizePortalCategory(category) {
+  const value = (category || "").trim();
+  return PORTAL_CATEGORIES.includes(value) ? value : "Other";
+}
+
+/**
+ * Curated starter list of freelance gig portals, researched 2026-11-10.
+ * The app is local-first with no AI backend, so there is no live web
+ * search inside the app: this seed is the "automatic" list, and the user
+ * adds or edits portals by hand. Registration status reflects Yudhan's
+ * own accounts where known; uncertain entries say so in their remarks.
+ */
+const PORTAL_SEED = [
+  { id: "portal-mercor", name: "Mercor", url: "https://mercor.com", category: "AI Training", status: "registered", remarks: "Offer diterima 5 Nov 2026 sebagai Odin writer; detail tugas belum jelas (dokumen offer belum dibagikan)." },
+  { id: "portal-imerit", name: "iMerit Scholars", url: "https://imerit.net", category: "AI Training", status: "registered", remarks: "Kontrak 12499 (Video Fraud Detection Analyst) ditandatangani 1 Nov 2026, dihentikan 7 Nov 2026 tanpa alasan; tiket 350856347375 masih dalam peninjauan awal." },
+  { id: "portal-oneforma", name: "OneForma", url: "https://www.oneforma.com", category: "AI Training", status: "registered", remarks: "Verifikasi identitas selesai 5 Nov 2026; akun dibuat." },
+  { id: "portal-crowdgen", name: "CrowdGen", url: "https://www.crowdgen.com", category: "AI Training", status: "not_registered", remarks: "Email verifikasi diterima 5 Nov 2026 pukul 06:18; penyelesaian pendaftaran belum dikonfirmasi." },
+  { id: "portal-workbolt", name: "Workbolt", url: "https://workbolt.com", category: "AI Training", status: "registered", remarks: "Kode verifikasi diminta 5 Nov 2026 dari Legian (miliknya)." },
+  { id: "portal-turing", name: "Turing", url: "https://www.turing.com", category: "AI Training", status: "registered", remarks: "Akun sejak Jun 2026; penawaran Personal Account Raters ditutup 8 Nov 2026 (overlap 01:00-05:00 WITA tidak cocok)." },
+  { id: "portal-micro1", name: "Micro1", url: "https://micro1.ai", category: "AI Training", status: "not_registered", remarks: "" },
+  { id: "portal-upwork", name: "Upwork", url: "https://www.upwork.com", category: "Marketplace", status: "not_registered", remarks: "" },
+  { id: "portal-contra", name: "Contra", url: "https://contra.com", category: "Marketplace", status: "not_registered", remarks: "" },
+];
+
+/**
+ * Seeds the curated portal list on first run only. Returns how many
+ * portals were seeded (0 when the store already has entries).
+ */
+export function seedPortalsIfEmpty() {
+  if (portalsAdapter.get().length > 0) return 0;
+  const timestamp = now();
+  const seeded = PORTAL_SEED.map((p) => ({ ...p, createdAt: timestamp, updatedAt: timestamp }));
+  portalsAdapter.set(seeded);
+  return seeded.length;
+}
+
+export const portalStore = {
   list() {
-    const raw = contactsAdapter.get();
+    const raw = portalsAdapter.get();
     const list = Array.isArray(raw) ? raw : [];
-    return list.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+    return list
+      .map((p) => ({
+        ...p,
+        category: normalizePortalCategory(p.category),
+        status: normalizePortalStatus(p.status),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   },
   get(id) {
-    return this.list().find((c) => c.id === id) ?? null;
+    return this.list().find((p) => p.id === id) ?? null;
   },
   create(input) {
     const timestamp = now();
-    const contact = {
+    const portal = {
       id: createId(),
       name: (input.name || "").trim(),
-      company: (input.company || "").trim(),
-      role: (input.role || "").trim(),
-      email: (input.email || "").trim(),
-      linkedin: (input.linkedin || "").trim(),
-      note: (input.note || "").trim(),
+      url: (input.url || "").trim(),
+      category: normalizePortalCategory(input.category),
+      status: normalizePortalStatus(input.status),
+      remarks: (input.remarks || "").trim(),
       createdAt: timestamp,
       updatedAt: timestamp,
     };
-    const contacts = [contact, ...this.list()];
-    contactsAdapter.set(contacts);
-    return contact;
+    const portals = [portal, ...portalsAdapter.get()];
+    portalsAdapter.set(portals);
+    return portal;
   },
   update(id, patch) {
     const timestamp = now();
     let updatedItem = null;
-    const contacts = this.list().map((c) => {
-      if (c.id !== id) return c;
+    const portals = portalsAdapter.get().map((p) => {
+      if (p.id !== id) return p;
       updatedItem = {
-        ...c,
+        ...p,
         ...patch,
-        name: patch.name !== undefined ? patch.name.trim() : c.name,
-        company: patch.company !== undefined ? patch.company.trim() : c.company,
-        role: patch.role !== undefined ? patch.role.trim() : c.role,
-        email: patch.email !== undefined ? patch.email.trim() : c.email,
-        linkedin: patch.linkedin !== undefined ? patch.linkedin.trim() : c.linkedin,
-        note: patch.note !== undefined ? patch.note.trim() : c.note,
+        name: patch.name !== undefined ? patch.name.trim() : p.name,
+        url: patch.url !== undefined ? patch.url.trim() : p.url,
+        category: patch.category !== undefined ? normalizePortalCategory(patch.category) : p.category,
+        status: patch.status !== undefined ? normalizePortalStatus(patch.status) : p.status,
+        remarks: patch.remarks !== undefined ? patch.remarks.trim() : p.remarks,
         updatedAt: timestamp,
       };
       return updatedItem;
     });
-    contactsAdapter.set(contacts);
+    portalsAdapter.set(portals);
     return updatedItem;
   },
   remove(id) {
-    const remaining = this.list().filter((c) => c.id !== id);
-    contactsAdapter.set(remaining);
+    const remaining = portalsAdapter.get().filter((p) => p.id !== id);
+    portalsAdapter.set(remaining);
   },
 };

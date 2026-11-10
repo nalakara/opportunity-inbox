@@ -23,7 +23,9 @@ globalThis.window = {
 // Import storage module
 const {
   platformStore,
-  contactStore,
+  portalStore,
+  seedPortalsIfEmpty,
+  PORTAL_STATUS,
   settingsStore,
   resumeStore,
   STATUS_ENUM,
@@ -57,25 +59,35 @@ assert.equal(list.length, 1);
 assert.equal(list[0].id, job.id);
 console.log("  ✓ platformStore CRUD passed.");
 
-// 2. Contact Store CRUD
-console.log("2. Testing contactStore...");
-const contact = contactStore.create({
-  name: "Sarah Jenkins",
-  company: "Stripe",
-  role: "Recruiter",
-  email: "sarah@example.com",
-  linkedin: "linkedin.com/in/sarah",
-  note: "Sent introductory message",
+// 2. Portal Store CRUD & Status Validation
+console.log("2. Testing portalStore...");
+const portal = portalStore.create({
+  name: "Test Portal",
+  url: "https://example.com",
+  category: "Microtask",
+  status: "registered",
+  remarks: "Test remarks",
 });
 
-assert.ok(contact.id, "Contact ID should be generated");
-assert.equal(contact.name, "Sarah Jenkins");
-assert.equal(contact.company, "Stripe");
+assert.ok(portal.id, "Portal ID should be generated");
+assert.equal(portal.name, "Test Portal");
+assert.equal(portal.category, "Microtask");
+assert.equal(portal.status, PORTAL_STATUS.REGISTERED);
 
-const contacts = contactStore.list();
-assert.equal(contacts.length, 1);
-assert.equal(contacts[0].id, contact.id);
-console.log("  ✓ contactStore CRUD passed.");
+// Unknown status normalizes to not_registered.
+const odd = portalStore.create({ name: "Odd Portal", status: "banana" });
+assert.equal(odd.status, PORTAL_STATUS.NOT_REGISTERED);
+
+const updatedPortal = portalStore.update(portal.id, { status: "not_registered" });
+assert.equal(updatedPortal.status, PORTAL_STATUS.NOT_REGISTERED);
+
+const portals = portalStore.list();
+assert.equal(portals.length, 2);
+assert.ok(portals.some((p) => p.id === portal.id));
+
+portalStore.remove(odd.id);
+assert.equal(portalStore.list().length, 1);
+console.log("  ✓ portalStore CRUD passed.");
 
 // 3. Settings Store
 console.log("3. Testing settingsStore...");
@@ -113,7 +125,7 @@ const exportedJson = platformStore.exportJson();
 const parsedExport = JSON.parse(exportedJson);
 assert.equal(parsedExport.version, 2);
 assert.ok(Array.isArray(parsedExport.platforms));
-assert.ok(Array.isArray(parsedExport.contacts));
+assert.ok(Array.isArray(parsedExport.portals));
 assert.ok(parsedExport.settings);
 assert.ok(parsedExport.resume);
 
@@ -124,7 +136,7 @@ assert.equal(platformStore.list().length, 0);
 const importResult = platformStore.importJson(exportedJson, "replace");
 assert.equal(importResult.success, true);
 assert.equal(platformStore.list().length, 1);
-assert.equal(contactStore.list().length, 1);
+assert.equal(portalStore.list().length, 1);
 assert.equal(settingsStore.get().userName, "Yudhan Sebastian");
 console.log("  ✓ JSON Export & Import round-trip passed.");
 
@@ -137,7 +149,7 @@ const expectedTabs = [
   "home",
   "board",
   "statistics",
-  "contacts",
+  "portals",
   "coverletter",
   "resumebuilder",
   "resumescore",
@@ -231,7 +243,7 @@ const legacyJson = JSON.stringify({
       updatedAt: "2026-11-01T00:00:00.000Z",
     },
   ],
-  contacts: [],
+  portals: [],
   settings: {},
   resume: null,
 });
@@ -241,6 +253,28 @@ assert.equal(legacy.statusHistory.length, 1);
 assert.equal(legacy.statusHistory[0].status, "OFFER");
 assert.equal(legacy.statusHistory[0].at, "2026-11-01T00:00:00.000Z");
 console.log("  ✓ status history recorded, no-op updates ignored, legacy imports backfilled.");
+
+
+// 9. Portal Seed List
+console.log("9. Testing portal seed list...");
+memoryStorage.clear();
+const seededCount = seedPortalsIfEmpty();
+assert.equal(seededCount, 9);
+assert.equal(seedPortalsIfEmpty(), 0, "Seeding twice must not duplicate");
+
+const seeded = portalStore.list();
+assert.equal(seeded.length, 9);
+const mercor = portalStore.get("portal-mercor");
+assert.ok(mercor, "Mercor should be seeded");
+assert.equal(mercor.status, PORTAL_STATUS.REGISTERED);
+assert.ok(mercor.remarks.includes("Odin"));
+const crowdgen = portalStore.get("portal-crowdgen");
+assert.equal(crowdgen.status, PORTAL_STATUS.NOT_REGISTERED);
+assert.ok(crowdgen.remarks.includes("belum dikonfirmasi"));
+
+const updatedSeed = portalStore.update("portal-micro1", { status: "registered" });
+assert.equal(updatedSeed.status, PORTAL_STATUS.REGISTERED);
+console.log("  ✓ portal seed list (9 portals, idempotent) passed.");
 
 console.log("\n🎉 ALL SMOKE TESTS PASSED CLEANLY!");
 

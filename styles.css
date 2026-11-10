@@ -1176,13 +1176,13 @@ button {
 }
 
 /* CONTACTS & NETWORKING CRM */
-.contacts-grid {
+.portals-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
 }
 
-.contact-card {
+.portal-card {
   background: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1194,43 +1194,53 @@ button {
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.contact-card:hover {
+.portal-card:hover {
   transform: translateY(-2px);
   border-color: var(--accent-orange);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4), 0 0 14px var(--accent-orange-soft);
 }
 
-.contact-card-header {
+.portal-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.contact-name {
+.portal-name {
   font-size: 1.05rem;
   font-weight: 800;
   color: var(--text-main);
 }
 
-.contact-company-badge {
+.portal-status-badge {
   font-size: 0.78rem;
   font-weight: 700;
-  background: var(--surface-muted);
-  color: var(--accent-orange-bright);
-  border: 1px solid rgba(249, 115, 22, 0.2);
   padding: 2px 8px;
   border-radius: var(--radius-sm);
   width: fit-content;
+  white-space: nowrap;
 }
 
-.contact-role {
+.portal-status-badge.is-registered {
+  background: var(--surface-muted);
+  color: var(--accent-orange-bright);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.portal-status-badge.is-not-registered {
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.portal-category {
   font-size: 0.85rem;
   color: var(--text-muted);
   font-weight: 600;
 }
 
-.contact-note {
+.portal-remarks {
   font-size: 0.84rem;
   color: var(--text-muted);
   background: var(--surface);
@@ -1241,14 +1251,14 @@ button {
   white-space: pre-wrap;
 }
 
-.contact-channels {
+.portal-channels {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 4px;
 }
 
-.contact-channel-btn {
+.portal-channel-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1263,13 +1273,13 @@ button {
   transition: all 0.2s ease;
 }
 
-.contact-channel-btn:hover {
+.portal-channel-btn:hover {
   border-color: var(--accent-orange);
   color: var(--accent-orange-bright);
   background: var(--surface-hover);
 }
 
-.contact-card-footer {
+.portal-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
