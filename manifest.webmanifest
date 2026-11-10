@@ -3,8 +3,8 @@
   "short_name": "Inbox",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f7f5ef",
-  "theme_color": "#f7f5ef",
+  "background_color": "#fcfcfa",
+  "theme_color": "#fcfcfa",
   "icons": [
     {
       "src": "./icon.svg",

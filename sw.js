@@ -1,4 +1,4 @@
-const CACHE_NAME = "opportunity-inbox-v2.1.0";
+const CACHE_NAME = "opportunity-inbox-v2.4.0";
 const ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,12 @@ const ASSETS = [
   "./src/storage.js",
   "./manifest.webmanifest",
   "./icon.svg",
+  "./assets/fonts/archivo-500.woff2",
+  "./assets/fonts/archivo-700.woff2",
+  "./assets/fonts/archivo-800.woff2",
+  "./assets/fonts/ibm-plex-mono-400.woff2",
+  "./assets/fonts/ibm-plex-mono-500.woff2",
+  "./assets/fonts/ibm-plex-mono-600.woff2",
 ];
 
 self.addEventListener("install", (event) => {

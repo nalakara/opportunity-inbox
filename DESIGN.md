@@ -1,66 +1,84 @@
-# Design Direction: Opportunity Inbox
+# DESIGN.md — Opportunity Inbox
 
-> Quiet productivity, local-first craftsmanship, and deliberate focus for freelancers.
+Design direction for this app. Read this before changing any visual.
 
----
+## Identity
 
-## 1. Identity & Character
+- **Name:** Opportunity Inbox
+- **Visual direction:** Cabinet Editorial (light warm paper). Introduced in **v2.4.0**, superseding the earlier "Obsidian Dark" direction. The reference is The Cabinet: an editorial index, not a dashboard toy.
+- **Audience:** one working freelancer tracking gigs and pitches — Yudhan. Everything must be legible at a glance on a laptop and on his phone.
 
-Opportunity Inbox is built for freelancers who value clarity, privacy, and speed over subscription clutter and bloated trackers. The aesthetic is **Obsidian Minimal**: a calm, dark workspace designed to reduce cognitive load during the intense pitch-and-follow-up process.
+## Purpose (unchanged by the reskin)
 
-- **Tone**: Focused, competent, quiet, respectful of user attention.
-- **Audience**: Freelancers, independent professionals, and modern knowledge workers managing active multi-stage opportunity pipelines.
-- **Philosophy**: Local-first, zero-build, zero-tracking, instant load.
+A quiet pipeline board for freelance opportunities: Lead / Pitched / Diskusi / Deal / Gagal / Tanpa kabar / Follow Up, plus a directory of freelance portals. No noise, no gamification, no AI-looking gloss.
 
----
+## Visual Direction
 
-## 2. Palette & Contrast (WCAG AA Compliant)
+- **Warm paper, not dark.** Background is warm paper `#fcfcfa`; cards are white `#ffffff`. The app must never look like a dark-mode demo again.
+- **Sharp corners.** Radius is 2px for small elements (chips, badges, inputs) and 4px for cards, dialogs, and columns. No pill buttons (999px), no large rounded cards. The only circles are small functional ones (avatar, gauge ring, 28px icon buttons).
+- **Hairlines, not shadows.** 1px borders in `#e3ded2` do the separation. Shadows are flat and barely-there (`0 1px 2px rgba(22, 19, 14, 0.06)`). No glow, no lift on hover, no gradient anywhere.
+- **One accent.** A single red `#c8341f` for the active state, primary buttons, kickers, and the Deal stage. Nothing else competes with it.
+- **Muted board colours.** Stage colours are desaturated and confined to small coding marks: an 8px dot next to the stage name, the 3px top bar of a KPI card, a 4px left border on an insight card. Never a full-colour column header, never a saturated card fill.
+- **Editorial header.** Every page opens with a mono uppercase kicker ("OPPORTUNITY INBOX", red) above a large extrabold title, with a 2px ink rule under the topbar.
 
-The palette uses a controlled 3-layer dark foundation accented by a warm, deliberate orange highlight for interactive focus:
+## Typography
 
-- **App Canvas**: `#08090C` (Deep Obsidian)
-- **Sidebar & Muted Surfaces**: `#0C0D12` / `#0B0D13`
-- **Card & Workspace Surface**: `#151822` (Midnight Slate)
-- **Primary Accent**: `#F97316` (Warm Tangerine, contrast 6.32:1 on cards)
-- **Accent Glow**: `#FB923C` (Tangerine Bright)
-- **Text Tokens**:
-  - `text-main`: `#F3F4F6` (contrast 16.09:1 on cards, AAA)
-  - `text-muted`: `#8E96A5` (contrast 5.95:1 on cards, AA)
-  - `text-light`: `#94A3B8` (contrast 6.91:1 on cards, AA)
+- **Archivo** (500 / 700 / 800) for headings and UI. Self-hosted woff2 in `assets/fonts/`, loaded via `@font-face` in `styles.css`. No Google Fonts link anywhere — the app is offline-first and must render the same offline.
+- **IBM Plex Mono** (400 / 500 / 600) for labels: kickers, section titles, stage names, KPI labels, table headers, badges, pills, counts. Uppercase with wide letter-spacing.
+- Body text is Archivo. The resume sheet preview keeps its own document typography (system sans, paper-white) — it is a document, not app chrome.
 
-No rainbow gradients, no colored full-page glow meshes, and no technique without a clear functional reason.
+## Color Palette
 
----
+| Token | Value | Use |
+|---|---|---|
+| `--bg-app` | `#fcfcfa` | Warm paper background |
+| `--surface` / `--surface-card` | `#ffffff` | Cards, panels, headers |
+| `--surface-muted` / `--surface-hover` | `#f3efe6` | Input backgrounds, muted panels, hover |
+| `--text-main` | `#16130e` | Ink. 18.0:1 on paper |
+| `--text-muted` | `#57534a` | Secondary text. 7.5:1 on paper |
+| `--text-light` | `#6f6a5e` | Smallest meta text. 5.2:1 on paper |
+| `--border` | `#e3ded2` | 1px hairlines |
+| `--border-strong` | `#b8b0a0` | Hover border |
+| `--accent` | `#c8341f` | The one red. 5.2:1 on paper, 5.3:1 white-on-red |
+| `--accent-dark` | `#a92c1a` | Primary-button hover |
+| `--accent-soft` | `rgba(200, 52, 31, 0.08)` | Active nav tint, drag-over wash |
 
-## 3. Typography & Spacing
+Stage colours (coding only — dots, bars, borders; never text):
 
-- **Font Family**: Native system font stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`).
-  - *Reason*: Eliminates external font file requests, prevents layout shifts (CLS), and loads instantly offline.
-- **Hierarchy**:
-  - Page Titles: `1.4rem`, font-weight `800`
-  - Section Headers: `1.05rem - 1.15rem`, font-weight `700`
-  - Body & Labels: `0.85rem - 0.94rem`, font-weight `500 - 600`, line-height `1.5 - 1.7`
-- **Border Radius Hierarchy**:
-  - Small elements (tags, badges, inline controls): `var(--radius-sm)` (4px)
-  - Interactive cards & inputs: `var(--radius-md)` (8px)
-  - Modal dialogs & primary panels: `var(--radius-lg)` (12px)
-  - (No arbitrary pill-shaped 999px elements without semantic justification).
+| Stage | Value |
+|---|---|
+| Lead | `#5f7a8c` (muted slate blue) |
+| Pitched | `#7a6b9e` (dusty violet) |
+| Diskusi | `#5e7f6a` (sage green) |
+| Deal | `#c8341f` (the accent red — the win) |
+| Gagal | `#8c7b70` (warm taupe) |
+| Tanpa kabar | `#8a8f98` (cool grey) |
+| Follow Up | `#a67c2e` (muted ochre) |
 
----
+Semantic colours for badges and scanner feedback (text-safe on paper): ok `#1e7a55`, warn `#8a5e00`, bad `#a83a32`, info `#2f5da8`.
 
-## 4. The Three Dials
+## Layout
 
-| Dial | Level | Selection | Rationale |
-|---|---|---|---|
-| **ENERGY** | **1 (Calm)** | Quiet & Non-intrusive | Finding gigs requires calm concentration; the interface steps back and lets data and actions take center stage. |
-| **RHYTHM** | **2 (Balanced)** | Consistent with Focused Workspaces | Kanban columns and tables maintain predictable consistency, while tool views (Resume Builder, Cover Letter) expand into split-screen authoring layouts. |
-| **MOTION** | **1 (Calm)** | Fast Tactile Feedback | 150ms transitions on hover and active states; zero scroll-reveal fades, floating cards, or artificial delays. |
+- Left sidebar (260px) with the red brand mark, numbered-style nav, and the user chip at the bottom. On mobile it becomes a fixed drawer plus a bottom nav.
+- Content area: kicker + title + toolbar, then the board or the page content. Kanban columns are 310px wide with a paper header (stage dot + name + count chip); the list view uses the same header as an accordion bar.
+- The board is the one place colour is allowed to show up at all, and only as dots.
 
----
+## Accessibility
 
-## 5. Craftsmanship & Accessibility Commitments
+- R-25 WCAG AA: every text colour is verified at 4.5:1 or better on its background (see the table above). The accent `#c8341f` passes as text (5.2:1); the brighter red `#e0583f` does **not** (3.6:1) and must never be used for text.
+- R-32 visible focus: interactive elements keep a visible focus ring (red outline on the cover-letter textarea, red border on the search input).
+- R-03 44px touch targets on small screens (unchanged).
+- R-02 no em dashes anywhere in the UI copy (unchanged).
+- R-04 no decorative AI emojis (unchanged).
 
-- **Keyboard First**: Every button, input, dialog, and dropdown is reachable via Tab and activatable via Enter/Space. Visible 2px outline rings on all focused elements.
-- **Mobile First**: All touch targets meet or exceed the 44px minimum hit area standard.
-- **Honest Content**: Zero fictional testimonials, fake numbers, or AI buzzwords. Real pipeline data only.
+## Dials
 
+- **ENERGY 1** — Calm. The app should feel like a paper index, not a slot machine.
+- **RHYTHM 2** — Balanced. A steady grid of cards, no oversized hero, no dense spreadsheet.
+- **MOTION 1** — Calm. Transitions are short fades and border changes only. No bounce, no lift, no glow.
+
+## What NOT to change
+
+- The seven stage names and their meanings, the funnel definition, the weekly pitch target, and the Portals directory — the reskin is visual only.
+- The tool suite (ATS resume builder/scorer, STAR responder, cover letter generator, LinkedIn suite) keeps its own document styling where it renders documents (resume sheet, print sheets).
+- Do not reintroduce gradients, glows, pill radii, or an external font dependency. Do not copy The Cabinet's 390px title-clipping flaw: the page title must fit at 390px.
