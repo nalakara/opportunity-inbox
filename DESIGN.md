@@ -57,6 +57,16 @@ Stage colours (coding only — dots, bars, borders; never text):
 
 Semantic colours for badges and scanner feedback (text-safe on paper): ok `#1e7a55`, warn `#8a5e00`, bad `#a83a32`, info `#2f5da8`.
 
+## Dark mode (v2.5.0)
+
+- **Automatic, per system.** A `@media (prefers-color-scheme: dark)` block at the end of `styles.css` re-aims the same tokens; there is no toggle and no JavaScript involved. Light stays the default.
+- **Tokens are The Cabinet's dark ones:** background `#14120e`, surfaces `#1e1b16`, accent `#e0583f`. Text is warm paper `#f3efe6` (15.0:1), muted `#b0a894` (7.3:1), light `#8f887a` (4.9:1) — all AA on the dark surface.
+- **One trap, handled:** white text on the bright dark accent `#e0583f` is only 3.73:1, so the primary button and the avatar use dark ink `#14120e` on it instead (5.02:1). The accent as *text* on dark passes (4.61:1).
+- **Stage colours get lighter muted variants** in dark mode (e.g. Lead `#7ba3b8`, Diskusi `#7ba889`, Follow Up `#c9a24e`) so the dots still read on dark; Deal takes the dark accent.
+- **Semantic colours switch to their light variants** in dark mode: ok `#34d399`, warn `#fbbf24`, bad `#f87171`, info `#60a5fa`.
+- **Hardcoded exceptions** live inside the dark block (dialog shadow/backdrop, sidebar backdrop, mobile nav background, dragging shadow). The resume sheet stays a white document in both modes — it is a document, not app chrome.
+- **Theme-color follows too:** `index.html` carries a light and a dark `theme-color` meta tag with matching `media` attributes.
+
 ## Layout
 
 - Left sidebar (260px) with the red brand mark, numbered-style nav, and the user chip at the bottom. On mobile it becomes a fixed drawer plus a bottom nav.

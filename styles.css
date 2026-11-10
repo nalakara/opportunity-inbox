@@ -484,6 +484,14 @@ button {
   width: 100%;
 }
 
+.gauge-svg path:first-of-type {
+  stroke: var(--border);
+}
+
+#gaugeProgressPath {
+  stroke: var(--accent);
+}
+
 .gauge-value {
   position: absolute;
   bottom: 0;
@@ -571,6 +579,7 @@ button {
 .search-box svg {
   position: absolute;
   left: 16px;
+  color: var(--text-muted);
 }
 
 .search-box input {
@@ -743,19 +752,19 @@ button {
 
 .follow-up-badge.upcoming {
   background: rgba(59, 130, 246, 0.15);
-  color: #2f5da8;
+  color: var(--info);
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .follow-up-badge.due-today {
   background: rgba(245, 158, 11, 0.18);
-  color: #8a5e00;
+  color: var(--warn);
   border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
 .follow-up-badge.overdue {
   background: rgba(239, 68, 68, 0.18);
-  color: #a83a32;
+  color: var(--bad);
   border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
@@ -1025,7 +1034,7 @@ button {
 .insight-title { font-weight: 800; font-size: 1rem; }
 
 .badge { font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: var(--radius-sm); letter-spacing: 0.03em; }
-.badge.low { background: rgba(59, 130, 246, 0.15); color: #2f5da8; }
+.badge.low { background: rgba(59, 130, 246, 0.15); color: var(--info); }
 .badge.medium { background: rgba(200, 52, 31, 0.15); color: var(--accent); }
 
 .stats-breakdown-grid {
@@ -1105,8 +1114,8 @@ button {
   color: var(--text-main);
 }
 
-.required-star { color: #c8341f; }
-.form-error { color: #c8341f; font-size: 0.82rem; font-weight: 600; margin: 0; }
+.required-star { color: var(--accent); }
+.form-error { color: var(--accent); font-size: 0.82rem; font-weight: 600; margin: 0; }
 
 .form-actions {
   display: flex;
@@ -1646,8 +1655,8 @@ button {
   letter-spacing: 0.04em;
 }
 
-.rs-subhead.text-green { color: #1e7a55; }
-.rs-subhead.text-orange { color: #c8341f; }
+.rs-subhead.text-green { color: var(--ok); }
+.rs-subhead.text-orange { color: var(--accent); }
 
 .rs-tags-container {
   display: flex;
@@ -1669,13 +1678,13 @@ button {
 
 .rs-tag.matched {
   background: rgba(16, 185, 129, 0.15);
-  color: #1e7a55;
+  color: var(--ok);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .rs-tag.missing {
   background: rgba(200, 52, 31, 0.12);
-  color: #c8341f;
+  color: var(--accent);
   border: 1px solid rgba(200, 52, 31, 0.25);
 }
 
@@ -1771,7 +1780,7 @@ button {
 }
 
 .file-dropzone.has-file {
-  border-color: #1e7a55;
+  border-color: var(--ok);
   background: rgba(16, 185, 129, 0.06);
 }
 
@@ -1798,4 +1807,80 @@ button {
 .kanban-column-count,
 .stage-badge {
   font-family: var(--font-mono);
+}
+
+/* DARK MODE (v2.5.0): automatic per system, like The Cabinet.
+   Light tokens stay the default; this block only re-aims them. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg-app: #14120e;
+    --sidebar-bg: #14120e;
+    --surface: #1e1b16;
+    --surface-card: #1e1b16;
+    --surface-hover: #2a251c;
+    --surface-muted: #26221a;
+
+    --text-main: #f3efe6;
+    --text-muted: #b0a894;
+    --text-light: #8f887a;
+    --border: #3a352c;
+    --border-highlight: rgba(252, 252, 250, 0.08);
+    --border-strong: #5a5344;
+
+    /* Cabinet dark accent. White text on it is only 3.73:1, so buttons
+       and the avatar use dark ink on it instead (5.02:1). */
+    --accent: #e0583f;
+    --accent-dark: #e86a4f;
+    --accent-soft: rgba(224, 88, 63, 0.14);
+
+    /* Lighter muted stage colours so the dots still read on dark */
+    --status-wishlist: #7ba3b8;
+    --status-applied: #9a8fc0;
+    --status-interviewing: #7ba889;
+    --status-offer: #e0583f;
+    --status-rejected: #b09a8c;
+    --status-ghosted: #a8adb5;
+    --status-followup: #c9a24e;
+
+    /* Lighter semantic colours (text-safe on dark) */
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --info: #60a5fa;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Dark ink on the bright accent (white on #e0583f fails AA) */
+  .primary-btn {
+    color: #14120e;
+  }
+
+  .avatar {
+    color: #14120e;
+  }
+
+  /* Hardcoded light-mode values that do not follow variables */
+  .capture-dialog {
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  .capture-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.65);
+  }
+
+  .sidebar-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .mobile-bottom-nav {
+    background: rgba(20, 18, 14, 0.95);
+  }
+
+  .kanban-card.is-dragging {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5);
+  }
 }

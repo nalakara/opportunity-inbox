@@ -64,7 +64,7 @@ Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers 
 
 ```text
 ├── index.html            # App shell, views (Home, Board, Stats, Tools), and dialog markup
-├── styles.css            # Cabinet Editorial design system (light paper, self-hosted fonts), responsive styling & print sheets
+├── styles.css            # Cabinet Editorial design system (light paper + auto dark mode, self-hosted fonts), responsive styling & print sheets
 ├── src/
 │   ├── app.js            # View routing, DOM rendering, tool logic & event delegation
 │   └── storage.js        # Stores (Opportunities, Portals, Settings, Resume) & JSON backup
