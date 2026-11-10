@@ -90,5 +90,5 @@ Semantic colours for badges and scanner feedback (text-safe on paper): ok `#1e7a
 ## What NOT to change
 
 - The seven stage names and their meanings, the funnel definition, the weekly pitch target, and the Portals directory — the reskin is visual only.
-- The tool suite (ATS resume builder/scorer, STAR responder, cover letter generator, LinkedIn suite) keeps its own document styling where it renders documents (resume sheet, print sheets).
+- The tool suite (resume builder, proposal drafter, LinkedIn suite) keeps its own document styling where it renders documents (resume sheet, print sheets).
 - Do not reintroduce gradients, glows, pill radii, or an external font dependency. Do not copy The Cabinet's 390px title-clipping flaw: the page title must fit at 390px.

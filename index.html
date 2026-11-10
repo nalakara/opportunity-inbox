@@ -73,10 +73,8 @@
 
           <div class="nav-section-title">TOOLS</div>
           <ul class="nav-group secondary-tools">
-            <li><button class="nav-link" data-tab="coverletter" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Cover Letter</span></button></li>
+            <li><button class="nav-link" data-tab="proposal" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Proposal Drafter</span></button></li>
             <li><button class="nav-link" data-tab="resumebuilder" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Resume Builder</span></button></li>
-            <li><button class="nav-link" data-tab="resumescore" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>Score my Resume</span></button></li>
-            <li><button class="nav-link" data-tab="aianswer" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Answer Generator</span></button></li>
             <li><button class="nav-link" data-tab="linkedintools" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg><span>LinkedIn Tools</span></button></li>
           </ul>
         </nav>
@@ -303,19 +301,19 @@
           </section>
 
           <!-- View: COVER LETTER GENERATOR -->
-          <section class="tab-view" id="viewCoverletter" data-tab="coverletter" style="display: none;">
+          <section class="tab-view" id="viewProposal" data-tab="proposal" style="display: none;">
             <div class="cl-workspace">
               <!-- Left Form / Config Column -->
               <div class="card cl-form-card">
                 <div class="card-header">
-                  <h3>✉️ Cover Letter Settings</h3>
+                  <h3>✉️ Proposal Settings</h3>
                 </div>
 
                 <form id="clConfigForm" class="cl-config-form">
                   <div class="form-group">
-                    <label for="clJobSelect">Link Saved Application (optional)</label>
+                    <label for="clJobSelect">Link Saved Opportunity (optional)</label>
                     <select id="clJobSelect">
-                      <option value="">-- Manual Input / Custom Role --</option>
+                      <option value="">-- Manual Input / Custom Project --</option>
                       <!-- Options populated dynamically from saved applications -->
                     </select>
                   </div>
@@ -326,44 +324,44 @@
                       <input id="clNameInput" placeholder="e.g. Yudhan" required />
                     </div>
                     <div class="form-group" style="flex: 1;">
-                      <label for="clRecipientInput">Hiring Recipient</label>
-                      <input id="clRecipientInput" placeholder="e.g. Hiring Team or Sarah" value="Hiring Team" />
+                      <label for="clRecipientInput">Client Name</label>
+                      <input id="clRecipientInput" placeholder="e.g. Sarah (leave blank if unknown)" />
                     </div>
                   </div>
 
                   <div class="form-row" style="display: flex; gap: 12px;">
                     <div class="form-group" style="flex: 1;">
-                      <label for="clCompanyInput">Company / Organization <span class="required-star">*</span></label>
-                      <input id="clCompanyInput" placeholder="e.g. Stripe, Airbnb" required />
+                      <label for="clCompanyInput">Client / Company <span class="required-star">*</span></label>
+                      <input id="clCompanyInput" placeholder="e.g. Upwork client, Mercor, studio name" required />
                     </div>
                     <div class="form-group" style="flex: 1;">
-                      <label for="clRoleInput">Target Role / Position <span class="required-star">*</span></label>
-                      <input id="clRoleInput" placeholder="e.g. Senior Frontend Engineer" required />
+                      <label for="clRoleInput">Project / Gig <span class="required-star">*</span></label>
+                      <input id="clRoleInput" placeholder="e.g. AI data annotation, logo refresh" required />
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label for="clToneSelect">Tone & Strategy</label>
                     <select id="clToneSelect">
-                      <option value="impact">Impact-Driven & Confident (metrics, execution, velocity)</option>
-                      <option value="mission">Mission & Culture Aligned (values, product passion)</option>
-                      <option value="technical">Technical Problem Solver (architecture, scalability, quality)</option>
-                      <option value="referral">Referral / Warm Outreach (networking intro)</option>
+                      <option value="problem">Problem-first & Direct (lead with their problem, short)</option>
+                      <option value="proof">Proof-led (lead with relevant past work)</option>
+                      <option value="question">Question-led (lead with a sharp clarifying question)</option>
+                      <option value="warm">Warm Outreach / Referral (networking intro)</option>
                     </select>
                   </div>
 
                   <div class="form-group">
-                    <label for="clHighlightsInput">Key Strengths & Achievements (bullet or text)</label>
-                    <textarea id="clHighlightsInput" rows="3" placeholder="e.g. Built high-traffic React apps; improved performance by 40%; mentored 4 junior devs"></textarea>
+                    <label for="clHighlightsInput">Relevant Proof (past work, numbers)</label>
+                    <textarea id="clHighlightsInput" rows="3" placeholder="e.g. Built 3 annotation datasets; 98% accuracy on QA tasks; 13 yrs hospitality design"></textarea>
                   </div>
 
                   <div class="form-group">
-                    <label for="clMotivationInput">Why This Company? (optional hook)</label>
-                    <input id="clMotivationInput" placeholder="e.g. I admire your developer experience philosophy and recent API improvements" />
+                    <label for="clMotivationInput">Why This Project? (optional hook)</label>
+                    <input id="clMotivationInput" placeholder="e.g. The brief mentions Figma-to-code, which is exactly what I do daily" />
                   </div>
 
                   <button class="primary-btn" id="clGenerateBtn" type="button" style="width: 100%; margin-top: 8px;">
-                    Generate Cover Letter
+                    Draft Proposal
                   </button>
                 </form>
               </div>
@@ -383,7 +381,7 @@
                 </div>
 
                 <div class="cl-document-container" id="clPrintArea">
-                  <textarea id="clOutputTextarea" class="cl-document-textarea" placeholder="Your generated letter will appear here. Click 'Generate Cover Letter' to create a customized draft."></textarea>
+                  <textarea id="clOutputTextarea" class="cl-document-textarea" placeholder="Your proposal draft will appear here. Click 'Draft Proposal' to create a short, tailored draft."></textarea>
                 </div>
               </div>
             </div>
@@ -473,7 +471,7 @@
               <div class="card cl-preview-card">
                 <div class="cl-preview-header">
                   <div>
-                    <h3 style="margin-bottom: 2px;">ATS Standard Preview</h3>
+                    <h3 style="margin-bottom: 2px;">Resume Preview</h3>
                     <span class="cl-meta-text">Single-column • High Contrast • 1-Page Layout</span>
                   </div>
                   <div class="cl-actions-group">
@@ -487,158 +485,6 @@
                   <div class="resume-sheet" id="resumePreviewSheet">
                     <!-- Rendered via JS -->
                   </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- View: SCORE MY RESUME -->
-          <section class="tab-view" id="viewResumescore" data-tab="resumescore" style="display: none;">
-            <div class="cl-workspace">
-              <!-- Left Column: Inputs -->
-              <div class="card cl-form-card">
-                <div class="card-header">
-                  <h3>🎯 ATS Resume & Job Scanner</h3>
-                </div>
-
-                <div class="cl-config-form">
-                  <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                      <label for="rsJobDescriptionInput">Job Description</label>
-                      <button class="text-link-btn" id="rsLoadJobBtn" type="button" style="font-size: 0.78rem;">Link from Saved Board ↗</button>
-                    </div>
-                    <textarea id="rsJobDescriptionInput" rows="6" placeholder="Paste the full job requirements, responsibilities, or keywords here..."></textarea>
-                  </div>
-
-                  <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                      <label for="rsResumeTextInput">Your Resume Content</label>
-                      <button class="text-link-btn" id="rsLoadMyResumeBtn" type="button" style="font-size: 0.78rem;">Auto-load from Resume Builder ↗</button>
-                    </div>
-                    <textarea id="rsResumeTextInput" rows="8" placeholder="Paste your resume text here, or click 'Auto-load' to pull from your Resume Builder..."></textarea>
-                  </div>
-
-                  <button class="primary-btn" id="rsScanBtn" type="button" style="width: 100%; margin-top: 8px;">
-                    🎯 Scan & Analyze Match
-                  </button>
-                </div>
-              </div>
-
-              <!-- Right Column: Results Dashboard -->
-              <div class="card cl-preview-card" id="rsResultsCard">
-                <div class="rs-score-banner">
-                  <div class="rs-gauge-ring">
-                    <span class="rs-gauge-number" id="rsMatchScore">0%</span>
-                    <span class="rs-gauge-label">Match Score</span>
-                  </div>
-                  <div class="rs-verdict-info">
-                    <h4 id="rsVerdictTitle">Ready to Scan</h4>
-                    <p id="rsVerdictDesc">Paste your target job description and resume to discover hard skills match, ATS keyword alignment, and formatting recommendations.</p>
-                  </div>
-                </div>
-
-                <div class="rs-breakdown-section">
-                  <h4>Keywords & Skills Analysis</h4>
-                  <div class="rs-keywords-grid">
-                    <div>
-                      <span class="rs-subhead text-green">✓ Matched Keywords (<span id="rsMatchedCount">0</span>)</span>
-                      <div class="rs-tags-container" id="rsMatchedTags">
-                        <span class="empty-tag-note">No scan yet</span>
-                      </div>
-                    </div>
-                    <div>
-                      <span class="rs-subhead text-orange">✗ Missing Keywords (<span id="rsMissingCount">0</span>)</span>
-                      <div class="rs-tags-container" id="rsMissingTags">
-                        <span class="empty-tag-note">No scan yet</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="rs-breakdown-section" style="margin-top: 20px;">
-                  <h4>ATS Hygiene & Readability Checklist</h4>
-                  <div class="rs-checklist" id="rsChecklist">
-                    <div class="rs-check-item"><span>📊 Measurable Metrics (%, numbers, stats)</span><span id="rsCheckMetrics">-</span></div>
-                    <div class="rs-check-item"><span>💼 Strong Action Verbs</span><span id="rsCheckVerbs">-</span></div>
-                    <div class="rs-check-item"><span>📬 Contact Details Complete</span><span id="rsCheckContact">-</span></div>
-                    <div class="rs-check-item"><span>📏 Resume Word Count</span><span id="rsCheckLength">-</span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- View: AI ANSWER GENERATOR -->
-          <section class="tab-view" id="viewAiAnswer" data-tab="aianswer" style="display: none;">
-            <div class="cl-workspace">
-              <!-- Left Form Column -->
-              <div class="card cl-form-card">
-                <div class="card-header">
-                  <h3>STAR Interview Responder</h3>
-                </div>
-
-                <div class="cl-config-form">
-                  <div class="form-group">
-                    <label for="aiQuestionCategory">Select Common Question</label>
-                    <select id="aiQuestionCategory">
-                      <option value="conflict">Behavioral: Handling conflict with team member or manager</option>
-                      <option value="failure">Behavioral: A major project mistake and how you recovered</option>
-                      <option value="leadership">Behavioral: Stepping up to lead a challenging initiative</option>
-                      <option value="ambiguity">Situational: Navigating ambiguous requirements or tight deadlines</option>
-                      <option value="whyUs">Motivation: Why do you want to work at this specific company?</option>
-                      <option value="salary">Negotiation: What are your salary and compensation expectations?</option>
-                      <option value="custom">Custom Question (write your own)</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group" id="aiCustomQuestionGroup" style="display: none;">
-                    <label for="aiCustomQuestionInput">Your Custom Interview Question</label>
-                    <input id="aiCustomQuestionInput" placeholder="e.g. How do you approach architectural refactoring?" />
-                  </div>
-
-                  <div class="form-row" style="display: flex; gap: 12px;">
-                    <div class="form-group" style="flex: 1;">
-                      <label for="aiCompanyInput">Target Company</label>
-                      <input id="aiCompanyInput" placeholder="e.g. Stripe, Netflix" />
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                      <label for="aiRoleInput">Target Role</label>
-                      <input id="aiRoleInput" placeholder="e.g. Staff Software Engineer" />
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="aiFrameworkSelect">Answering Framework</label>
-                    <select id="aiFrameworkSelect">
-                      <option value="star">STAR Method (Situation, Task, Action, Result)</option>
-                      <option value="car">CAR Method (Context, Action, Result)</option>
-                      <option value="direct">Direct & Concise (Bullet Point Delivery)</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="aiDetailsInput">Your Real Experience / Project Context</label>
-                    <textarea id="aiDetailsInput" rows="4" placeholder="Briefly describe what happened: e.g. Legacy migration delayed by 2 weeks; I took initiative to modularize the services; shipped 3 days early with 0 downtime."></textarea>
-                  </div>
-
-                  <button class="primary-btn" id="aiGenerateBtn" type="button" style="width: 100%;">
-                    Generate Structured Answer
-                  </button>
-                </div>
-              </div>
-
-              <!-- Right Output Column -->
-              <div class="card cl-preview-card">
-                <div class="cl-preview-header">
-                  <div>
-                    <h3 style="margin-bottom: 2px;">Interview Answer Draft</h3>
-                    <span class="cl-meta-text">Prepared for verbal or written delivery</span>
-                  </div>
-                  <button class="secondary-btn sm" id="aiCopyBtn" type="button">📋 Copy Answer</button>
-                </div>
-
-                <div class="cl-document-container">
-                  <textarea id="aiOutputTextarea" class="cl-document-textarea" style="height: 480px;" placeholder="Select a question and click 'Generate Structured Answer'. The response will be structured using your chosen framework for high interview impact."></textarea>
                 </div>
               </div>
             </div>

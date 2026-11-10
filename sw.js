@@ -1,4 +1,4 @@
-const CACHE_NAME = "opportunity-inbox-v2.4.0";
+const CACHE_NAME = "opportunity-inbox-v2.6.0";
 const ASSETS = [
   "./",
   "./index.html",

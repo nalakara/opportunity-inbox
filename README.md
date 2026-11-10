@@ -42,11 +42,9 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
   - Actionable guidance when pitch momentum slows down.
 - **⚙️ Dynamic User Preferences**: Customize your display name and weekly pitch target directly in local storage without any accounts.
 
-### Power-User & Job Search Tool Suite
-- **📄 ATS Resume Builder**: Create crisp, ATS-compliant, single-column tech resumes. Features **Upload / Import** for existing CVs (.pdf, .txt, .md, .json) with intelligent local field-matching, live preview sheet, Markdown copy/export, and clean `@media print` PDF generation.
-- **🎯 Score My Resume (ATS Scanner)**: Instant keyword and hard skill matching against target job descriptions. Audits quantifiable metrics, power verbs, and ATS formatting guidelines with composite scoring.
-- **✨ STAR Interview Responder**: Generate high-impact behavioral and situational interview answers using the STAR (Situation, Task, Action, Result) and CAR frameworks.
-- **✉️ Cover Letter Generator**: Generate tailored, professional cover letters instantly in 4 tones (*Impact-Driven, Mission-Aligned, Technical Problem Solver, Warm Referral*). Supports auto-linking with saved jobs, live Markdown editing, word count metrics, `.md` download, and clean print-to-PDF formatting.
+### Freelance Tool Suite
+- **📄 Resume Builder**: Create a clean, single-column resume. Features **Upload / Import** for existing CVs (.pdf, .txt, .md, .json) with intelligent local field-matching, live preview sheet, Markdown copy/export, and clean `@media print` PDF generation.
+- **✉️ Proposal Drafter**: Draft short, tailored freelance proposals in 4 tones (*Problem-first, Proof-led, Question-led, Warm Outreach*). Supports auto-linking with saved opportunities, live Markdown editing, word count metrics, `.md` download, and clean print-to-PDF formatting.
 - **💼 LinkedIn Optimization Suite**: Craft high-conversion recruiter outreach InMails, referral requests, keyword-rich headlines, and Unicode post styling (bold, italic, mono).
 - **Quick Capture Shortcut**: Press `⌘K` (Mac) or `Ctrl+K` (Windows/Linux) anywhere to open the capture dialog.
 - **URL Auto-Normalization**: Automatically formats URLs (e.g. `careers.airbnb.com` → `https://careers.airbnb.com`) and opens them safely in new tabs.

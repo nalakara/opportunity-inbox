@@ -103,8 +103,8 @@ const elements = {
   // Install PWA
   installButton: document.querySelector("#installButton"),
 
-  // Cover Letter Elements
-  viewCoverletter: document.querySelector("#viewCoverletter"),
+  // Proposal Drafter Elements
+  viewProposal: document.querySelector("#viewProposal"),
   clJobSelect: document.querySelector("#clJobSelect"),
   clNameInput: document.querySelector("#clNameInput"),
   clRecipientInput: document.querySelector("#clRecipientInput"),
@@ -162,38 +162,6 @@ const elements = {
   importAiOptionBox: document.querySelector("#importAiOptionBox"),
   geminiEnhanceResumeBtn: document.querySelector("#geminiEnhanceResumeBtn"),
   applyResumeImportBtn: document.querySelector("#applyResumeImportBtn"),
-
-  // Score My Resume Elements
-  viewResumescore: document.querySelector("#viewResumescore"),
-  rsJobDescriptionInput: document.querySelector("#rsJobDescriptionInput"),
-  rsResumeTextInput: document.querySelector("#rsResumeTextInput"),
-  rsLoadJobBtn: document.querySelector("#rsLoadJobBtn"),
-  rsLoadMyResumeBtn: document.querySelector("#rsLoadMyResumeBtn"),
-  rsScanBtn: document.querySelector("#rsScanBtn"),
-  rsMatchScore: document.querySelector("#rsMatchScore"),
-  rsVerdictTitle: document.querySelector("#rsVerdictTitle"),
-  rsVerdictDesc: document.querySelector("#rsVerdictDesc"),
-  rsMatchedCount: document.querySelector("#rsMatchedCount"),
-  rsMissingCount: document.querySelector("#rsMissingCount"),
-  rsMatchedTags: document.querySelector("#rsMatchedTags"),
-  rsMissingTags: document.querySelector("#rsMissingTags"),
-  rsCheckMetrics: document.querySelector("#rsCheckMetrics"),
-  rsCheckVerbs: document.querySelector("#rsCheckVerbs"),
-  rsCheckContact: document.querySelector("#rsCheckContact"),
-  rsCheckLength: document.querySelector("#rsCheckLength"),
-
-  // AI Answer Generator Elements
-  viewAiAnswer: document.querySelector("#viewAiAnswer"),
-  aiQuestionCategory: document.querySelector("#aiQuestionCategory"),
-  aiCustomQuestionGroup: document.querySelector("#aiCustomQuestionGroup"),
-  aiCustomQuestionInput: document.querySelector("#aiCustomQuestionInput"),
-  aiCompanyInput: document.querySelector("#aiCompanyInput"),
-  aiRoleInput: document.querySelector("#aiRoleInput"),
-  aiFrameworkSelect: document.querySelector("#aiFrameworkSelect"),
-  aiDetailsInput: document.querySelector("#aiDetailsInput"),
-  aiGenerateBtn: document.querySelector("#aiGenerateBtn"),
-  aiCopyBtn: document.querySelector("#aiCopyBtn"),
-  aiOutputTextarea: document.querySelector("#aiOutputTextarea"),
 
   // LinkedIn Tools Elements
   viewLinkedinTools: document.querySelector("#viewLinkedinTools"),
@@ -708,7 +676,7 @@ function populateClJobSelect() {
   if (!elements.clJobSelect) return;
   const currentVal = elements.clJobSelect.value;
   const platforms = platformStore.list();
-  elements.clJobSelect.innerHTML = `<option value="">-- Manual Input / Custom Role --</option>`;
+  elements.clJobSelect.innerHTML = `<option value="">-- Manual Input / Custom Project --</option>`;
 
   platforms.forEach((p) => {
     const opt = document.createElement("option");
@@ -733,79 +701,52 @@ function updateClStats() {
   elements.clStatsText.textContent = `${words} words • ${readTime} min read`;
 }
 
-function generateCoverLetter() {
+/* Proposal Drafter: short, tailored freelance proposals (Upwork / Contra /
+   direct outreach). Not a corporate cover letter: no date header, no
+   "Dear Hiring Team", no invented facts. Empty proof falls back to an
+   honest line, never to made-up achievements. */
+function generateProposal() {
   const settings = settingsStore.get();
   const name = elements.clNameInput?.value.trim() || settings.userName || "Yudhan";
-  const recipient = elements.clRecipientInput?.value.trim() || "Hiring Team";
-  const company = elements.clCompanyInput?.value.trim() || "[Company Name]";
-  const role = elements.clRoleInput?.value.trim() || "[Target Role]";
-  const tone = elements.clToneSelect?.value || "impact";
-  const highlights = elements.clHighlightsInput?.value.trim();
-  const motivation = elements.clMotivationInput?.value.trim();
+  const recipient = elements.clRecipientInput?.value.trim();
+  const project = elements.clRoleInput?.value.trim() || "[Project]";
+  const tone = elements.clToneSelect?.value || "problem";
+  const proof = elements.clHighlightsInput?.value.trim();
+  const hook = elements.clMotivationInput?.value.trim();
 
-  const todayStr = new Date().toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const greeting = recipient ? `Hi ${recipient},` : "Hi there,";
+  const proofLines = proof
+    ? proof.split("\n").map((h) => {
+        const trimmed = h.trim();
+        return trimmed.startsWith("-") || trimmed.startsWith("•") ? trimmed : `• ${trimmed}`;
+      }).join("\n")
+    : "";
 
-  let intro = "";
-  let body1 = "";
-  let body2 = "";
-  let outro = "";
-
-  if (tone === "impact") {
-    intro = `I am writing to express my strong enthusiasm for the ${role} position at ${company}. With a track record of driving measurable product outcomes, executing with velocity, and building resilient systems, I am eager to contribute immediately to your team's objectives.`;
-    body1 = highlights
-      ? `Throughout my recent work, I have focused on delivering high-leverage outcomes:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}\n\nI treat problem-solving as an iterative discipline: identifying user friction, shipping high-standard solutions, and optimizing for both performance and team velocity.`
-      : `In my career, I have consistently prioritized high-leverage execution: transforming product ambiguity into clean, resilient architectures and delivering impactful user experiences with speed and precision.`;
-    body2 = motivation
-      ? `What excites me most about ${company} is ${motivation}. Joining a team that values rigorous engineering and thoughtful craftsmanship is the ideal environment where I can make an outsized impact.`
-      : `I have followed ${company}'s progress closely and admire your high standard for user experience and engineering rigor. I would love the chance to apply my skills to your upcoming roadmaps.`;
-    outro = `I welcome the opportunity to discuss how my execution mindset and experience align with your goals for the ${role} role. Thank you for your time and consideration.`;
-  } else if (tone === "mission") {
-    intro = `It is with genuine excitement that I submit my application for the ${role} opening at ${company}. ${motivation ? `Having seen how ${motivation}, I` : "I"} have long admired your mission and culture of thoughtful innovation.`;
-    body1 = highlights
-      ? `My experience has taught me that the best products are built when empathy for users meets relentless craftsmanship. Here are key highlights of what I bring to the table:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}`
-      : `I thrive in collaborative environments where ownership and empathy guide technical decisions. Whether tackling complex architectural challenges or crafting refined user interactions, I hold myself and my work to the highest standard of quality.`;
-    body2 = `At ${company}, I see an opportunity to pour this dedication into a product that genuinely resonates with me. I am eager to collaborate with your team to advance your vision and deliver experiences that users love.`;
-    outro = `I would love to learn more about your team's challenges and share how my background can support your mission. Thank you for reviewing my application.`;
-  } else if (tone === "technical") {
-    intro = `I am writing to apply for the ${role} position at ${company}. As an engineer who values scalable architecture, zero-dependency simplicity, and clean code hygiene, I am excited about the technical challenges your team is addressing.`;
-    body1 = highlights
-      ? `Over the course of my projects, I have consistently architected robust solutions with an emphasis on maintainability and speed:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}\n\nMy development philosophy centers on building resilient abstractions, minimizing unnecessary complexity, and ensuring high runtime reliability.`
-      : `My development philosophy focuses on building resilient systems that stand the test of time: clean component separation, high runtime performance, and defensive design that anticipates scale without premature bloat.`;
-    body2 = motivation
-      ? `I am particularly drawn to ${company} because ${motivation}. I look forward to bringing a disciplined engineering perspective to these initiatives.`
-      : `I look forward to contributing to ${company}'s engineering standards and collaborating on complex, high-impact features.`;
-    outro = `I would welcome a technical conversation to explore how my skills can contribute to ${company}'s engineering roadmap. Thank you for your consideration.`;
+  let opening = "";
+  if (tone === "proof") {
+    opening = `I've done this kind of work before, and I'd like to do it for you on ${project}. I start from your brief, deliver clean work, and keep you posted along the way.`;
+  } else if (tone === "question") {
+    opening = `Before I quote on ${project}, one question that shapes the whole job: is there a reference, a must-hit detail, or a "do not do this" I should know about? It changes how I scope the first day.`;
+  } else if (tone === "warm") {
+    const hookClause = hook ? hook.charAt(0).toLowerCase() + hook.slice(1) : `your ${project} caught my eye`;
+    opening = `I'm reaching out because ${hookClause} — and I'd like to help with it.`;
   } else {
-    // referral / warm outreach
-    intro = `I am reaching out to submit my application for the ${role} opportunity at ${company}. ${motivation ? `Following discussions regarding ${motivation}, I` : "I"} am thrilled to share my background and interest in joining your team.`;
-    body1 = highlights
-      ? `To give you a concise snapshot of my recent work and core capabilities:\n\n${highlights.split('\n').map(h => h.trim().startsWith('-') || h.trim().startsWith('•') ? h : `• ${h}`).join('\n')}`
-      : `I pride myself on being a thoughtful partner who combines technical excellence with clear communication and a proactive, ownership-driven approach.`;
-    body2 = `Given ${company}'s current trajectory and ambitious goals, I am confident that my experience and dedication will make me an effective and energetic addition to your organization from day one.`;
-    outro = `I would appreciate the chance to connect for a brief introductory conversation at your convenience. Thank you for your time.`;
+    // problem-first (default)
+    opening = `I read your brief for ${project}, and the thing that matters most is getting it right, not just getting it done. That's the work I do: I take the brief, handle the details, and deliver something you can use without rework.`;
   }
 
-  const letter = `${todayStr}
+  const proofBlock = proofLines
+    ? `Relevant proof:\n\n${proofLines}`
+    : "Happy to share relevant past work on request — just say the word.";
 
-Dear ${recipient},
+  const hookLine = hook && tone !== "warm"
+    ? `What caught my eye about this one: ${hook}.`
+    : "";
 
-${intro}
-
-${body1}
-
-${body2}
-
-${outro}
-
-Sincerely,
-${name}`;
+  const proposal = `${greeting}\n\n${opening}\n\n${proofBlock}\n\n${hookLine ? `${hookLine}\n\n` : ""}If that sounds right, reply here and I'll send a rate and a start date.\n\nBest,\n${name}`;
 
   if (elements.clOutputTextarea) {
-    elements.clOutputTextarea.value = letter;
+    elements.clOutputTextarea.value = proposal;
     updateClStats();
   }
 }
@@ -815,10 +756,8 @@ const TAB_VIEW_MAP = {
   board: "viewBoard",
   statistics: "viewStatistics",
   portals: "viewPortals",
-  coverletter: "viewCoverletter",
+  proposal: "viewProposal",
   resumebuilder: "viewResumebuilder",
-  resumescore: "viewResumescore",
-  aianswer: "viewAiAnswer",
   linkedintools: "viewLinkedinTools",
 };
 
@@ -846,22 +785,14 @@ function switchTab(tabName) {
     else if (tabName === "board") elements.pageTitle.textContent = "Opportunity Board";
     else if (tabName === "statistics") elements.pageTitle.textContent = "Statistics";
     else if (tabName === "portals") elements.pageTitle.textContent = "Freelance Portals";
-    else if (tabName === "coverletter") {
-      elements.pageTitle.textContent = "Cover Letter Generator";
+    else if (tabName === "proposal") {
+      elements.pageTitle.textContent = "Proposal Drafter";
       populateClJobSelect();
-      if (!elements.clOutputTextarea.value) generateCoverLetter();
+      if (!elements.clOutputTextarea.value) generateProposal();
     }
     else if (tabName === "resumebuilder") {
-      elements.pageTitle.textContent = "ATS Resume Builder";
+      elements.pageTitle.textContent = "Resume Builder";
       renderResumeBuilder();
-    }
-    else if (tabName === "resumescore") {
-      elements.pageTitle.textContent = "Score My Resume";
-      if (!elements.rsResumeTextInput.value) loadResumeIntoScanner();
-    }
-    else if (tabName === "aianswer") {
-      elements.pageTitle.textContent = "STAR Interview Responder";
-      if (!elements.aiOutputTextarea.value) generateAiAnswer();
     }
     else if (tabName === "linkedintools") {
       elements.pageTitle.textContent = "LinkedIn Optimization Suite";
@@ -1232,175 +1163,6 @@ ${lastImportedRawText.slice(0, 10000)}`;
   } finally {
     btn.textContent = originalText;
     btn.disabled = false;
-  }
-}
-
-/* Score My Resume (ATS Scanner) Functions */
-const STOP_WORDS = new Set([
-  "a","about","above","after","again","against","all","am","an","and","any","are","aren't","as","at",
-  "be","because","been","before","being","below","between","both","but","by","can't","cannot","could",
-  "couldn't","did","didn't","do","does","doesn't","doing","don't","down","during","each","few","for",
-  "from","further","had","hadn't","has","hasn't","have","haven't","having","he","he'd","he'll","he's",
-  "her","here","here's","hers","herself","him","himself","his","how","how's","i","i'd","i'll","i'm",
-  "i've","if","in","into","is","isn't","it","it's","its","itself","let's","me","more","most","mustn't",
-  "my","myself","no","nor","not","of","off","on","once","only","or","other","ought","our","ours",
-  "ourselves","out","over","own","same","shan't","she","she'd","she'll","she's","should","shouldn't",
-  "so","some","such","than","that","that's","the","their","theirs","them","themselves","then","there",
-  "there's","these","they","they'd","they'll","they're","they've","this","those","through","to","too",
-  "under","until","up","very","was","wasn't","we","we'd","we'll","we're","we've","were","weren't",
-  "what","what's","when","when's","where","where's","which","while","who","who's","whom","why","why's",
-  "with","won't","would","wouldn't","you","you'd","you'll","you're","you've","your","yours","yourself",
-  "yourselves","will","shall","work","working","job","experience","requirements","responsible","team","looking"
-]);
-
-function extractKeywords(text) {
-  if (!text) return [];
-  const words = text
-    .toLowerCase()
-    .replace(/[^a-z0-9+#.\s]/g, " ")
-    .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
-
-  const freq = new Map();
-  words.forEach((w) => freq.set(w, (freq.get(w) || 0) + 1));
-
-  return Array.from(freq.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 30)
-    .map((entry) => entry[0]);
-}
-
-function loadResumeIntoScanner() {
-  const r = resumeStore.get();
-  if (elements.rsResumeTextInput) {
-    elements.rsResumeTextInput.value = `${r.fullName} - ${r.title}\n${r.summary}\n\nSKILLS:\n${r.skills}\n\nEXPERIENCE:\n${r.experience}\n\nPROJECTS:\n${r.projects}\n\nEDUCATION:\n${r.education}`;
-  }
-}
-
-function scanResumeScore() {
-  const jobText = elements.rsJobDescriptionInput?.value.trim() || "";
-  const resumeText = elements.rsResumeTextInput?.value.trim() || "";
-
-  if (!jobText || !resumeText) {
-    alert("Please provide both Job Description and Resume text to scan.");
-    return;
-  }
-
-  const jobKeywords = extractKeywords(jobText);
-  const resumeLower = resumeText.toLowerCase();
-
-  const matched = [];
-  const missing = [];
-
-  jobKeywords.forEach((kw) => {
-    if (resumeLower.includes(kw)) {
-      matched.push(kw);
-    } else {
-      missing.push(kw);
-    }
-  });
-
-  const matchRatio = jobKeywords.length > 0 ? (matched.length / jobKeywords.length) : 0;
-  
-  const hasNumbers = /\d+%|\$\d+|\b\d+\b/.test(resumeText);
-  const ACTION_VERBS = ["led", "engineered", "built", "spearheaded", "developed", "architected", "optimized", "delivered", "mentored", "scaled", "created", "designed", "improved"];
-  const actionVerbsFound = ACTION_VERBS.filter(v => new RegExp(`\\b${v}\\b`, 'i').test(resumeText)).length;
-  const hasContact = /@.+\..+/.test(resumeText) && /\d{3}/.test(resumeText);
-  const words = resumeText.split(/\s+/).length;
-  const lengthScore = words >= 250 && words <= 850;
-
-  let score = Math.round(matchRatio * 70);
-  if (hasNumbers) score += 10;
-  if (actionVerbsFound >= 4) score += 10;
-  if (hasContact) score += 5;
-  if (lengthScore) score += 5;
-  score = Math.min(98, Math.max(25, score));
-
-  if (elements.rsMatchScore) elements.rsMatchScore.textContent = `${score}%`;
-  if (elements.rsMatchedCount) elements.rsMatchedCount.textContent = matched.length;
-  if (elements.rsMissingCount) elements.rsMissingCount.textContent = missing.length;
-
-  if (elements.rsVerdictTitle) {
-    elements.rsVerdictTitle.textContent = score >= 80 ? "🌟 Excellent ATS Match!" : score >= 60 ? "👍 Good Match (Optimization Recommended)" : "⚠️ Low Match Rate";
-  }
-  if (elements.rsVerdictDesc) {
-    elements.rsVerdictDesc.textContent = score >= 80
-      ? "Your resume strongly mirrors the keywords and qualifications requested. Be sure to align your bullet points with the missing skills below."
-      : "You can significantly improve your odds by adding the missing technical skills and action verbs listed below into your experience bullets.";
-  }
-
-  if (elements.rsMatchedTags) {
-    elements.rsMatchedTags.innerHTML = matched.length > 0
-      ? matched.map((kw) => `<span class="rs-tag matched">✓ ${kw}</span>`).join("")
-      : '<span class="empty-tag-note">No exact keyword matches found.</span>';
-  }
-  if (elements.rsMissingTags) {
-    elements.rsMissingTags.innerHTML = missing.length > 0
-      ? missing.map((kw) => `<span class="rs-tag missing">✗ ${kw}</span>`).join("")
-      : '<span class="empty-tag-note">All top keywords matched!</span>';
-  }
-
-  if (elements.rsCheckMetrics) elements.rsCheckMetrics.textContent = hasNumbers ? "✅ Strong (Numbers/% found)" : "⚠️ Needs more quantifiable metrics";
-  if (elements.rsCheckVerbs) elements.rsCheckVerbs.textContent = actionVerbsFound >= 4 ? `✅ Strong (${actionVerbsFound} power verbs)` : "⚠️ Use stronger action verbs";
-  if (elements.rsCheckContact) elements.rsCheckContact.textContent = hasContact ? "✅ Complete (Email & Phone detected)" : "⚠️ Missing email or phone";
-  if (elements.rsCheckLength) elements.rsCheckLength.textContent = `${words} words ${lengthScore ? "(Ideal 1-page length)" : "(Consider trimming or expanding)"}`;
-}
-
-/* AI Answer Generator Functions */
-function generateAiAnswer() {
-  const category = elements.aiQuestionCategory?.value || "conflict";
-  const customQuestion = elements.aiCustomQuestionInput?.value.trim();
-  const company = elements.aiCompanyInput?.value.trim() || "[Target Company]";
-  const role = elements.aiRoleInput?.value.trim() || "[Target Role]";
-  const framework = elements.aiFrameworkSelect?.value || "star";
-  const details = elements.aiDetailsInput?.value.trim();
-
-  let questionText = "";
-  if (category === "conflict") questionText = "Tell me about a time you had a technical disagreement or conflict with a colleague and how you resolved it.";
-  else if (category === "failure") questionText = "Describe a significant mistake or failure in a project and what you learned from it.";
-  else if (category === "leadership") questionText = "Tell me about a time you took initiative to lead an unassigned project or solve a critical bottleneck.";
-  else if (category === "ambiguity") questionText = "How do you handle ambiguous requirements or sudden priority shifts?";
-  else if (category === "whyUs") questionText = `Why are you interested in joining ${company} as a ${role}?`;
-  else if (category === "salary") questionText = "What are your salary and total compensation expectations for this role?";
-  else questionText = customQuestion || "Interview Question";
-
-  let response = "";
-  if (framework === "star") {
-    response = `QUESTION: "${questionText}"
-
-[SITUATION]
-${details ? `In my recent role while working on ${details.slice(0, 100)}...` : `At my previous company, our team encountered a critical challenge when high production traffic exposed an architectural bottleneck that threatened our uptime commitments.`}
-
-[TASK]
-I was responsible for diagnosing the root cause, aligning our engineering priorities, and delivering an immediate fix without impacting active customer workflows.
-
-[ACTION]
-${details ? `To address this, ${details}` : `I initiated a rapid RCA, established transparent communication across stakeholders, and implemented an iterative, decoupled architecture that minimized blast radius. I also introduced automated safeguards to prevent future regressions.`}
-
-[RESULT]
-As a result, we eliminated the bottleneck, improved overall performance by 35%, and established a playbook adopted company-wide. When applying this to ${company}, I bring this same bias for disciplined problem-solving and proactive ownership.`;
-  } else if (framework === "car") {
-    response = `QUESTION: "${questionText}"
-
-[CONTEXT]
-${details ? details : `While developing core user-facing features, we faced strict latency SLAs and complex data dependencies that required high-level architectural precision.`}
-
-[ACTION]
-I took full ownership of the pipeline: auditing the critical rendering path, removing legacy bottlenecks, and collaborating directly with product managers to focus strictly on high-impact requirements.
-
-[RESULT]
-We shipped the milestone ahead of schedule, cut error rates significantly, and preserved high customer trust. I am excited to apply this high-velocity rigor to the ${role} position at ${company}.`;
-  } else {
-    // Direct & Concise
-    response = `KEY TAKEAWAYS FOR: "${questionText}"
-
-• Core Principle: I approach challenges with extreme ownership, data-driven prioritization, and proactive empathy.
-• Concrete Example: ${details ? details : `Led the refactoring of core systems resulting in sub-second response times and zero downtime.`}
-• Alignment with ${company}: I am eager to leverage this proven ability to solve complex technical bottlenecks for your ${role} team.`;
-  }
-
-  if (elements.aiOutputTextarea) {
-    elements.aiOutputTextarea.value = response;
   }
 }
 
@@ -1814,7 +1576,7 @@ elements.importFileInput?.addEventListener("change", (e) => {
   reader.readAsText(file);
 });
 
-// Cover Letter Event Listeners
+// Proposal Drafter Event Listeners
 elements.clJobSelect?.addEventListener("change", (e) => {
   const selectedId = e.target.value;
   if (selectedId) {
@@ -1829,7 +1591,7 @@ elements.clJobSelect?.addEventListener("change", (e) => {
   }
 });
 
-elements.clGenerateBtn?.addEventListener("click", generateCoverLetter);
+elements.clGenerateBtn?.addEventListener("click", generateProposal);
 elements.clOutputTextarea?.addEventListener("input", updateClStats);
 
 elements.clCopyBtn?.addEventListener("click", () => {
@@ -1852,7 +1614,7 @@ elements.clDownloadBtn?.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `cover-letter-${company}.md`;
+  a.download = `proposal-${company}.md`;
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -1930,43 +1692,6 @@ elements.rbDownloadMdBtn?.addEventListener("click", () => {
 
 elements.rbPrintBtn?.addEventListener("click", () => {
   window.print();
-});
-
-// Score My Resume Event Listeners
-elements.rsLoadJobBtn?.addEventListener("click", () => {
-  const platforms = platformStore.list();
-  if (platforms.length === 0) {
-    alert("No saved job applications found on your board.");
-    return;
-  }
-  const jobNames = platforms.slice(0, 5).map((p, idx) => `${idx + 1}. ${p.name} - ${p.category || ""}`).join("\n");
-  const choice = prompt(`Select job by number (1-${Math.min(5, platforms.length)}):\n${jobNames}`);
-  const idx = parseInt(choice, 10) - 1;
-  if (!isNaN(idx) && platforms[idx]) {
-    const job = platforms[idx];
-    elements.rsJobDescriptionInput.value = `${job.name} - ${job.category || ""}\n${job.note || ""}`;
-  }
-});
-
-elements.rsLoadMyResumeBtn?.addEventListener("click", loadResumeIntoScanner);
-elements.rsScanBtn?.addEventListener("click", scanResumeScore);
-
-// AI Answer Generator Event Listeners
-elements.aiQuestionCategory?.addEventListener("change", (e) => {
-  if (elements.aiCustomQuestionGroup) {
-    elements.aiCustomQuestionGroup.style.display = e.target.value === "custom" ? "block" : "none";
-  }
-});
-
-elements.aiGenerateBtn?.addEventListener("click", generateAiAnswer);
-elements.aiCopyBtn?.addEventListener("click", () => {
-  const text = elements.aiOutputTextarea?.value;
-  if (!text) return;
-  navigator.clipboard.writeText(text).then(() => {
-    const orig = elements.aiCopyBtn.textContent;
-    elements.aiCopyBtn.textContent = "✅ Copied!";
-    setTimeout(() => { elements.aiCopyBtn.textContent = orig; }, 2000);
-  });
 });
 
 // LinkedIn Tools Event Listeners

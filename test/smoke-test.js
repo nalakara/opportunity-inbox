@@ -150,10 +150,8 @@ const expectedTabs = [
   "board",
   "statistics",
   "portals",
-  "coverletter",
+  "proposal",
   "resumebuilder",
-  "resumescore",
-  "aianswer",
   "linkedintools",
 ];
 
