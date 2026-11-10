@@ -17,7 +17,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 
 ---
 
-## ✨ Features
+## Features
 
 ### 📋 Dual-View Pipeline Tracking
 - **Interactive Kanban Board**: Visualize opportunities across 7 structured stages with native **Drag & Drop** support:
@@ -42,7 +42,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
   - Actionable guidance when pitch momentum slows down.
 - **⚙️ Dynamic User Preferences**: Customize your display name and weekly pitch target directly in local storage without any accounts.
 
-### ⚡ Power-User & Job Search Tool Suite
+### Power-User & Job Search Tool Suite
 - **📄 ATS Resume Builder**: Create crisp, ATS-compliant, single-column tech resumes. Features **Upload / Import** for existing CVs (.pdf, .txt, .md, .json) with intelligent local field-matching, live preview sheet, Markdown copy/export, and clean `@media print` PDF generation.
 - **🎯 Score My Resume (ATS Scanner)**: Instant keyword and hard skill matching against target job descriptions. Audits quantifiable metrics, power verbs, and ATS formatting guidelines with composite scoring.
 - **✨ STAR Interview Responder**: Generate high-impact behavioral and situational interview answers using the STAR (Situation, Task, Action, Result) and CAR frameworks.
@@ -67,7 +67,7 @@ Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers 
 ├── styles.css            # Obsidian Dark design system, responsive styling & print sheets
 ├── src/
 │   ├── app.js            # View routing, DOM rendering, tool logic & event delegation
-│   └── storage.js        # Stores (Jobs, Contacts, Settings, Resume) & JSON backup
+│   └── storage.js        # Stores (Opportunities, Contacts, Settings, Resume) & JSON backup
 ├── test/
 │   └── smoke-test.js     # Zero-dependency native Node.js smoke test suite
 ├── package.json          # Project metadata and test scripts
@@ -85,7 +85,7 @@ Opportunity Inbox intentionally avoids heavy JavaScript frameworks and bundlers 
 
 ---
 
-## 🚀 Quickstart & Local Development
+## Quickstart & Local Development
 
 No build step required. Simply open `index.html` in your browser or run any local HTTP server:
 

@@ -1,12 +1,12 @@
 # Design Direction: Opportunity Inbox
 
-> Quiet productivity, local-first craftsmanship, and deliberate focus for job seekers.
+> Quiet productivity, local-first craftsmanship, and deliberate focus for freelancers.
 
 ---
 
 ## 1. Identity & Character
 
-Opportunity Inbox is built for freelancers who value clarity, privacy, and speed over subscription clutter and bloated trackers. The aesthetic is **Obsidian Minimal** — a calm, dark workspace designed to reduce cognitive load during the intense pitch-and-follow-up process.
+Opportunity Inbox is built for freelancers who value clarity, privacy, and speed over subscription clutter and bloated trackers. The aesthetic is **Obsidian Minimal**: a calm, dark workspace designed to reduce cognitive load during the intense pitch-and-follow-up process.
 
 - **Tone**: Focused, competent, quiet, respectful of user attention.
 - **Audience**: Freelancers, independent professionals, and modern knowledge workers managing active multi-stage opportunity pipelines.
@@ -52,7 +52,7 @@ No rainbow gradients, no colored full-page glow meshes, and no technique without
 
 | Dial | Level | Selection | Rationale |
 |---|---|---|---|
-| **ENERGY** | **1 (Calm)** | Quiet & Non-intrusive | Job hunting requires calm concentration; the interface steps back and lets data and actions take center stage. |
+| **ENERGY** | **1 (Calm)** | Quiet & Non-intrusive | Finding gigs requires calm concentration; the interface steps back and lets data and actions take center stage. |
 | **RHYTHM** | **2 (Balanced)** | Consistent with Focused Workspaces | Kanban columns and tables maintain predictable consistency, while tool views (Resume Builder, Cover Letter) expand into split-screen authoring layouts. |
 | **MOTION** | **1 (Calm)** | Fast Tactile Feedback | 150ms transitions on hover and active states; zero scroll-reveal fades, floating cards, or artificial delays. |
 

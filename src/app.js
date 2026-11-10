@@ -267,9 +267,9 @@ function hasReachedStage(platform, stage) {
   return (platform.statusHistory || []).some((entry) => entry.status === stage);
 }
 
-// A conversion rate, or "–" when no opportunity ever entered the stage.
+// A conversion rate, or "n/a" when no opportunity ever entered the stage.
 function formatConversion(reached, entered) {
-  if (entered === 0) return "–";
+  if (entered === 0) return "n/a";
   return `${Math.round((reached / entered) * 100)}%`;
 }
 
@@ -1221,7 +1221,7 @@ ${lastImportedRawText.slice(0, 10000)}`;
 
     pendingImportedResume = parsed;
     displayParsedPreview(parsed, "Gemini AI Enhanced");
-    alert("✨ Resume polished and structured via Gemini AI!");
+    alert("Resume polished and structured via Gemini AI!");
   } catch (err) {
     console.error("Gemini enhancement failed:", err);
     alert(`Gemini AI extraction error: ${err.message}. Local extraction remains available.`);
@@ -1502,7 +1502,7 @@ function openCaptureDialog(platform = null, defaultStage = STATUS_ENUM.WISHLIST)
   elements.captureForm.reset();
   elements.formError.textContent = "";
   elements.editingId.value = platform?.id ?? "";
-  elements.dialogTitle.textContent = platform ? "Edit Job Application" : "Add Job Application";
+  elements.dialogTitle.textContent = platform ? "Edit Opportunity" : "Add Opportunity";
   elements.nameInput.value = platform?.name ?? "";
   elements.categoryInput.value = platform?.category ?? "";
   elements.urlInput.value = platform?.url ?? "";

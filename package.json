@@ -1,6 +1,6 @@
 {
   "name": "opportunity-inbox",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A clean, quiet productivity, local-first Progressive Web App (PWA) and complete freelance pipeline suite.",
   "main": "sw.js",
   "scripts": {
