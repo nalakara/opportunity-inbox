@@ -180,6 +180,26 @@ export const platformStore = {
     adapter.set(remaining);
   },
 
+  // Demo data: 13 fictional records with complete histories. Loading
+  // replaces the current opportunities; portals, settings, and CVs are
+  // untouched. Fixed ids make loading idempotent.
+  loadDemoData() {
+    const demo = buildDemoOpportunities();
+    adapter.set(demo);
+    return demo;
+  },
+
+  clearDemoData() {
+    const current = adapter.get();
+    const remaining = current.filter((p) => p.demo !== true);
+    adapter.set(remaining);
+    return current.length - remaining.length;
+  },
+
+  hasDemoData() {
+    return adapter.get().some((p) => p.demo === true);
+  },
+
   exportJson() {
     const payload = {
       version: 2,
@@ -217,6 +237,7 @@ export const platformStore = {
         statusHistory: normalizeStatusHistory(item),
         followUpDate: (item.followUpDate || "").trim(),
         note: (item.note || "").trim(),
+        ...(item.demo === true ? { demo: true } : {}),
         createdAt: item.createdAt || now(),
         updatedAt: item.updatedAt || now(),
       }));
@@ -275,6 +296,68 @@ export const platformStore = {
     }
   },
 };
+
+/* ------------------------------------------------------------------ */
+/* Demo data: one fictional dummy user with an optimal scenario.      */
+/* 13 opportunities across all 7 stages, each with a complete         */
+/* statusHistory, so the pipeline, gauge, and funnel can be evaluated  */
+/* with realistic, well-formed data. Timestamps are relative to load   */
+/* time (days ago), so the target metrics hold whenever the demo is    */
+/* loaded: gauge 7 of 10, funnel 45% / 60%, win rate 27%. No personal */
+/* identifiers anywhere: every name is fictional.                     */
+/* ------------------------------------------------------------------ */
+
+function demoAt(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString();
+}
+
+function demoDate(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// [id, stage, portal, title, url, [[stage, daysAgo] ...], followUpInDays|null, note]
+// followUpInDays: 0 = today, 1 = tomorrow, 2 = in two days.
+const DEMO_DEFS = [
+  ["demo-01", "WISHLIST", "Contra", "Banyan Coffee Co. - Packaging Labels", "https://contra.com", [["WISHLIST", 20]], null, "Saw the brief, researching the brand before pitching."],
+  ["demo-02", "WISHLIST", "Upwork", "Northwind Outdoors - Brand Refresh", "https://upwork.com", [["WISHLIST", 12]], null, "Shortlisted from a job post, not pitched yet."],
+  ["demo-03", "APPLIED", "Upwork", "Seaside Resort Bali - Menu Design", "https://upwork.com", [["WISHLIST", 8], ["APPLIED", 1]], 1, "Proposal sent, waiting for reply."],
+  ["demo-04", "APPLIED", "OneForma", "Image Labelling - Street Scenes", "https://www.oneforma.com", [["WISHLIST", 6], ["APPLIED", 0]], null, "Assessment submitted, awaiting review."],
+  ["demo-05", "INTERVIEWING", "Upwork", "Harbor & Pine Hotel - Logo Refresh", "https://upwork.com", [["WISHLIST", 14], ["APPLIED", 8], ["INTERVIEWING", 1]], 0, "Client asked for a second concept."],
+  ["demo-06", "INTERVIEWING", "Mercor", "Video Conversation Review", "https://mercor.com", [["WISHLIST", 13], ["APPLIED", 7], ["INTERVIEWING", 0]], null, "Screening call done, waiting on task details."],
+  ["demo-07", "INTERVIEWING", "Micro1", "Prompt Evaluation - Travel Guides", "https://micro1.ai", [["WISHLIST", 9], ["APPLIED", 5], ["INTERVIEWING", 1]], 2, "Shortlisted, rate discussion next."],
+  ["demo-08", "OFFER", "Contra", "Coffee Roastery - Brand & Packaging", "https://contra.com", [["WISHLIST", 19], ["APPLIED", 12], ["INTERVIEWING", 6], ["OFFER", 0]], null, "Won. Kickoff call this week."],
+  ["demo-09", "OFFER", "iMerit Scholars", "Video Annotation - Training Clips", "https://imerit.net", [["WISHLIST", 18], ["APPLIED", 10], ["INTERVIEWING", 7], ["OFFER", 5]], null, "First batch in progress."],
+  ["demo-10", "OFFER", "Upwork", "Restaurant Group - Menu & Signage", "https://upwork.com", [["WISHLIST", 10], ["APPLIED", 6], ["OFFER", 4]], null, "Direct hire, no interview round."],
+  ["demo-11", "REJECTED", "Workbolt", "Product Photos - Retouching Batch", "https://workbolt.com", [["WISHLIST", 13], ["APPLIED", 9], ["REJECTED", 5]], null, "Client chose another designer."],
+  ["demo-12", "GHOSTED", "CrowdGen", "Survey Response Review", "https://www.crowdgen.com", [["WISHLIST", 12], ["APPLIED", 8], ["GHOSTED", 4]], null, "No reply after two follow-ups."],
+  ["demo-13", "FOLLOW_UP", "Turing", "Code Review - React Components", "https://turing.com", [["WISHLIST", 7], ["APPLIED", 3], ["FOLLOW_UP", 0]], 1, "Nudge sent, waiting for reply."],
+];
+
+export function buildDemoOpportunities() {
+  return DEMO_DEFS.map(([id, status, category, name, url, history, followUpInDays, note]) => {
+    const statusHistory = history.map(([stage, daysAgo]) => ({ status: stage, at: demoAt(daysAgo) }));
+    return {
+      id,
+      demo: true,
+      name,
+      category,
+      url,
+      status,
+      statusHistory,
+      followUpDate: followUpInDays === null ? "" : demoDate(-followUpInDays),
+      note,
+      createdAt: statusHistory[0].at,
+      updatedAt: statusHistory[statusHistory.length - 1].at,
+    };
+  });
+}
 
 const SETTINGS_KEY = "opportunity-inbox.settings.v1";
 const PORTALS_KEY = "opportunity-inbox.portals.v1";

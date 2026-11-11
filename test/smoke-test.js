@@ -32,6 +32,7 @@ const {
   createCVRecord,
   formatFileSize,
   STATUS_ENUM,
+  buildDemoOpportunities,
 } = await import("../src/storage.js");
 
 console.log("Running Opportunity Inbox Suite Smoke Tests...\n");
@@ -313,6 +314,140 @@ assert.ok(html.includes("e.g. Upwork client, Mercor"), "Target Client placeholde
 assert.ok(html.includes("e.g. Logo refresh for F&B brands"), "Service / Offer placeholder must be freelance");
 assert.ok(html.includes("e.g. Logo design, hospitality & F&B, 13 yrs"), "headline placeholder must be freelance");
 console.log("  ✓ Gemini key removed and LinkedIn reframed for freelance gigs.");
+
+// 11. Demo dataset (v2.9.1)
+console.log("11. Testing demo dataset...");
+
+// Mirror of the metric definitions in src/app.js (countPitchedThisWeek,
+// hasReachedStage, formatConversion) so the test asserts the demo data
+// produces the target numbers under the app's own rules.
+function testIsDateThisWeek(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+  return d >= startOfWeek && d <= now;
+}
+function testCountPitchedThisWeek(platforms) {
+  return platforms.filter((p) =>
+    (p.statusHistory || []).some(
+      (entry) => entry.status !== STATUS_ENUM.WISHLIST && testIsDateThisWeek(entry.at)
+    )
+  ).length;
+}
+function testHasReachedStage(platform, stage) {
+  return (platform.statusHistory || []).some((entry) => entry.status === stage);
+}
+function testFormatConversion(reached, entered) {
+  if (entered === 0) return "n/a";
+  return `${Math.round((reached / entered) * 100)}%`;
+}
+
+const demo = buildDemoOpportunities();
+assert.equal(demo.length, 13, "demo must have 13 records");
+
+const demoStageCounts = {};
+for (const item of demo) demoStageCounts[item.status] = (demoStageCounts[item.status] || 0) + 1;
+assert.deepEqual(demoStageCounts, {
+  WISHLIST: 2, APPLIED: 2, INTERVIEWING: 3, OFFER: 3, REJECTED: 1, GHOSTED: 1, FOLLOW_UP: 1,
+}, "demo stage counts must match the optimal scenario");
+
+assert.equal(new Set(demo.map((d) => d.id)).size, 13, "demo ids must be unique");
+for (const item of demo) {
+  assert.equal(item.demo, true, "every demo record carries demo: true");
+  assert.ok(Array.isArray(item.statusHistory) && item.statusHistory.length > 0, "every demo record has history");
+  assert.equal(
+    item.statusHistory[item.statusHistory.length - 1].status,
+    item.status,
+    "last history entry must be the current stage"
+  );
+  for (const entry of item.statusHistory) {
+    assert.ok(STATUS_ENUM[entry.status], "history status must be a valid enum");
+    assert.ok(entry.at, "history entry must have a timestamp");
+  }
+  for (let i = 1; i < item.statusHistory.length; i++) {
+    assert.ok(
+      new Date(item.statusHistory[i].at) >= new Date(item.statusHistory[i - 1].at),
+      "history must be chronological"
+    );
+  }
+  assert.ok(item.createdAt && item.updatedAt, "demo record needs createdAt/updatedAt");
+}
+
+// No personal identifiers in the demo data.
+const demoJson = JSON.stringify(demo);
+for (const forbidden of ["Odin", "12499", "350856347375", "Legian"]) {
+  assert.ok(!demoJson.includes(forbidden), `demo data must not contain ${forbidden}`);
+}
+
+// Target metrics under the app's own definitions.
+assert.equal(testCountPitchedThisWeek(demo), 7, "demo gauge must read 7 pitches sent this week");
+const demoEverPitched = demo.filter((p) => testHasReachedStage(p, STATUS_ENUM.APPLIED)).length;
+const demoEverDiskusi = demo.filter((p) => testHasReachedStage(p, STATUS_ENUM.INTERVIEWING)).length;
+const demoEverDeal = demo.filter((p) => testHasReachedStage(p, STATUS_ENUM.OFFER)).length;
+assert.equal(demoEverPitched, 11);
+assert.equal(demoEverDiskusi, 5);
+assert.equal(demoEverDeal, 3);
+assert.equal(testFormatConversion(demoEverDiskusi, demoEverPitched), "45%");
+assert.equal(testFormatConversion(demoEverDeal, demoEverDiskusi), "60%");
+assert.equal(testFormatConversion(demoEverDeal, demoEverPitched), "27%");
+
+// Exactly one Deal record skips Diskusi in its history.
+const dealsSkippingDiskusi = demo.filter(
+  (p) => p.status === STATUS_ENUM.OFFER && !testHasReachedStage(p, STATUS_ENUM.INTERVIEWING)
+);
+assert.equal(dealsSkippingDiskusi.length, 1, "exactly one Deal must skip Diskusi");
+
+// Store behaviour: load replaces, is idempotent, clear removes only demo.
+memoryStorage.clear();
+seedPortalsIfEmpty();
+const manualBefore = platformStore.create({ name: "Manual Client", category: "Remote", status: "WISHLIST" });
+const portalsBefore = portalStore.list().length;
+const settingsBefore = settingsStore.get();
+
+const loadedDemo = platformStore.loadDemoData();
+assert.equal(loadedDemo.length, 13);
+assert.equal(platformStore.list().length, 13);
+assert.ok(platformStore.list().every((p) => p.demo === true), "all loaded records are demo");
+assert.equal(platformStore.get(manualBefore.id), null, "loading demo replaces existing opportunities");
+assert.equal(portalStore.list().length, portalsBefore, "loading demo must not touch portals");
+assert.deepEqual(settingsStore.get(), settingsBefore, "loading demo must not touch settings");
+assert.equal(platformStore.hasDemoData(), true);
+
+platformStore.loadDemoData();
+assert.equal(platformStore.list().length, 13, "loading demo twice must not duplicate");
+assert.equal(new Set(platformStore.list().map((p) => p.id)).size, 13);
+
+const manualAfter = platformStore.create({ name: "Manual Client 2", category: "Remote", status: "WISHLIST" });
+assert.equal(platformStore.list().length, 14);
+assert.equal(platformStore.clearDemoData(), 13, "clear must remove exactly the demo records");
+assert.equal(platformStore.list().length, 1, "clear leaves other opportunities untouched");
+assert.equal(platformStore.list()[0].id, manualAfter.id);
+assert.equal(platformStore.hasDemoData(), false);
+
+// Demo flag survives an export/import round-trip, so demo records stay
+// identifiable (and clearable) after a backup restore.
+platformStore.loadDemoData();
+const demoExport = platformStore.exportJson();
+memoryStorage.clear();
+platformStore.importJson(demoExport, "replace");
+assert.equal(platformStore.list().length, 13);
+assert.ok(platformStore.list().every((p) => p.demo === true), "demo flag must survive export/import");
+assert.equal(platformStore.clearDemoData(), 13);
+assert.equal(platformStore.list().length, 0);
+
+// Source checks: the Settings UI and wiring exist.
+assert.ok(html.includes('id="demoBanner"'), "demo banner element must exist");
+assert.ok(html.includes('id="loadDemoBtn"') && html.includes("Load demo data"), "Load demo data button must exist");
+assert.ok(html.includes('id="clearDemoBtn"') && html.includes("Clear demo data"), "Clear demo data button must exist");
+assert.ok(appJs.includes("loadDemoData") && appJs.includes("clearDemoData"), "app.js must wire demo load/clear");
+assert.ok(storageJs.includes("buildDemoOpportunities"), "storage.js must define the demo builder");
+assert.ok(storageJs.includes("item.demo === true"), "storage.js must preserve the demo flag on import");
+console.log("  ✓ demo dataset (13 records, target metrics, idempotent load, exact clear) passed.");
 
 console.log("\n🎉 ALL SMOKE TESTS PASSED CLEANLY!");
 

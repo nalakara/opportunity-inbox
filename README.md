@@ -46,6 +46,7 @@ Built 100% offline-ready, zero-build, and local-first with zero tracking, extern
 - **🗄️ CV Vault**: Store finished CV PDFs from CV Studio (label, note, upload date) in IndexedDB, ready to **Open / Download** whenever a portal asks for a CV upload. PDF only, max 10 MB per file; files live in this browser only and are not included in the JSON backup.
 - **✉️ Proposal Drafter**: Draft short, tailored freelance proposals in 4 tones (*Problem-first, Proof-led, Question-led, Warm Outreach*). Supports auto-linking with saved opportunities, live Markdown editing, word count metrics, `.md` download, and clean print-to-PDF formatting.
 - **LinkedIn Outreach for Gigs**: Draft client pitches, proposal follow-ups, portal gig enquiries, and post-call thank-you notes, plus keyword-rich headlines and Unicode post styling (bold, italic, mono).
+- **Demo data**: Load 13 fictional sample opportunities from Settings to evaluate the app with a realistic pipeline (7 pitches this week, funnel 45% / 60%, win rate 27%). Loading replaces the current opportunities; portals, settings, and CVs are untouched. A "Demo data" note shows while demo records are loaded, and "Clear demo data" removes exactly those records.
 - **Quick Capture Shortcut**: Press `⌘K` (Mac) or `Ctrl+K` (Windows/Linux) anywhere to open the capture dialog.
 - **URL Auto-Normalization**: Automatically formats URLs (e.g. `careers.airbnb.com` → `https://careers.airbnb.com`) and opens them safely in new tabs.
 - **Full Data Ownership (Backup & Restore)**:

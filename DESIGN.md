@@ -87,6 +87,12 @@ Semantic colours for badges and scanner feedback (text-safe on paper): ok `#1e7a
 - **RHYTHM 2** — Balanced. A steady grid of cards, no oversized hero, no dense spreadsheet.
 - **MOTION 1** — Calm. Transitions are short fades and border changes only. No bounce, no lift, no glow.
 
+## Demo data (v2.9.1)
+
+- Settings offers "Load demo data": 13 fictional opportunities across all 7 stages, each with a complete history, so the pipeline, gauge, and funnel can be evaluated with realistic data. Loading replaces the current opportunities; portals, settings, and CVs are untouched.
+- While demo records are loaded, a small dashed "Demo data" note sits above the active view so sample records are never mistaken for real ones. "Clear demo data" in Settings removes exactly the demo records.
+- Demo records carry `demo: true`, preserved through export/import. The banner is muted paper with a dashed hairline border and mono text, no colour fill.
+
 ## What NOT to change
 
 - The seven stage names and their meanings, the funnel definition, the weekly pitch target, and the Portals directory — the reskin is visual only.

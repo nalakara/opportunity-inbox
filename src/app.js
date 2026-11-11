@@ -34,6 +34,9 @@ const elements = {
   cancelSettingsButton: document.querySelector("#cancelSettingsButton"),
   settingsUserNameInput: document.querySelector("#settingsUserNameInput"),
   settingsWeeklyGoalInput: document.querySelector("#settingsWeeklyGoalInput"),
+  demoBanner: document.querySelector("#demoBanner"),
+  loadDemoBtn: document.querySelector("#loadDemoBtn"),
+  clearDemoBtn: document.querySelector("#clearDemoBtn"),
 
   // Toolbar & Search & View Switcher
   searchInput: document.querySelector("#searchInput"),
@@ -781,6 +784,7 @@ function switchTab(tabName) {
 
 function render() {
   renderUserProfile();
+  updateDemoBanner();
   if (activeTab === "board") renderBoard();
   if (activeTab === "home") renderHome();
   if (activeTab === "statistics") renderStatistics();
@@ -1114,6 +1118,7 @@ function openSettingsDialog() {
   const settings = settingsStore.get();
   elements.settingsUserNameInput.value = settings.userName;
   elements.settingsWeeklyGoalInput.value = settings.weeklyGoal;
+  updateDemoButtons();
   elements.settingsDialog.showModal();
   elements.settingsUserNameInput.focus();
 }
@@ -1126,6 +1131,31 @@ function saveSettings() {
   const userName = elements.settingsUserNameInput.value.trim() || "Yudhan";
   const weeklyGoal = Math.max(1, parseInt(elements.settingsWeeklyGoalInput.value, 10) || 10);
   settingsStore.update({ userName, weeklyGoal });
+  closeSettingsDialog();
+  render();
+}
+
+/* Demo data: fictional sample pipeline for evaluation */
+function updateDemoBanner() {
+  if (!elements.demoBanner) return;
+  elements.demoBanner.style.display = platformStore.hasDemoData() ? "block" : "none";
+}
+
+function updateDemoButtons() {
+  if (!elements.clearDemoBtn) return;
+  elements.clearDemoBtn.style.display = platformStore.hasDemoData() ? "inline-flex" : "none";
+}
+
+function loadDemoData() {
+  if (!confirm("Loading demo data will replace your current opportunities with 13 fictional sample records. Portals, settings, and CVs are not touched. Continue?")) return;
+  platformStore.loadDemoData();
+  closeSettingsDialog();
+  render();
+}
+
+function clearDemoData() {
+  if (!confirm("Remove all demo opportunities from the board?")) return;
+  platformStore.clearDemoData();
   closeSettingsDialog();
   render();
 }
@@ -1227,6 +1257,8 @@ elements.settingsForm?.addEventListener("submit", (e) => {
   e.preventDefault();
   saveSettings();
 });
+elements.loadDemoBtn?.addEventListener("click", loadDemoData);
+elements.clearDemoBtn?.addEventListener("click", clearDemoData);
 
 // Portals event listeners
 elements.addPortalBtn?.addEventListener("click", () => openPortalDialog());

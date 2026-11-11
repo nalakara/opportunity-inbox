@@ -117,6 +117,8 @@
 
         <!-- View Containers -->
         <main class="content-container">
+          <div class="demo-banner" id="demoBanner" style="display: none;">Demo data: these opportunities are fictional samples for evaluation. Clear them in Settings.</div>
+
           <!-- View: HOME -->
           <section class="tab-view" id="viewHome" data-tab="home" style="display: none;">
             <div class="home-header">
@@ -689,6 +691,15 @@
           <label for="settingsWeeklyGoalInput">Weekly Pitch Goal</label>
           <input id="settingsWeeklyGoalInput" name="settingsWeeklyGoal" type="number" min="1" max="100" placeholder="10" required />
           <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">Target number of pitches you aim to send every week.</small>
+        </div>
+
+        <div class="form-group demo-section">
+          <label>Demo data</label>
+          <p class="demo-section-text">Load 13 fictional sample opportunities to evaluate the app with a realistic pipeline. Loading replaces your current opportunities; portals, settings, and CVs are untouched.</p>
+          <div class="demo-section-actions">
+            <button class="secondary-btn sm" id="loadDemoBtn" type="button">Load demo data</button>
+            <button class="secondary-btn sm" id="clearDemoBtn" type="button" style="display: none;">Clear demo data</button>
+          </div>
         </div>
 
         <div class="form-actions">

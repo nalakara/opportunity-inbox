@@ -1604,6 +1604,30 @@ button {
   font-family: var(--font-mono);
 }
 
+/* Demo data (v2.9.1): muted paper note, dashed hairline, mono text. */
+.demo-banner {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.demo-section-text {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.demo-section-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* DARK MODE (v2.5.0): automatic per system, like The Cabinet.
    Light tokens stay the default; this block only re-aims them. */
 @media (prefers-color-scheme: dark) {
